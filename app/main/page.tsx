@@ -12,8 +12,8 @@ type MainPageProps = {
 export default async function MainPage({ searchParams }: MainPageProps) {
   const params = await searchParams;
   const school =
-    getSchoolById(params.schoolId ?? "school-045") ??
-    getSchoolById("school-045");
+    getSchoolById(params.schoolId ?? "school-044") ??
+    getSchoolById("school-044");
   const score = Number(params.score ?? "0");
 
   if (!school) {

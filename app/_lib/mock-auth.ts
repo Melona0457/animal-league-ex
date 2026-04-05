@@ -19,7 +19,7 @@ export const SCHOOL_OPTIONS: SchoolOption[] = SCHOOL_CATALOG;
 const STORAGE_KEY = "blossom-save-accounts";
 
 const DEFAULT_ACCOUNTS: MockAccount[] = [
-  { username: "springhero", password: "1234", schoolId: "school-045" },
+  { username: "springhero", password: "1234", schoolId: "school-044" },
   { username: "petalrush", password: "1234", schoolId: "school-006" },
 ];
 

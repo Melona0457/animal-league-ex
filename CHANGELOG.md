@@ -193,3 +193,17 @@
 - 게임 점수 반영 버튼이 Supabase 업데이트 후 메인으로 이동하도록 변경
 - 랭킹 화면이 Supabase 데이터를 읽어 실제 순위를 표시하도록 변경
 - 학교 상세 화면의 흔들기가 Supabase 수치 차감으로 반영되도록 변경
+
+## 2026-04-05 기본 학교 숭실대 기준 조정
+
+### 수정한 파일
+- `app/_lib/mock-auth.ts`
+- `app/main/page.tsx`
+- `app/game/page.tsx`
+- `app/ranking/page.tsx`
+- `app/schools/[schoolId]/page.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 기본 테스트 계정 학교를 숭실대(`school-044`)로 변경
+- 메인/게임/랭킹/학교상세의 fallback 학교를 숭실대로 변경

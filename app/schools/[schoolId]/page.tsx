@@ -20,7 +20,7 @@ export default async function SchoolDetailPage({
   return (
     <SchoolDetailClient
       schoolId={routeParams.schoolId}
-      fromSchoolId={query.fromSchoolId ?? "school-045"}
+      fromSchoolId={query.fromSchoolId ?? "school-044"}
       shakenCount={Number(query.shaken ?? "0")}
     />
   );

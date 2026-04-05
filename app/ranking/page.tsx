@@ -10,7 +10,7 @@ type RankingPageProps = {
 export default async function RankingPage({ searchParams }: RankingPageProps) {
   const params = await searchParams;
   const sort = params.sort === "name" ? "name" : "rank";
-  const currentSchoolId = params.schoolId ?? "school-045";
+  const currentSchoolId = params.schoolId ?? "school-044";
 
   return <RankingClient currentSchoolId={currentSchoolId} sort={sort} />;
 }
