@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { applyGameScore } from "../_lib/school-state";
 
 type GameItem = {
@@ -25,6 +31,7 @@ const GAME_DURATION = 15;
 
 export function GameClient({ schoolId, schoolName }: GameClientProps) {
   const router = useRouter();
+  const [isSaving, startSavingTransition] = useTransition();
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
@@ -110,8 +117,10 @@ export function GameClient({ schoolId, schoolName }: GameClientProps) {
   }
 
   function handleApplyScore() {
-    applyGameScore(schoolId, score);
-    router.push(`/main?schoolId=${schoolId}&score=${score}`);
+    startSavingTransition(async () => {
+      await applyGameScore(schoolId, score);
+      router.push(`/main?schoolId=${schoolId}&score=${score}`);
+    });
   }
 
   return (
@@ -196,9 +205,10 @@ export function GameClient({ schoolId, schoolName }: GameClientProps) {
                     <button
                       type="button"
                       onClick={handleApplyScore}
+                      disabled={isSaving}
                       className="rounded-2xl bg-stone-900 px-4 py-4 text-center text-sm font-semibold text-white"
                     >
-                      점수 반영하고 메인으로
+                      {isSaving ? "점수 저장 중..." : "점수 반영하고 메인으로"}
                     </button>
                     <button
                       type="button"

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getLevelLabel, type SchoolRecord } from "../_lib/mock-data";
 import { getStoredSchools } from "../_lib/school-state";
 
@@ -11,7 +11,25 @@ type RankingClientProps = {
 };
 
 export function RankingClient({ currentSchoolId, sort }: RankingClientProps) {
-  const [schools] = useState<SchoolRecord[]>(() => getStoredSchools());
+  const [schools, setSchools] = useState<SchoolRecord[]>([]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadSchools() {
+      const storedSchools = await getStoredSchools();
+
+      if (isActive) {
+        setSchools(storedSchools);
+      }
+    }
+
+    loadSchools();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   const sortedSchools =
     sort === "name"

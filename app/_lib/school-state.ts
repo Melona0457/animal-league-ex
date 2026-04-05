@@ -1,11 +1,20 @@
 "use client";
 
 import { getDefaultSchoolRecords, type SchoolRecord } from "./mock-data";
+import { supabase } from "./supabase";
 
-const SCHOOL_STATE_KEY = "blossom-save-school-state-v1";
+type SchoolRow = {
+  id: string;
+  name: string;
+  total_petals: number;
+  bloom_rate: number;
+  level: number;
+  rank: number;
+  progress_percent: number;
+};
 
-function canUseStorage() {
-  return typeof window !== "undefined";
+function defaultSchools() {
+  return getDefaultSchoolRecords();
 }
 
 function rankSchools(schools: SchoolRecord[]) {
@@ -29,81 +38,88 @@ function levelFromProgress(progressPercent: number) {
   return 1;
 }
 
-export function getStoredSchools() {
-  const defaults = getDefaultSchoolRecords();
+function mapRows(rows: SchoolRow[]) {
+  const defaults = defaultSchools();
+  const orderMap = new Map(defaults.map((school) => [school.id, school.order]));
 
-  if (!canUseStorage()) {
-    return defaults;
-  }
+  const mapped = rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    totalPetals: row.total_petals,
+    bloomRate: row.bloom_rate,
+    level: row.level,
+    rank: row.rank,
+    progressPercent: row.progress_percent,
+    shakeAvailable: true,
+    order: orderMap.get(row.id) ?? 9999,
+  }));
 
-  const saved = window.localStorage.getItem(SCHOOL_STATE_KEY);
-
-  if (!saved) {
-    window.localStorage.setItem(SCHOOL_STATE_KEY, JSON.stringify(defaults));
-    return defaults;
-  }
-
-  try {
-    return rankSchools(JSON.parse(saved) as SchoolRecord[]);
-  } catch {
-    window.localStorage.setItem(SCHOOL_STATE_KEY, JSON.stringify(defaults));
-    return defaults;
-  }
+  return rankSchools(mapped);
 }
 
-export function saveStoredSchools(schools: SchoolRecord[]) {
-  if (!canUseStorage()) {
+export async function getStoredSchools() {
+  const { data, error } = await supabase.from("schools").select("*");
+
+  if (error || !data) {
+    return defaultSchools();
+  }
+
+  return mapRows(data as SchoolRow[]);
+}
+
+export async function getStoredSchoolById(schoolId: string) {
+  const schools = await getStoredSchools();
+  return schools.find((school) => school.id === schoolId);
+}
+
+export async function applyGameScore(schoolId: string, score: number) {
+  const { data, error } = await supabase
+    .from("schools")
+    .select("*")
+    .eq("id", schoolId)
+    .single();
+
+  if (error || !data) {
     return;
   }
 
-  window.localStorage.setItem(
-    SCHOOL_STATE_KEY,
-    JSON.stringify(rankSchools(schools)),
-  );
+  const totalPetals = Math.max(0, (data as SchoolRow).total_petals + score);
+  const progressPercent = progressFromTotal(totalPetals);
+  const level = levelFromProgress(progressPercent);
+
+  await supabase
+    .from("schools")
+    .update({
+      total_petals: totalPetals,
+      bloom_rate: progressPercent,
+      progress_percent: progressPercent,
+      level,
+    })
+    .eq("id", schoolId);
 }
 
-export function getStoredSchoolById(schoolId: string) {
-  return getStoredSchools().find((school) => school.id === schoolId);
-}
+export async function applyShake(schoolId: string, amount = 30) {
+  const { data, error } = await supabase
+    .from("schools")
+    .select("*")
+    .eq("id", schoolId)
+    .single();
 
-export function applyGameScore(schoolId: string, score: number) {
-  const nextSchools = getStoredSchools().map((school) => {
-    if (school.id !== schoolId) {
-      return school;
-    }
+  if (error || !data) {
+    return;
+  }
 
-    const totalPetals = Math.max(0, school.totalPetals + score);
-    const progressPercent = progressFromTotal(totalPetals);
+  const totalPetals = Math.max(0, (data as SchoolRow).total_petals - amount);
+  const progressPercent = progressFromTotal(totalPetals);
+  const level = levelFromProgress(progressPercent);
 
-    return {
-      ...school,
-      totalPetals,
-      bloomRate: progressPercent,
-      progressPercent,
-      level: levelFromProgress(progressPercent),
-    };
-  });
-
-  saveStoredSchools(nextSchools);
-}
-
-export function applyShake(schoolId: string, amount = 30) {
-  const nextSchools = getStoredSchools().map((school) => {
-    if (school.id !== schoolId) {
-      return school;
-    }
-
-    const totalPetals = Math.max(0, school.totalPetals - amount);
-    const progressPercent = progressFromTotal(totalPetals);
-
-    return {
-      ...school,
-      totalPetals,
-      bloomRate: progressPercent,
-      progressPercent,
-      level: levelFromProgress(progressPercent),
-    };
-  });
-
-  saveStoredSchools(nextSchools);
+  await supabase
+    .from("schools")
+    .update({
+      total_petals: totalPetals,
+      bloom_rate: progressPercent,
+      progress_percent: progressPercent,
+      level,
+    })
+    .eq("id", schoolId);
 }

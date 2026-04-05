@@ -176,3 +176,20 @@
 - 잘못된 위치의 `app/login/.env.local`을 프로젝트 루트 `.env.local`로 이동
 - Supabase URL, Publishable Key를 Next.js가 읽을 수 있는 위치로 정리
 - 프로젝트에서 바로 import 가능한 Supabase 클라이언트 파일 추가
+
+## 2026-04-05 Supabase 연동 전환
+
+### 수정한 파일
+- `app/_lib/school-state.ts`
+- `app/main/main-client.tsx`
+- `app/game/game-client.tsx`
+- `app/ranking/ranking-client.tsx`
+- `app/schools/[schoolId]/school-detail-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 학교 상태 저장 방식을 `localStorage`에서 Supabase `schools` 테이블 기준으로 변경
+- 메인 화면이 Supabase에서 학교 상태를 읽도록 변경
+- 게임 점수 반영 버튼이 Supabase 업데이트 후 메인으로 이동하도록 변경
+- 랭킹 화면이 Supabase 데이터를 읽어 실제 순위를 표시하도록 변경
+- 학교 상세 화면의 흔들기가 Supabase 수치 차감으로 반영되도록 변경

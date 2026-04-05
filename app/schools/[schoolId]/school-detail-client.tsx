@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   getDefaultSchoolRecords,
   getLevelLabel,
@@ -23,14 +23,37 @@ export function SchoolDetailClient({
   fromSchoolId,
   shakenCount,
 }: SchoolDetailClientProps) {
-  const [school, setSchool] = useState<SchoolRecord | undefined>(() =>
-    getStoredSchoolById(schoolId) ??
+  const [isShaking, startShakeTransition] = useTransition();
+  const [school, setSchool] = useState<SchoolRecord | undefined>(
     getDefaultSchoolRecords().find((item) => item.id === schoolId),
   );
 
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadSchool() {
+      const storedSchool =
+        (await getStoredSchoolById(schoolId)) ??
+        getDefaultSchoolRecords().find((item) => item.id === schoolId);
+
+      if (isActive) {
+        setSchool(storedSchool);
+      }
+    }
+
+    loadSchool();
+
+    return () => {
+      isActive = false;
+    };
+  }, [schoolId, shakenCount]);
+
   function handleShake() {
-    applyShake(schoolId);
-    setSchool(getStoredSchoolById(schoolId));
+    startShakeTransition(async () => {
+      await applyShake(schoolId);
+      const nextSchool = await getStoredSchoolById(schoolId);
+      setSchool(nextSchool);
+    });
   }
 
   if (!school) {
@@ -98,7 +121,7 @@ export function SchoolDetailClient({
               onClick={handleShake}
               className="rounded-3xl bg-rose-400 px-4 py-4 text-center text-base font-semibold text-stone-950 shadow-[0_16px_40px_rgba(0,0,0,0.2)]"
             >
-              흔들기 사용하기
+              {isShaking ? "흔드는 중..." : "흔들기 사용하기"}
             </Link>
             <Link
               href={`/main?schoolId=${fromSchoolId}`}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   getLevelLabel,
   getSchoolBackgroundImage,
@@ -18,7 +18,25 @@ type MainClientProps = {
 
 export function MainClient({ school, score }: MainClientProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [currentSchool] = useState(() => getStoredSchoolById(school.id) ?? school);
+  const [currentSchool, setCurrentSchool] = useState(school);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadSchool() {
+      const storedSchool = await getStoredSchoolById(school.id);
+
+      if (isActive && storedSchool) {
+        setCurrentSchool(storedSchool);
+      }
+    }
+
+    loadSchool();
+
+    return () => {
+      isActive = false;
+    };
+  }, [school.id]);
 
   const totalPetals = currentSchool.totalPetals;
   const progressPercent = currentSchool.progressPercent;
