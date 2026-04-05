@@ -1,0 +1,135 @@
+# CHANGELOG
+
+## 2026-04-05
+
+### 생성한 파일
+- `CHANGELOG.md`
+- `app/_lib/mock-auth.ts`
+- `app/_lib/mock-data.ts`
+- `app/login/page.tsx`
+- `app/login/login-form.tsx`
+- `app/signup/page.tsx`
+- `app/signup/signup-form.tsx`
+- `app/main/page.tsx`
+- `app/game/game-client.tsx`
+- `app/game/page.tsx`
+- `app/ranking/page.tsx`
+- `app/schools/[schoolId]/page.tsx`
+
+### 수정한 파일
+- `app/layout.tsx`
+- `app/globals.css`
+- `app/page.tsx`
+
+### 이번 작업에서 구현한 화면과 기능
+- 초기화면 MVP 골격 구현
+- 로그인 화면 MVP 골격 구현
+- 회원가입 화면 MVP 골격 구현
+- 로그인 후 메인 화면으로 이동하도록 연결
+- 메인 화면 MVP 골격 구현
+- 미니게임 화면 MVP 골격 구현
+- 랭킹 화면 MVP 골격 구현
+- 다른 학교 상세 화면 MVP 골격 구현
+- 화면 간 라우팅 연결
+- 더미 데이터 기반 학교 상태 표시
+- 미니게임 15초, 벚꽃 `+1`, 벌레 `-2` 규칙 반영
+- 게임 종료 후 메인 화면으로 점수 전달
+- `npx next build --webpack` 기준 빌드 검증 완료
+
+### 더미 데이터 및 실제 연결 필요 항목
+- 학교 랭킹, 벚꽃 수, 개화율, 레벨은 모두 `app/_lib/mock-data.ts`의 더미 데이터 사용
+- 로그인/회원가입은 로컬 스토리지 기반 임시 인증 흐름 사용
+- 미니게임 점수는 서버 저장 없이 URL 파라미터로만 반영
+- 흔들기 기능은 실제 반영 없이 더미 수치와 안내 문구로 처리
+- 학교 상태 변화, 랭킹 재계산, 계정 세션 유지, 실제 DB/API 연동 필요
+
+## 2026-04-05 추가 점검
+
+### 생성한 파일
+- `app/community/page.tsx`
+
+### 수정한 파일
+- `app/main/page.tsx`
+- `app/game/game-client.tsx`
+- `app/ranking/page.tsx`
+- `app/schools/[schoolId]/page.tsx`
+- `CHANGELOG.md`
+
+### 이번 점검에서 추가한 동작
+- 메인 화면의 `실시간 댓글 커뮤니티` 버튼을 실제 라우트로 연결
+- `/community` 더미 커뮤니티 화면 추가
+- 게임 화면에서 랭킹, 커뮤니티로 이동 가능하도록 링크 추가
+- 랭킹 화면에서 게임, 커뮤니티로 이동 가능하도록 링크 추가
+- 학교 상세 화면에서 메인, 커뮤니티로 이동 가능하도록 링크 추가
+- 학교 상세의 흔들기 버튼을 더미 상태 변경 방식으로 연결
+- 흔들기 사용 후 안내 문구가 보이도록 처리
+
+### 아직 미구현인 부분
+- 커뮤니티 댓글 작성/실시간 반영 기능
+- 흔들기 실제 서버 반영 및 하루 1회 제한 영속화
+- 미니게임 점수의 실제 누적 저장
+- 사용자 세션 유지 및 학교 상태의 실제 동기화
+
+## 2026-04-05 디자인 구조 보강
+
+### 생성한 파일
+- `app/main/main-client.tsx`
+
+### 수정한 파일
+- `app/page.tsx`
+- `app/main/page.tsx`
+- `app/game/game-client.tsx`
+- `app/ranking/page.tsx`
+- `app/_lib/mock-data.ts`
+- `app/globals.css`
+- `CHANGELOG.md`
+
+### 이번 작업에서 추가한 내용
+- 초기화면을 이미지 배경 슬롯 구조로 변경
+- 메인 화면을 이미지 배경 + 레벨별 나무 이미지 슬롯 구조로 변경
+- 메인 화면 진행도 바 UI 추가
+- 메인 화면 메뉴 버튼 및 드로어 오버레이 구현
+- 미니게임을 낙하 애니메이션 기반 인터랙션으로 고도화
+- 랭킹 화면 랭킹순에서 상위 3개 단상 UI 추가
+
+### 이미지 자산 연결 방식
+- 초기화면 배경: `/public/images/landing/hero-background.jpg`
+- 학교별 메인 배경: `/public/images/schools/{schoolId}/main-background.jpg`
+- 학교별 레벨 나무 이미지: `/public/images/schools/{schoolId}/tree-level-{level}.png`
+
+### 아직 남은 실제 연결 포인트
+- 실제 이미지 파일 추가 필요
+- 학교별 나무 이미지 단계 세분화 필요
+- 메뉴 내부 로그아웃/커뮤니티 상태를 실제 세션과 연결 필요
+
+## 2026-04-05 메인 구조 및 게임 수정
+
+### 수정한 파일
+- `app/main/main-client.tsx`
+- `app/game/game-client.tsx`
+- `app/globals.css`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 메인 화면을 카드 분할 구조에서 전면형 레이아웃으로 변경
+- 상단 바를 `현재 순위 / 레벨(퍼센트+총벚꽃수) / 메뉴` 구성으로 정리
+- 중앙에는 학교 나무 이미지만 크게 보이도록 정리
+- 하단에는 `벚꽃 붙이기`, `방해하러 가기` 버튼만 남기도록 정리
+- 메뉴 안으로 나머지 이동 링크를 넣어 메인 화면을 단순화
+- 미니게임 낙하 애니메이션을 `top` 기반에서 `translateY` 기반으로 변경
+- 벚꽃/벌레가 실제로 보이고 떨어지도록 회전/이동 키프레임을 수정
+
+## 2026-04-05 흐름 정리 추가 수정
+
+### 수정한 파일
+- `app/main/main-client.tsx`
+- `app/game/game-client.tsx`
+- `app/schools/[schoolId]/page.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 메뉴의 `우리학교 벚꽃 현황`이 학교 상세가 아니라 메인 화면으로 가도록 수정
+- 미니게임 화면을 전체 화면형 레이아웃으로 변경
+- 게임 종료 시 중앙 결과 오버레이와 `점수 반영하고 메인으로` 버튼을 강조
+- 방해하러가기 학교 상세 화면을 메인처럼 전체 화면형으로 변경
+- 흔들기 제한을 테스트용으로 해제하고 연속 확인 가능하도록 수정
