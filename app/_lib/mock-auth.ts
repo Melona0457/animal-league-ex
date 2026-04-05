@@ -1,6 +1,7 @@
 "use client";
 
 import { getSchoolById } from "./mock-data";
+import { SCHOOL_CATALOG } from "./school-catalog";
 
 export type SchoolOption = {
   id: string;
@@ -13,20 +14,13 @@ export type MockAccount = {
   schoolId: string;
 };
 
-export const SCHOOL_OPTIONS: SchoolOption[] = [
-  { id: "yonsei", name: "연세대학교" },
-  { id: "korea", name: "고려대학교" },
-  { id: "snu", name: "서울대학교" },
-  { id: "ewha", name: "이화여자대학교" },
-  { id: "hanyang", name: "한양대학교" },
-  { id: "skku", name: "성균관대학교" },
-];
+export const SCHOOL_OPTIONS: SchoolOption[] = SCHOOL_CATALOG;
 
 const STORAGE_KEY = "blossom-save-accounts";
 
 const DEFAULT_ACCOUNTS: MockAccount[] = [
-  { username: "springhero", password: "1234", schoolId: "yonsei" },
-  { username: "petalrush", password: "1234", schoolId: "korea" },
+  { username: "springhero", password: "1234", schoolId: "school-045" },
+  { username: "petalrush", password: "1234", schoolId: "school-006" },
 ];
 
 function canUseStorage() {

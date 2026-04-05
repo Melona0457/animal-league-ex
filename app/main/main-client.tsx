@@ -9,6 +9,7 @@ import {
   getTreeStage,
   type SchoolRecord,
 } from "../_lib/mock-data";
+import { getStoredSchoolById } from "../_lib/school-state";
 
 type MainClientProps = {
   school: SchoolRecord;
@@ -17,14 +18,16 @@ type MainClientProps = {
 
 export function MainClient({ school, score }: MainClientProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const totalPetals = school.totalPetals + score;
-  const progressPercent = Math.min(100, school.progressPercent + Math.max(score, 0) / 100);
+  const [currentSchool] = useState(() => getStoredSchoolById(school.id) ?? school);
+
+  const totalPetals = currentSchool.totalPetals;
+  const progressPercent = currentSchool.progressPercent;
 
   return (
     <main
       className="min-h-screen bg-stone-900 px-4 py-5 text-white"
       style={{
-        backgroundImage: `linear-gradient(180deg, rgba(34, 18, 26, 0.28), rgba(34, 18, 26, 0.72)), url('${getSchoolBackgroundImage(school.id)}')`,
+        backgroundImage: `linear-gradient(180deg, rgba(34, 18, 26, 0.28), rgba(34, 18, 26, 0.72)), url('${getSchoolBackgroundImage(currentSchool.id)}')`,
         backgroundPosition: "center",
         backgroundSize: "cover",
       }}
@@ -33,14 +36,14 @@ export function MainClient({ school, score }: MainClientProps) {
         <header className="grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border border-white/15 bg-black/30 p-3 backdrop-blur-sm sm:gap-3 sm:p-4">
           <div className="rounded-2xl bg-white/10 px-3 py-3">
             <p className="text-[11px] font-medium text-white/65 sm:text-xs">현재 순위</p>
-            <p className="mt-1 text-xl font-bold sm:text-3xl">#{school.rank}</p>
+            <p className="mt-1 text-xl font-bold sm:text-3xl">#{currentSchool.rank}</p>
           </div>
           <div className="rounded-2xl bg-white/10 px-3 py-3">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="text-[11px] font-medium text-white/65 sm:text-xs">레벨</p>
                 <p className="mt-1 text-base font-bold sm:text-2xl">
-                  {getLevelLabel(school.level)} · {progressPercent.toFixed(0)}%
+                  {getLevelLabel(currentSchool.level)} · {progressPercent.toFixed(0)}%
                 </p>
                 <p className="mt-1 text-[11px] text-white/65 sm:text-xs">
                   총 벚꽃 수 {totalPetals.toLocaleString()}
@@ -72,16 +75,16 @@ export function MainClient({ school, score }: MainClientProps) {
         <section className="flex flex-1 flex-col justify-center py-4">
           <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center">
             <p className="mb-3 rounded-full bg-black/30 px-4 py-2 text-xs text-white/75 backdrop-blur-sm">
-              {school.name} · {getTreeStage(school.bloomRate)}
+              {currentSchool.name} · {getTreeStage(currentSchool.bloomRate)}
             </p>
             <div
               className="flex h-[46vh] min-h-[300px] w-full items-end justify-center bg-contain bg-bottom bg-no-repeat"
               style={{
-                backgroundImage: `url('${getSchoolTreeImage(school.id, school.level)}')`,
+                backgroundImage: `url('${getSchoolTreeImage(currentSchool.id, currentSchool.level)}')`,
               }}
             >
               <div className="mb-6 rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
-                나무 이미지 슬롯: `/public${getSchoolTreeImage(school.id, school.level)}`
+                나무 이미지 슬롯: `/public${getSchoolTreeImage(currentSchool.id, currentSchool.level)}`
               </div>
             </div>
           </div>
@@ -89,13 +92,13 @@ export function MainClient({ school, score }: MainClientProps) {
 
         <section className="grid gap-3 pb-2 sm:grid-cols-2">
           <Link
-            href={`/game?schoolId=${school.id}`}
+            href={`/game?schoolId=${currentSchool.id}`}
             className="rounded-3xl bg-rose-400 px-4 py-4 text-center text-base font-semibold text-stone-950 shadow-[0_16px_40px_rgba(0,0,0,0.2)]"
           >
             벚꽃 붙이기
           </Link>
           <Link
-            href={`/ranking?schoolId=${school.id}`}
+            href={`/ranking?schoolId=${currentSchool.id}`}
             className="rounded-3xl border border-white/20 bg-white/10 px-4 py-4 text-center text-base font-semibold text-white shadow-[0_16px_40px_rgba(0,0,0,0.16)]"
           >
             방해하러 가기
@@ -120,19 +123,19 @@ export function MainClient({ school, score }: MainClientProps) {
               </button>
             </div>
             <Link
-              href={`/main?schoolId=${school.id}`}
+              href={`/main?schoolId=${currentSchool.id}`}
               className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4"
             >
               우리학교 벚꽃 현황
             </Link>
             <Link
-              href={`/ranking?schoolId=${school.id}`}
+              href={`/ranking?schoolId=${currentSchool.id}`}
               className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4"
             >
               모아보기
             </Link>
             <Link
-              href={`/community?schoolId=${school.id}`}
+              href={`/community?schoolId=${currentSchool.id}`}
               className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4"
             >
               실시간 댓글 커뮤니티

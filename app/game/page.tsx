@@ -9,7 +9,9 @@ type GamePageProps = {
 
 export default async function GamePage({ searchParams }: GamePageProps) {
   const params = await searchParams;
-  const school = getSchoolById(params.schoolId ?? "yonsei") ?? getSchoolById("yonsei");
+  const school =
+    getSchoolById(params.schoolId ?? "school-045") ??
+    getSchoolById("school-045");
 
   if (!school) {
     return null;

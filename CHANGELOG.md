@@ -133,3 +133,46 @@
 - 게임 종료 시 중앙 결과 오버레이와 `점수 반영하고 메인으로` 버튼을 강조
 - 방해하러가기 학교 상세 화면을 메인처럼 전체 화면형으로 변경
 - 흔들기 제한을 테스트용으로 해제하고 연속 확인 가능하도록 수정
+
+## 2026-04-05 로컬 저장 및 학교 목록 갱신
+
+### 생성한 파일
+- `app/_lib/school-catalog.ts`
+- `app/_lib/school-state.ts`
+- `app/ranking/ranking-client.tsx`
+- `app/schools/[schoolId]/school-detail-client.tsx`
+
+### 수정한 파일
+- `app/_lib/mock-auth.ts`
+- `app/_lib/mock-data.ts`
+- `app/main/main-client.tsx`
+- `app/main/page.tsx`
+- `app/game/game-client.tsx`
+- `app/game/page.tsx`
+- `app/ranking/page.tsx`
+- `app/schools/[schoolId]/page.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 지원 학교 목록을 요청한 목록 기준으로 전체 교체
+- 중복으로 들어온 `서강대`는 1회만 유지
+- 학교 데이터를 공통 카탈로그 기반으로 정리
+- 게임 점수를 `localStorage`에 저장하도록 변경
+- 메인 화면 새로고침 후에도 학교 점수/레벨/진행도가 유지되도록 수정
+- 랭킹 화면도 저장된 학교 상태를 읽어오도록 수정
+- 학교 상세 화면도 저장된 상태를 기준으로 표시하도록 수정
+- 흔들기 사용 시 학교 총 벚꽃 수가 로컬 저장 기준으로 실제 차감되도록 수정
+
+## 2026-04-05 Supabase 환경변수 정리
+
+### 생성한 파일
+- `.env.local`
+- `app/_lib/supabase.ts`
+
+### 수정한 파일
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 잘못된 위치의 `app/login/.env.local`을 프로젝트 루트 `.env.local`로 이동
+- Supabase URL, Publishable Key를 Next.js가 읽을 수 있는 위치로 정리
+- 프로젝트에서 바로 import 가능한 Supabase 클라이언트 파일 추가

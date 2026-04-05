@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { applyGameScore } from "../_lib/school-state";
 
 type GameItem = {
   id: string;
@@ -22,6 +24,7 @@ type GameClientProps = {
 const GAME_DURATION = 15;
 
 export function GameClient({ schoolId, schoolName }: GameClientProps) {
+  const router = useRouter();
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
@@ -106,6 +109,11 @@ export function GameClient({ schoolId, schoolName }: GameClientProps) {
     setIsFinished(false);
   }
 
+  function handleApplyScore() {
+    applyGameScore(schoolId, score);
+    router.push(`/main?schoolId=${schoolId}&score=${score}`);
+  }
+
   return (
     <main className="min-h-screen overflow-hidden bg-[linear-gradient(180deg,#fff7fb_0%,#ffe7ef_48%,#ffd7e8_100%)] text-stone-900">
       <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5">
@@ -185,12 +193,13 @@ export function GameClient({ schoolId, schoolName }: GameClientProps) {
                     획득했어요. 이제 메인 화면에서 점수 반영 상태를 확인할 수 있어요.
                   </p>
                   <div className="mt-6 flex flex-col gap-3">
-                    <Link
-                      href={`/main?schoolId=${schoolId}&score=${score}`}
+                    <button
+                      type="button"
+                      onClick={handleApplyScore}
                       className="rounded-2xl bg-stone-900 px-4 py-4 text-center text-sm font-semibold text-white"
                     >
                       점수 반영하고 메인으로
-                    </Link>
+                    </button>
                     <button
                       type="button"
                       onClick={handleRestart}

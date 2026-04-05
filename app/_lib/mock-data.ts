@@ -1,3 +1,5 @@
+import { SCHOOL_CATALOG } from "./school-catalog";
+
 export type SchoolRecord = {
   id: string;
   name: string;
@@ -7,70 +9,39 @@ export type SchoolRecord = {
   rank: number;
   progressPercent: number;
   shakeAvailable: boolean;
+  order: number;
 };
 
-export const SCHOOLS: SchoolRecord[] = [
-  {
-    id: "yonsei",
-    name: "연세대학교",
-    totalPetals: 8420,
-    bloomRate: 84,
-    level: 5,
-    rank: 1,
-    progressPercent: 84,
+export const SCHOOLS: SchoolRecord[] = SCHOOL_CATALOG.map((school, index) => {
+  const totalPetals = 9600 - index * 87;
+  const progressPercent = Math.max(12, Math.min(100, Math.floor(totalPetals / 100)));
+  const level =
+    progressPercent >= 80
+      ? 5
+      : progressPercent >= 60
+        ? 4
+        : progressPercent >= 40
+          ? 3
+          : progressPercent >= 20
+            ? 2
+            : 1;
+
+  return {
+    id: school.id,
+    name: school.name,
+    totalPetals,
+    bloomRate: progressPercent,
+    level,
+    rank: index + 1,
+    progressPercent,
     shakeAvailable: true,
-  },
-  {
-    id: "korea",
-    name: "고려대학교",
-    totalPetals: 8110,
-    bloomRate: 81,
-    level: 5,
-    rank: 2,
-    progressPercent: 81,
-    shakeAvailable: false,
-  },
-  {
-    id: "snu",
-    name: "서울대학교",
-    totalPetals: 7340,
-    bloomRate: 73,
-    level: 4,
-    rank: 3,
-    progressPercent: 73,
-    shakeAvailable: false,
-  },
-  {
-    id: "ewha",
-    name: "이화여자대학교",
-    totalPetals: 6250,
-    bloomRate: 62,
-    level: 4,
-    rank: 4,
-    progressPercent: 62,
-    shakeAvailable: false,
-  },
-  {
-    id: "hanyang",
-    name: "한양대학교",
-    totalPetals: 5480,
-    bloomRate: 54,
-    level: 3,
-    rank: 5,
-    progressPercent: 54,
-    shakeAvailable: false,
-  },
-  {
-    id: "skku",
-    name: "성균관대학교",
-    totalPetals: 4720,
-    bloomRate: 47,
-    level: 3,
-    rank: 6,
-    progressPercent: 47,
-    shakeAvailable: false,
-  },
-];
+    order: index,
+  };
+});
+
+export function getDefaultSchoolRecords() {
+  return SCHOOLS.map((school) => ({ ...school }));
+}
 
 export function getSchoolById(schoolId: string) {
   return SCHOOLS.find((school) => school.id === schoolId);
@@ -92,19 +63,15 @@ export function getTreeStage(bloomRate: number) {
   if (bloomRate >= 80) {
     return "만개 직전";
   }
-
   if (bloomRate >= 60) {
     return "벚꽃 풍성";
   }
-
   if (bloomRate >= 40) {
     return "가지가 차오름";
   }
-
   if (bloomRate >= 20) {
     return "꽃눈 생성";
   }
-
   return "새싹 단계";
 }
 
