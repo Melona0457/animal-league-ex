@@ -23,7 +23,7 @@ export default function Home() {
         }}
       />
       <Link
-        href="/login"
+        href="/select-school"
         className="group relative z-10 flex min-h-screen flex-col items-center justify-between px-5 py-8 sm:px-8"
       >
         <div className="flex w-full justify-between text-xs font-semibold tracking-[0.24em] text-rose-100 sm:text-sm">

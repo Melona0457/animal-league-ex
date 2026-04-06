@@ -11,8 +11,8 @@ import {
   getTreeStage,
   type SchoolRecord,
 } from "../_lib/mock-data";
-import { signOutAccount } from "../_lib/mock-auth";
 import { getPetalsBySchoolId, type PetalPlacement } from "../_lib/petal-state";
+import { setSelectedSchoolId } from "../_lib/selected-school";
 import { getStoredSchoolById, getStoredSchools } from "../_lib/school-state";
 
 type MainClientProps = {
@@ -78,6 +78,7 @@ export function MainClient({ school, score }: MainClientProps) {
   const [currentSchool, setCurrentSchool] = useState(school);
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
   const [petals, setPetals] = useState<PetalPlacement[]>([]);
+  const [shareNotice, setShareNotice] = useState("");
 
   useEffect(() => {
     let isActive = true;
@@ -106,6 +107,10 @@ export function MainClient({ school, score }: MainClientProps) {
     };
   }, [school.id]);
 
+  useEffect(() => {
+    setSelectedSchoolId(currentSchool.id);
+  }, [currentSchool.id]);
+
   const totalPetals = currentSchool.totalPetals;
   const progressPercent = currentSchool.progressPercent;
   const currentIndex = schools.findIndex((item) => item.id === currentSchool.id);
@@ -119,9 +124,38 @@ export function MainClient({ school, score }: MainClientProps) {
     ? Math.max(0, currentSchool.totalPetals - nextSchool.totalPetals)
     : 0;
 
-  async function handleLogout() {
-    await signOutAccount();
-    router.push("/");
+  function handleSelectAnotherSchool() {
+    router.push("/select-school");
+  }
+
+  async function handleShare() {
+    const shareUrl =
+      typeof window === "undefined"
+        ? ""
+        : `${window.location.origin}/main?schoolId=${currentSchool.id}`;
+    const shareTitle = `${currentSchool.name} 벚꽃살리기`;
+    const shareText = `${currentSchool.name} 벚꽃 지키러 같이 들어와줘. 지금 우리 학교 순위 올리는 중이야.`;
+
+    if (!shareUrl) {
+      return;
+    }
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+        setShareNotice("공유창을 열었어요.");
+        return;
+      }
+
+      await navigator.clipboard.writeText(shareUrl);
+      setShareNotice("공유 링크를 복사했어요.");
+    } catch {
+      setShareNotice("공유를 완료하지 못했어요. 다시 시도해주세요.");
+    }
   }
 
   return (
@@ -252,18 +286,24 @@ export function MainClient({ school, score }: MainClientProps) {
             >
               모아보기
             </Link>
-            <Link
-              href={`/community?schoolId=${currentSchool.id}`}
-              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4"
-            >
-              실시간 댓글 커뮤니티
-            </Link>
             <button
               type="button"
-              onClick={handleLogout}
+              onClick={handleShare}
+              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left"
+            >
+              친구에게 공유하기
+            </button>
+            {shareNotice ? (
+              <div className="rounded-2xl border border-emerald-300/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
+                {shareNotice}
+              </div>
+            ) : null}
+            <button
+              type="button"
+              onClick={handleSelectAnotherSchool}
               className="mt-auto rounded-2xl bg-white px-4 py-4 text-center font-semibold text-stone-950"
             >
-              로그아웃
+              학교 다시 선택
             </button>
           </div>
         </div>
