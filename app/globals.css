@@ -22,9 +22,30 @@ html {
 }
 
 body {
-  background: var(--background);
+  background: transparent;
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+.app-global-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: url("/images/backgrounds/main-background.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: blur(12px);
+  transform: scale(1.04);
+  pointer-events: none;
+}
+
+.app-global-background-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(180deg, rgba(36, 15, 26, 0.08), rgba(36, 15, 26, 0.18));
+  pointer-events: none;
 }
 
 a,
@@ -105,6 +126,11 @@ img {
   will-change: transform, opacity;
 }
 
+.tap-burst-petal {
+  animation: tap-burst-petal linear forwards;
+  will-change: transform, opacity;
+}
+
 @keyframes shake-falling-petal {
   0% {
     transform: translate3d(0, 0, 0) rotate(var(--shake-petal-rotate-start)) scale(1);
@@ -125,6 +151,29 @@ img {
   100% {
     transform: translate3d(calc(var(--shake-petal-drift) * 0.82), calc(var(--shake-petal-drop) * 1.05), 0)
       rotate(var(--shake-petal-rotate-end)) scale(0.88);
+    opacity: 0;
+  }
+}
+
+@keyframes tap-burst-petal {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.45) rotate(var(--tap-rotate-start));
+    opacity: 0;
+  }
+  18% {
+    transform: translate3d(calc(var(--tap-ring-x) * 0.58), calc(var(--tap-ring-y) * 0.58), 0)
+      scale(1) rotate(calc((var(--tap-rotate-start) * 0.75) + (var(--tap-rotate-end) * 0.25)));
+    opacity: 1;
+  }
+  52% {
+    transform: translate3d(var(--tap-ring-x), calc(var(--tap-ring-y) + var(--tap-rise)), 0)
+      scale(1.02)
+      rotate(calc((var(--tap-rotate-start) * 0.48) + (var(--tap-rotate-end) * 0.52)));
+    opacity: 0.98;
+  }
+  100% {
+    transform: translate3d(calc(var(--tap-ring-x) * 0.8), calc(var(--tap-ring-y) + var(--tap-rise) + var(--tap-drop)), 0)
+      scale(0.9) rotate(var(--tap-rotate-end));
     opacity: 0;
   }
 }

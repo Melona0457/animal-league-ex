@@ -33,7 +33,7 @@ export default async function GameSelectPage({
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#fff7fb_0%,#ffe7ef_48%,#ffd7e8_100%)] px-4 py-5 text-stone-900">
+    <main className="min-h-screen px-4 py-5 text-stone-900">
       <div className="mx-auto flex min-h-screen w-full max-w-4xl flex-col gap-4">
         <header className="rounded-[2rem] border border-white/70 bg-white/50 p-5 backdrop-blur-sm">
           <p className="text-xs font-semibold tracking-[0.24em] text-rose-500">
