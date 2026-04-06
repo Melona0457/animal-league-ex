@@ -290,6 +290,11 @@ export function SchoolDetailClient({
   }
 
   async function handleShareAttackResult() {
+    if (!school) {
+      setShareNotice("학교 정보를 아직 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
     const shareUrl =
       typeof window === "undefined"
         ? ""
