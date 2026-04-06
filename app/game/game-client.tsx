@@ -17,19 +17,12 @@ import {
   getPetalsBySchoolId,
   type PetalPlacement,
 } from "../_lib/petal-state";
-import { applyGameScore } from "../_lib/school-state";
+import { applyGameScore, getStoredSchools } from "../_lib/school-state";
+import { type SchoolRecord } from "../_lib/mock-data";
 
-type GameMode = "fall" | "tap" | "drag";
+type GameMode = "fall" | "tap";
 
 type DraftPetal = {
-  id: string;
-  xPercent: number;
-  yPercent: number;
-  rotation: number;
-  scale: number;
-};
-
-type LoosePetal = {
   id: string;
   xPercent: number;
   yPercent: number;
@@ -67,20 +60,10 @@ function randomPetalStyle() {
   };
 }
 
-function randomLoosePetal(id: string): LoosePetal {
-  return {
-    id,
-    xPercent: 10 + Math.random() * 80,
-    yPercent: 84 + Math.random() * 10,
-    ...randomPetalStyle(),
-  };
-}
-
 export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClientProps) {
   const router = useRouter();
   const boardRef = useRef<HTMLDivElement | null>(null);
   const draftIdRef = useRef(0);
-  const loosePetalIdRef = useRef(0);
   const fallingItemIdRef = useRef(0);
   const itemTimersRef = useRef<number[]>([]);
   const [isSaving, startSavingTransition] = useTransition();
@@ -88,23 +71,23 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
   const [isFinished, setIsFinished] = useState(false);
   const [existingPetals, setExistingPetals] = useState<PetalPlacement[]>([]);
   const [placedPetals, setPlacedPetals] = useState<DraftPetal[]>([]);
-  const [loosePetals, setLoosePetals] = useState<LoosePetal[]>(
-    Array.from({ length: 7 }, (_, index) => randomLoosePetal(`loose-initial-${index}`)),
-  );
-  const [draggingPetal, setDraggingPetal] = useState<LoosePetal | null>(null);
-  const [dragPreview, setDragPreview] = useState<{ xPercent: number; yPercent: number } | null>(
-    null,
-  );
   const [fallingItems, setFallingItems] = useState<FallingItem[]>([]);
+  const [fallScore, setFallScore] = useState(0);
+  const [schools, setSchools] = useState<SchoolRecord[]>([]);
+  const [shareNotice, setShareNotice] = useState("");
 
   useEffect(() => {
     let isActive = true;
 
     void (async () => {
-      const petals = await getPetalsBySchoolId(schoolId);
+      const [petals, storedSchools] = await Promise.all([
+        getPetalsBySchoolId(schoolId),
+        getStoredSchools(),
+      ]);
 
       if (isActive) {
         setExistingPetals(petals);
+        setSchools(storedSchools);
       }
     })();
 
@@ -243,79 +226,28 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
     ]);
   }
 
-  function handleLoosePetalPointerDown(
-    event: ReactPointerEvent<HTMLButtonElement>,
-    petal: LoosePetal,
-  ) {
-    if (mode !== "drag" || isFinished) {
-      return;
-    }
-
-    event.preventDefault();
-    setDraggingPetal(petal);
-    const position = getRelativePosition(event.clientX, event.clientY);
-    setDragPreview(position);
-  }
-
-  function handleBoardPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!draggingPetal || isFinished) {
-      return;
-    }
-
-    const position = getRelativePosition(event.clientX, event.clientY);
-    setDragPreview(position);
-  }
-
-  function handleBoardPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!draggingPetal || isFinished) {
-      return;
-    }
-
-    const position = getRelativePosition(event.clientX, event.clientY);
-
-    if (position) {
-      setPlacedPetals((current) => [
-        ...current,
-        createDraftPetal(position.xPercent, position.yPercent, {
-          rotation: draggingPetal.rotation,
-          scale: draggingPetal.scale,
-        }),
-      ]);
-      setLoosePetals((current) => [
-        ...current.filter((item) => item.id !== draggingPetal.id),
-        randomLoosePetal(`loose-${loosePetalIdRef.current++}`),
-      ]);
-    }
-
-    setDraggingPetal(null);
-    setDragPreview(null);
-  }
-
-  function handlePointerLeave() {
-    setDragPreview(null);
-  }
-
   function handleFallingItemClick(item: FallingItem) {
     if (mode !== "fall" || isFinished) {
       return;
     }
 
-    setPlacedPetals((current) => {
-      if (item.type === "bug") {
-        return current.slice(0, Math.max(0, current.length - 2));
-      }
-
-      return [
+    if (item.type === "bug") {
+      setFallScore((current) => Math.max(0, current - 2));
+    } else {
+      setPlacedPetals((current) => [
         ...current,
         createDraftPetal(20 + Math.random() * 60, 22 + Math.random() * 46),
-      ];
-    });
+      ]);
+      setFallScore((current) => current + 1);
+    }
 
     setFallingItems((current) => current.filter((currentItem) => currentItem.id !== item.id));
   }
 
   function handleApplyScore() {
     startSavingTransition(async () => {
+      const finalScore = mode === "fall" ? fallScore : placedPetals.length;
+
       if (placedPetals.length > 0) {
         await addPetalPlacements(
           schoolId,
@@ -328,8 +260,8 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
         );
       }
 
-      await applyGameScore(schoolId, placedPetals.length);
-      router.push(`/main?schoolId=${schoolId}&score=${placedPetals.length}`);
+      await applyGameScore(schoolId, finalScore);
+      router.push(`/main?schoolId=${schoolId}&score=${finalScore}`);
     });
   }
 
@@ -337,32 +269,66 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
     setTimeLeft(GAME_DURATION);
     setIsFinished(false);
     setPlacedPetals([]);
-    setDraggingPetal(null);
-    setDragPreview(null);
     setFallingItems([]);
-    setLoosePetals(
-      Array.from({ length: 7 }, (_, index) => randomLoosePetal(`loose-restart-${index}`)),
-    );
+    setFallScore(0);
   }
+
+  const currentScore = mode === "fall" ? fallScore : placedPetals.length;
+  const currentSchool = schools.find((item) => item.id === schoolId) ?? null;
+  const currentSchoolIndex = schools.findIndex((item) => item.id === schoolId);
+  const previousSchool =
+    currentSchoolIndex > 0 ? schools[currentSchoolIndex - 1] : null;
 
   const modeTitle =
     mode === "fall"
       ? "클래식 낙하형"
-      : mode === "tap"
-        ? "터치로 바로 붙이기"
-        : "바닥 꽃잎 끌어다 놓기";
+      : "터치로 바로 붙이기";
 
   const modeGuide =
     mode === "fall"
       ? "위에서 떨어지는 벚꽃은 잡고 벌레는 피하면서 점수를 모으세요."
-      : mode === "tap"
-        ? "현재 나무와 기존 꽃잎을 보면서 원하는 위치를 바로 눌러 붙이세요."
-        : "나무 하단에 떨어진 꽃잎을 끌어 올려 가지에 예쁘게 고정해보세요.";
+      : "현재 나무와 기존 꽃잎을 보면서 원하는 위치를 바로 눌러 붙이세요.";
 
   const resultDescription =
     mode === "fall"
-      ? `이번 판에서 ${placedPetals.length}개의 벚꽃잎을 추가로 붙였어요.`
+      ? `이번 판 점수는 ${currentScore}점이에요. 벚꽃은 +1점, 벌은 -2점으로 반영됐어요.`
       : `이번 판에서 ${placedPetals.length}개의 벚꽃잎을 직접 고정했어요.`;
+
+  async function handleShareResult() {
+    const shareUrl =
+      typeof window === "undefined"
+        ? ""
+        : `${window.location.origin}/main?schoolId=${schoolId}`;
+
+    if (!shareUrl) {
+      return;
+    }
+
+    const rivalryLine = previousSchool
+      ? `${previousSchool.name} 추격 중.`
+      : "이번 시즌 1등 굳히는 중.";
+    const shareText =
+      mode === "fall"
+        ? `${schoolName} 방금 클래식 낙하형에서 ${currentScore}점 획득. ${rivalryLine} 같이 들어와서 벚꽃 붙여줘.`
+        : `${schoolName} 방금 벚꽃 ${currentScore}개 추가 배치. ${rivalryLine} 같이 들어와서 우리 학교 밀어줘.`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${schoolName} 벚꽃살리기 결과`,
+          text: shareText,
+          url: shareUrl,
+        });
+        setShareNotice("결과 공유창을 열었어요.");
+        return;
+      }
+
+      await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      setShareNotice("공유 문구와 링크를 복사했어요.");
+    } catch {
+      setShareNotice("공유를 완료하지 못했어요. 다시 시도해주세요.");
+    }
+  }
 
   return (
     <main className="min-h-screen overflow-hidden bg-[linear-gradient(180deg,#fff7fb_0%,#ffe7ef_48%,#ffd7e8_100%)] text-stone-900">
@@ -374,7 +340,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
           </div>
           <div className="rounded-2xl bg-white/65 px-3 py-3">
             <p className="text-[11px] text-stone-500 sm:text-xs">현재 점수</p>
-            <p className="mt-1 text-xl font-bold sm:text-3xl">{placedPetals.length}</p>
+            <p className="mt-1 text-xl font-bold sm:text-3xl">{currentScore}</p>
             <p className="mt-1 text-[11px] text-stone-500 sm:text-xs">{modeTitle}</p>
           </div>
           <Link
@@ -396,7 +362,9 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
                 <h1 className="mt-1 text-2xl font-bold">{schoolName} 벚꽃 붙이기</h1>
                 <p className="mt-2 text-sm text-stone-500">{modeGuide}</p>
               </div>
-              <p className="text-sm text-stone-500">배치 완료 {placedPetals.length}개</p>
+              <p className="text-sm text-stone-500">
+                {mode === "fall" ? `현재 점수 ${currentScore}점` : `배치 완료 ${placedPetals.length}개`}
+              </p>
             </div>
 
             {mode === "fall" ? (
@@ -457,58 +425,15 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
               <div
                 ref={boardRef}
                 onPointerDown={handleBoardClick}
-                onPointerMove={handleBoardPointerMove}
-                onPointerUp={handleBoardPointerUp}
-                onPointerLeave={handlePointerLeave}
                 className="absolute inset-x-4 top-24 bottom-4 overflow-hidden rounded-[2rem] border border-rose-100/60 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.88),rgba(255,255,255,0.26))]"
               >
                 <TreeScene treeLevel={treeLevel} petals={combinedPetals} className="w-full">
                   <div className="absolute inset-x-0 bottom-0 h-[42%] bg-[linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,0.9))]" />
-                  {mode === "drag"
-                    ? loosePetals.map((petal) => (
-                        <button
-                          key={petal.id}
-                          type="button"
-                          onPointerDown={(event) => handleLoosePetalPointerDown(event, petal)}
-                          className="absolute z-20 h-8 w-8 -translate-x-1/2 -translate-y-1/2 bg-contain bg-center bg-no-repeat"
-                          style={{
-                            left: `${petal.xPercent}%`,
-                            top: `${petal.yPercent}%`,
-                            transform: `translate(-50%, -50%) rotate(${petal.rotation}deg) scale(${petal.scale})`,
-                            backgroundImage: "url('/images/petals/petal.png')",
-                            filter: "grayscale(0.8) saturate(0.45) brightness(0.88)",
-                            opacity: 0.92,
-                          }}
-                        >
-                          <span className="flex h-full w-full items-center justify-center text-xl opacity-0">🌸</span>
-                        </button>
-                      ))
-                    : null}
-
-                  {draggingPetal && dragPreview ? (
-                    <div
-                      className="pointer-events-none absolute z-30 h-8 w-8 -translate-x-1/2 -translate-y-1/2 bg-contain bg-center bg-no-repeat opacity-85"
-                      style={{
-                        left: `${dragPreview.xPercent}%`,
-                        top: `${dragPreview.yPercent}%`,
-                        transform: `translate(-50%, -50%) rotate(${draggingPetal.rotation}deg) scale(${draggingPetal.scale})`,
-                        backgroundImage: "url('/images/petals/petal.png')",
-                      }}
-                    >
-                      <span className="flex h-full w-full items-center justify-center text-xl opacity-0">🌸</span>
-                    </div>
-                  ) : null}
                 </TreeScene>
 
-                {mode === "tap" ? (
-                  <div className="absolute inset-x-4 bottom-4 rounded-[1.75rem] border border-white/70 bg-white/70 px-4 py-3 text-sm text-stone-600 backdrop-blur-sm">
-                    현재 나무 모양과 이미 붙은 벚꽃을 보면서 원하는 가지를 눌러 배치하세요.
-                  </div>
-                ) : (
-                  <div className="absolute inset-x-4 bottom-4 rounded-[1.75rem] border border-white/70 bg-white/70 px-4 py-3 text-sm text-stone-600 backdrop-blur-sm">
-                    나무 하단에 떨어진 꽃잎을 끌어 올려 원하는 가지 위치에 고정하세요.
-                  </div>
-                )}
+                <div className="absolute inset-x-4 bottom-4 rounded-[1.75rem] border border-white/70 bg-white/70 px-4 py-3 text-sm text-stone-600 backdrop-blur-sm">
+                  현재 나무 모양과 이미 붙은 벚꽃을 보면서 원하는 가지를 눌러 배치하세요.
+                </div>
               </div>
             )}
 
@@ -520,7 +445,25 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
                   </p>
                   <h2 className="mt-3 text-3xl font-bold">벚꽃 붙이기 종료</h2>
                   <p className="mt-4 text-base leading-7 text-stone-600">{resultDescription}</p>
+                  {currentSchool ? (
+                    <p className="mt-2 text-sm text-stone-500">
+                      현재 {schoolName} 순위는 #{currentSchool.rank}
+                      {previousSchool ? `, 바로 위는 ${previousSchool.name}` : ""}
+                    </p>
+                  ) : null}
+                  {shareNotice ? (
+                    <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                      {shareNotice}
+                    </div>
+                  ) : null}
                   <div className="mt-6 flex flex-col gap-3">
+                    <button
+                      type="button"
+                      onClick={handleShareResult}
+                      className="rounded-2xl border border-stone-200 bg-white px-4 py-4 text-sm font-semibold text-stone-700"
+                    >
+                      친구에게 결과 공유하기
+                    </button>
                     <button
                       type="button"
                       onClick={handleApplyScore}

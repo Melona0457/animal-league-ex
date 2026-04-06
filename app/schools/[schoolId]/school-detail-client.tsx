@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import { TreeScene } from "../../_components/tree-scene";
 import {
   getDefaultSchoolRecords,
@@ -29,6 +29,7 @@ export function SchoolDetailClient({
   fromSchoolId,
   shakenCount,
 }: SchoolDetailClientProps) {
+  const fallingPetalIdRef = useRef(0);
   const [petals, setPetals] = useState<PetalPlacement[]>([]);
   const [school, setSchool] = useState<SchoolRecord | undefined>(
     getDefaultSchoolRecords().find((item) => item.id === schoolId),
@@ -39,7 +40,47 @@ export function SchoolDetailClient({
   const [droppedCount, setDroppedCount] = useState(0);
   const [reducedScore, setReducedScore] = useState(0);
   const [shakeResult, setShakeResult] = useState<ShakePetalResult | null>(null);
+  const [fallingPetals, setFallingPetals] = useState<
+    Array<{
+      id: string;
+      xPercent: number;
+      yPercent: number;
+      drift: number;
+      duration: number;
+      rotationStart: number;
+      rotationEnd: number;
+    }>
+  >([]);
   const lastMotionRef = useRef(0);
+
+  const spawnShakePetals = useCallback((count = 1) => {
+    const nextPetals = Array.from({ length: count }, () => ({
+      id: `shake-fall-${fallingPetalIdRef.current++}`,
+      xPercent: 28 + Math.random() * 44,
+      yPercent: 6 + Math.random() * 10,
+      drift: -52 + Math.random() * 104,
+      duration: 1100 + Math.floor(Math.random() * 700),
+      rotationStart: -35 + Math.random() * 70,
+      rotationEnd: -120 + Math.random() * 240,
+    }));
+
+    setFallingPetals((current) => [...current, ...nextPetals]);
+
+    nextPetals.forEach((petal) => {
+      window.setTimeout(() => {
+        setFallingPetals((current) => current.filter((item) => item.id !== petal.id));
+      }, petal.duration + 160);
+    });
+  }, []);
+
+  const registerShakeInput = useCallback((petalBurst = 2) => {
+    if (shakeMode !== "countdown") {
+      return;
+    }
+
+    setShakeCount((current) => current + 1);
+    spawnShakePetals(petalBurst);
+  }, [shakeMode, spawnShakePetals]);
 
   useEffect(() => {
     let isActive = true;
@@ -107,7 +148,7 @@ export function SchoolDetailClient({
       }
 
       lastMotionRef.current = now;
-      setShakeCount((current) => current + 1);
+      registerShakeInput(1 + Math.floor(Math.random() * 2));
     }
 
     const timer = window.setInterval(() => {
@@ -127,7 +168,28 @@ export function SchoolDetailClient({
       window.clearInterval(timer);
       window.removeEventListener("devicemotion", handleMotion);
     };
-  }, [shakeMode]);
+  }, [shakeMode, registerShakeInput]);
+
+  useEffect(() => {
+    if (shakeMode !== "countdown") {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.code !== "Space") {
+        return;
+      }
+
+      event.preventDefault();
+      registerShakeInput(2);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [shakeMode, registerShakeInput]);
 
   useEffect(() => {
     if (shakeMode !== "countdown" || shakeSeconds > 0) {
@@ -144,6 +206,7 @@ export function SchoolDetailClient({
       setDroppedCount(result.removedCount);
       setReducedScore(scorePenalty);
       setShakeResult(result);
+      setFallingPetals([]);
       setShakeMode("result");
     })();
   }, [shakeMode, shakeSeconds, schoolId, shakeCount]);
@@ -153,6 +216,7 @@ export function SchoolDetailClient({
     setDroppedCount(0);
     setReducedScore(0);
     setShakeResult(null);
+    setFallingPetals([]);
     setShakeSeconds(8);
     setShakeMode("countdown");
   }
@@ -203,6 +267,27 @@ export function SchoolDetailClient({
               className="flex h-[46vh] min-h-[300px] w-full items-end justify-center"
             >
               <TreeScene treeLevel={school.level} petals={petals} className="w-full max-w-[640px]">
+                {shakeMode === "countdown"
+                  ? fallingPetals.map((petal) => (
+                      <span
+                        key={petal.id}
+                        className="pointer-events-none absolute z-20 text-2xl shake-falling-petal"
+                        style={
+                          {
+                            left: `${petal.xPercent}%`,
+                            top: `${petal.yPercent}%`,
+                            animationDuration: `${petal.duration}ms`,
+                            "--shake-petal-drift": `${petal.drift}px`,
+                            "--shake-petal-drop": "460px",
+                            "--shake-petal-rotate-start": `${petal.rotationStart}deg`,
+                            "--shake-petal-rotate-end": `${petal.rotationEnd}deg`,
+                          } as CSSProperties
+                        }
+                      >
+                        🌸
+                      </span>
+                    ))
+                  : null}
                 <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center">
                   <div className="rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
                     현재 붙은 벚꽃 {petals.length}개
@@ -236,32 +321,33 @@ export function SchoolDetailClient({
       </div>
 
       {shakeMode === "countdown" ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4">
-          <div className="w-full max-w-md rounded-[2rem] border border-white/15 bg-stone-950/92 p-6 text-center text-white backdrop-blur-sm">
-            <p className="text-sm font-semibold tracking-[0.24em] text-rose-300">SHAKE MODE</p>
-            <h2 className="mt-3 text-3xl font-bold">지금 흔들어주세요</h2>
-            <p className="mt-4 text-sm leading-6 text-white/70">
-              휴대폰을 흔들면 카운트가 올라가고, 끝나면 그 수만큼 벚꽃잎이 떨어져요.
-            </p>
-            <div className="mt-6 grid grid-cols-2 gap-3 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
-              <div>
-                <p className="text-xs text-white/55">남은 시간</p>
-                <p className="mt-2 text-3xl font-bold">{shakeSeconds}s</p>
-              </div>
-              <div>
-                <p className="text-xs text-white/55">흔든 횟수</p>
-                <p className="mt-2 text-3xl font-bold">{shakeCount}</p>
+        <>
+          <button
+            type="button"
+            onPointerDown={() => registerShakeInput(2 + Math.floor(Math.random() * 2))}
+            className="fixed inset-0 z-40 bg-transparent"
+            aria-label="화면 아무 곳이나 눌러 흔들기"
+          />
+          <div className="pointer-events-none fixed inset-x-4 top-6 z-50 flex justify-center">
+            <div className="w-full max-w-lg rounded-[2rem] border border-white/15 bg-stone-950/68 p-5 text-center text-white backdrop-blur-md">
+              <p className="text-sm font-semibold tracking-[0.24em] text-rose-300">SHAKE MODE</p>
+              <h2 className="mt-3 text-3xl font-bold">지금 흔들어주세요</h2>
+              <p className="mt-3 text-sm leading-6 text-white/75">
+                화면 어디든 터치하거나 스페이스바를 누르거나, 휴대폰을 흔들면 바로 꽃이 떨어져요.
+              </p>
+              <div className="mt-5 grid grid-cols-2 gap-3 rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
+                <div>
+                  <p className="text-xs text-white/55">남은 시간</p>
+                  <p className="mt-2 text-3xl font-bold">{shakeSeconds}s</p>
+                </div>
+                <div>
+                  <p className="text-xs text-white/55">흔든 횟수</p>
+                  <p className="mt-2 text-3xl font-bold">{shakeCount}</p>
+                </div>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setShakeCount((current) => current + 1)}
-              className="mt-5 rounded-2xl border border-white/15 bg-white/8 px-4 py-3 text-sm font-semibold text-white"
-            >
-              흔들기 감지가 안 되면 탭해서 +1
-            </button>
           </div>
-        </div>
+        </>
       ) : null}
 
       {shakeMode === "result" ? (

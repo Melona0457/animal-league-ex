@@ -18,11 +18,6 @@ const GAME_MODES = [
     title: "터치로 바로 붙이기",
     description: "현재 나무와 기존 꽃잎을 보면서 원하는 위치를 톡 누르면 그 자리에 바로 붙어요.",
   },
-  {
-    id: "drag",
-    title: "바닥 꽃잎 끌어다 놓기",
-    description: "나무 하단 부근에 떨어진 꽃잎을 끌어 올려 원하는 가지 위치에 고정해보세요.",
-  },
 ];
 
 export default async function GameSelectPage({
@@ -50,7 +45,7 @@ export default async function GameSelectPage({
           </p>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-3">
+        <section className="grid gap-4 md:grid-cols-2">
           {GAME_MODES.map((mode) => (
             <article
               key={mode.id}
