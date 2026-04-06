@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import {
   getLevelLabel,
   getSchoolBackgroundImage,
+  getSchoolLogoImage,
   getTreeImage,
   getTreeStage,
   type SchoolRecord,
@@ -17,6 +18,58 @@ type MainClientProps = {
   school: SchoolRecord;
   score: number;
 };
+
+function NearbySchoolRow({
+  school,
+  gap,
+}: {
+  school: SchoolRecord | null;
+  gap: number;
+}) {
+  if (!school) {
+    return (
+      <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/4 px-3 py-2 text-white/45">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[10px]">
+          -
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs font-medium">경쟁 학교 없음</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/4 px-3 py-2">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5">
+          <img
+            src={getSchoolLogoImage(school.id)}
+            alt={`${school.name} 로고`}
+            className="h-full w-full object-contain"
+            onError={(event) => {
+              const image = event.currentTarget;
+
+              if (image.dataset.fallbackApplied === "true") {
+                image.style.display = "none";
+                return;
+              }
+
+              image.dataset.fallbackApplied = "true";
+              image.src = `/images/schools/${school.id}/logo.webp`;
+            }}
+          />
+          <span className="hidden text-[10px] text-white/45">로고</span>
+        </div>
+        <div className="min-w-0">
+          <p className="text-[11px] text-white/55">#{school.rank}</p>
+          <p className="truncate text-sm font-semibold text-white">{school.name}</p>
+        </div>
+      </div>
+      <p className="shrink-0 text-[11px] text-rose-100/80">{gap.toLocaleString()}표</p>
+    </div>
+  );
+}
 
 export function MainClient({ school, score }: MainClientProps) {
   const router = useRouter();
@@ -78,21 +131,13 @@ export function MainClient({ school, score }: MainClientProps) {
     >
       <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl flex-col">
         <header className="grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border border-white/15 bg-black/22 p-3 backdrop-blur-sm sm:gap-3 sm:p-4">
-          <div className="px-3 py-3">
-            <p className="text-[11px] font-medium text-white/65 sm:text-xs">현재 순위</p>
-            <p className="mt-1 text-xl font-bold sm:text-3xl">#{currentSchool.rank}</p>
-            <div className="mt-3 space-y-1 text-[11px] text-white/65 sm:text-xs">
-              <p>
-                {previousSchool
-                  ? `${previousSchool.rank}위까지 ${gapToPrevious.toLocaleString()}표 차이`
-                  : "현재 1위 학교예요"}
-              </p>
-              <p>
-                {nextSchool
-                  ? `${nextSchool.rank}위와 ${gapToNext.toLocaleString()}표 차이`
-                  : "현재 마지막 순위 학교예요"}
-              </p>
+          <div className="flex flex-col justify-between px-3 py-3">
+            <NearbySchoolRow school={previousSchool} gap={gapToPrevious} />
+            <div className="py-3 text-center">
+              <p className="text-[11px] font-medium text-white/65 sm:text-xs">현재 순위</p>
+              <p className="mt-1 text-xl font-bold sm:text-3xl">#{currentSchool.rank}</p>
             </div>
+            <NearbySchoolRow school={nextSchool} gap={gapToNext} />
           </div>
           <div className="px-3 py-3">
             <div className="flex items-start justify-between gap-2">
