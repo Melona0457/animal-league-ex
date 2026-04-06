@@ -3,17 +3,28 @@ import { getLandingBackgroundImage } from "./_lib/mock-data";
 
 export default function Home() {
   return (
-    <main
-      className="relative min-h-screen overflow-hidden bg-stone-900 text-white"
-      style={{
-        backgroundImage: `linear-gradient(180deg, rgba(33, 17, 25, 0.35), rgba(33, 17, 25, 0.72)), url('${getLandingBackgroundImage()}')`,
-        backgroundPosition: "center",
-        backgroundSize: "cover",
-      }}
-    >
+    <main className="relative min-h-screen overflow-hidden bg-stone-900 text-white">
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 h-full w-full object-cover"
+        poster={getLandingBackgroundImage()}
+      >
+        <source src="/videos/intro.mp4" type="video/mp4" />
+      </video>
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `linear-gradient(180deg, rgba(33, 17, 25, 0.38), rgba(33, 17, 25, 0.74)), url('${getLandingBackgroundImage()}')`,
+          backgroundPosition: "center",
+          backgroundSize: "cover",
+        }}
+      />
       <Link
         href="/login"
-        className="group flex min-h-screen flex-col items-center justify-between px-5 py-8 sm:px-8"
+        className="group relative z-10 flex min-h-screen flex-col items-center justify-between px-5 py-8 sm:px-8"
       >
         <div className="flex w-full justify-between text-xs font-semibold tracking-[0.24em] text-rose-100 sm:text-sm">
           <span>SPRING LEAGUE</span>
@@ -43,7 +54,7 @@ export default function Home() {
               확인하게 되는 봄 시즌 대항전.
             </p>
             <p className="mt-4 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs text-white/70">
-              배경 이미지 슬롯: <span>{`/public${getLandingBackgroundImage()}`}</span>
+              인트로 영상 슬롯: <span>/public/videos/intro.mp4</span>
             </p>
 
             <div className="mt-10 rounded-full border border-white/20 bg-white/10 px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(0,0,0,0.18)] backdrop-blur transition group-hover:scale-[1.02] sm:text-base">

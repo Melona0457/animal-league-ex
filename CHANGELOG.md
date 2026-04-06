@@ -336,3 +336,14 @@
 
 ### Supabase 추가 작업 필요
 - `comments` 테이블에 `nickname text`, `is_anonymous boolean default true` 컬럼 추가 필요
+
+## 2026-04-06 인트로 영상 슬롯 추가
+
+### 수정한 파일
+- `app/page.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 초기화면 배경을 이미지 중심 구조에서 인트로 영상 자동재생 구조로 확장
+- `/public/videos/intro.mp4` 경로의 mp4 파일을 자동재생/반복재생/음소거 배경 영상으로 사용하도록 수정
+- 영상이 아직 없거나 로드되지 않을 때를 대비해 기존 배경 이미지를 poster/오버레이 폴백으로 유지
