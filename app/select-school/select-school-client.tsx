@@ -25,7 +25,7 @@ export function SelectSchoolClient() {
   return (
     <main className="min-h-screen px-4 py-6 text-white">
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-4xl flex-col justify-center gap-6">
-        <section className="rounded-[2rem] border border-white/15 bg-black/28 p-6 shadow-[0_24px_80px_rgba(16,10,15,0.16)] backdrop-blur-md md:p-8">
+        <section className="select-school-panel select-school-panel-primary rounded-[2rem] border border-white/15 bg-black/28 p-6 shadow-[0_24px_80px_rgba(16,10,15,0.16)] backdrop-blur-md md:p-8">
           <p className="text-sm font-semibold tracking-[0.28em] text-rose-500">
             SCHOOL SELECT
           </p>
@@ -39,7 +39,7 @@ export function SelectSchoolClient() {
           </p>
         </section>
 
-        <section className="rounded-[2rem] border border-white/15 bg-black/28 p-6 shadow-[0_24px_80px_rgba(16,10,15,0.14)] backdrop-blur-md md:p-8">
+        <section className="select-school-panel select-school-panel-secondary rounded-[2rem] border border-white/15 bg-black/28 p-6 shadow-[0_24px_80px_rgba(16,10,15,0.14)] backdrop-blur-md md:p-8">
           <label className="block">
             <span className="mb-3 block text-sm font-semibold text-white/82">소속 대학 선택</span>
             <select
