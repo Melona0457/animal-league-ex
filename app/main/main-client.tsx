@@ -334,10 +334,12 @@ export function MainClient({ school, score }: MainClientProps) {
             <p className="mb-3 rounded-full bg-black/30 px-4 py-2 text-xs text-white/75 backdrop-blur-sm">
               {currentSchool.name} · {getTreeStage(currentSchool.bloomRate)}
             </p>
-            <div
-              className="flex h-[46vh] min-h-[300px] w-full items-end justify-center"
-            >
-              <TreeScene treeLevel={currentSchool.level} petals={petals} className="w-full max-w-[640px]">
+            <div className="flex h-[calc(100vh-15rem)] min-h-[560px] w-full items-end justify-center">
+              <TreeScene
+                treeLevel={currentSchool.level}
+                petals={petals}
+                className="w-full max-w-[1160px]"
+              >
                 <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center">
                   <div className="rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
                     현재 붙은 벚꽃 {petals.length}개

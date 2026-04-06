@@ -427,10 +427,8 @@ export function SchoolDetailClient({
             <p className="mb-3 rounded-full bg-black/30 px-4 py-2 text-xs text-white/75 backdrop-blur-sm">
               {school.name} · {getTreeStage(school.bloomRate)}
             </p>
-            <div
-              className="flex h-[46vh] min-h-[300px] w-full items-end justify-center"
-            >
-              <TreeScene treeLevel={school.level} petals={petals} className="w-full max-w-[640px]">
+            <div className="flex h-[calc(100vh-15rem)] min-h-[560px] w-full items-end justify-center">
+              <TreeScene treeLevel={school.level} petals={petals} className="w-full max-w-[1160px]">
                 {shakeMode === "countdown"
                   ? fallingPetals.map((petal) => (
                       <span

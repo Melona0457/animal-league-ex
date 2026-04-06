@@ -450,7 +450,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
                 onPointerDown={handleBoardClick}
                 className="absolute inset-x-4 top-24 bottom-4 overflow-hidden rounded-[2rem] border border-rose-100/60 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.88),rgba(255,255,255,0.26))]"
               >
-                <TreeScene treeLevel={treeLevel} petals={combinedPetals} className="w-full">
+                <TreeScene treeLevel={treeLevel} petals={combinedPetals} className="w-full max-w-[1040px]">
                   <div className="absolute inset-x-0 bottom-0 h-[42%] bg-[linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,0.9))]" />
                 </TreeScene>
 
