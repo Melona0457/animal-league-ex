@@ -37,13 +37,11 @@ function SchoolLogo({ schoolId, schoolName }: { schoolId: string; schoolName: st
           onError={handleError}
         />
       ) : null}
-      <span
-        className={`rounded-full bg-white/90 px-2 py-1 text-[10px] text-stone-500 ${
-          isMissing ? "" : "absolute inset-auto"
-        }`}
-      >
-        로고
-      </span>
+      {isMissing ? (
+        <span className="rounded-full bg-white/90 px-2 py-1 text-[10px] text-stone-500">
+          로고
+        </span>
+      ) : null}
     </div>
   );
 }
