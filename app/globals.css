@@ -45,31 +45,57 @@ img {
 }
 
 .falling-item {
-  animation-name: falling-item;
-  animation-timing-function: linear;
-  animation-fill-mode: forwards;
   will-change: transform, opacity;
 }
 
-@keyframes falling-item {
+@keyframes petal-float {
   0% {
-    transform: translate3d(0, -88px, 0) rotate(var(--fall-start-rotate));
+    transform: translate3d(0, -88px, 0) rotate(var(--motion-start-rotate));
     opacity: 1;
   }
   25% {
-    transform: translate3d(calc(var(--fall-drift) * 0.35), calc(var(--fall-distance) * 0.25), 0)
-      rotate(calc((var(--fall-start-rotate) * 0.7) + (var(--fall-end-rotate) * 0.3)));
+    transform: translate3d(var(--petal-x1), var(--petal-y1), 0)
+      rotate(calc((var(--motion-start-rotate) * 0.7) + (var(--motion-end-rotate) * 0.3)));
   }
   50% {
-    transform: translate3d(calc(var(--fall-drift) * -0.2), calc(var(--fall-distance) * 0.5), 0)
-      rotate(calc((var(--fall-start-rotate) * 0.4) + (var(--fall-end-rotate) * 0.6)));
+    transform: translate3d(var(--petal-x2), var(--petal-y2), 0)
+      rotate(calc((var(--motion-start-rotate) * 0.4) + (var(--motion-end-rotate) * 0.6)));
   }
   75% {
-    transform: translate3d(calc(var(--fall-drift) * 0.7), calc(var(--fall-distance) * 0.75), 0)
-      rotate(calc((var(--fall-start-rotate) * 0.2) + (var(--fall-end-rotate) * 0.8)));
+    transform: translate3d(var(--petal-x3), var(--petal-y3), 0)
+      rotate(calc((var(--motion-start-rotate) * 0.2) + (var(--motion-end-rotate) * 0.8)));
   }
   100% {
-    transform: translate3d(var(--fall-drift), var(--fall-distance), 0) rotate(var(--fall-end-rotate));
+    transform: translate3d(var(--petal-x4), var(--petal-y4), 0)
+      rotate(var(--motion-end-rotate));
     opacity: 0.96;
+  }
+}
+
+@keyframes bug-fly {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(var(--motion-start-rotate)) scale(0.98);
+    opacity: 0.95;
+  }
+  18% {
+    transform: translate3d(var(--bug-x1), var(--bug-y1), 0)
+      rotate(calc((var(--motion-start-rotate) * 0.8) + (var(--motion-end-rotate) * 0.2)));
+  }
+  40% {
+    transform: translate3d(var(--bug-x2), var(--bug-y2), 0)
+      rotate(calc((var(--motion-start-rotate) * 0.55) + (var(--motion-end-rotate) * 0.45)));
+  }
+  64% {
+    transform: translate3d(var(--bug-x3), var(--bug-y3), 0)
+      rotate(calc((var(--motion-start-rotate) * 0.35) + (var(--motion-end-rotate) * 0.65)));
+  }
+  82% {
+    transform: translate3d(var(--bug-x4), var(--bug-y4), 0)
+      rotate(calc((var(--motion-start-rotate) * 0.18) + (var(--motion-end-rotate) * 0.82)));
+  }
+  100% {
+    transform: translate3d(var(--bug-x5), var(--bug-y5), 0)
+      rotate(var(--motion-end-rotate));
+    opacity: 0.9;
   }
 }

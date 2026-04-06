@@ -41,11 +41,14 @@ type FallingItem = {
   id: string;
   type: "petal" | "bug";
   x: number;
+  y: number;
   size: number;
   duration: number;
   drift: number;
+  wiggle: number;
   startRotation: number;
   endRotation: number;
+  direction?: "left-to-right" | "right-to-left";
 };
 
 type GameClientProps = {
@@ -137,18 +140,22 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
 
     function spawnItem() {
       const nextId = `fall-${fallingItemIdRef.current++}`;
-      const type = Math.random() < 0.72 ? "petal" : "bug";
+      const type = Math.random() < 0.66 ? "petal" : "bug";
       const duration = 2600 + Math.floor(Math.random() * 1800);
+      const direction = Math.random() < 0.5 ? "left-to-right" : "right-to-left";
 
       const item: FallingItem = {
         id: nextId,
         type,
-        x: 6 + Math.random() * 82,
+        x: type === "petal" ? 6 + Math.random() * 82 : direction === "left-to-right" ? -10 : 100,
+        y: type === "petal" ? 0 : 16 + Math.random() * 56,
         size: 36 + Math.floor(Math.random() * 28),
         duration,
         drift: -42 + Math.random() * 84,
+        wiggle: 18 + Math.random() * 34,
         startRotation: -24 + Math.random() * 48,
         endRotation: -90 + Math.random() * 180,
+        direction,
       };
 
       setFallingItems((current) => [...current.slice(-13), item]);
@@ -409,17 +416,39 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
                     style={
                       {
                         left: `${item.x}%`,
+                        top: `${item.y}%`,
                         width: `${item.size}px`,
                         height: `${item.size}px`,
-                        animationDuration: `${item.duration}ms`,
-                        "--fall-drift": `${item.drift}px`,
-                        "--fall-start-rotate": `${item.startRotation}deg`,
-                        "--fall-end-rotate": `${item.endRotation}deg`,
-                        "--fall-distance": "95vh",
+                        animation: `${item.type === "petal" ? "petal-float" : "bug-fly"} ${item.duration}ms linear forwards`,
+                        "--petal-x1": `${item.drift * 0.2 + item.wiggle * 0.8}px`,
+                        "--petal-x2": `${item.drift * -0.15 - item.wiggle * 0.55}px`,
+                        "--petal-x3": `${item.drift * 0.45 + item.wiggle * 0.65}px`,
+                        "--petal-x4": `${item.drift}px`,
+                        "--petal-y1": "24vh",
+                        "--petal-y2": "48vh",
+                        "--petal-y3": "72vh",
+                        "--petal-y4": "95vh",
+                        "--bug-x1":
+                          item.direction === "left-to-right" ? "22vw" : "-22vw",
+                        "--bug-x2":
+                          item.direction === "left-to-right" ? "48vw" : "-48vw",
+                        "--bug-x3":
+                          item.direction === "left-to-right" ? "76vw" : "-76vw",
+                        "--bug-x4":
+                          item.direction === "left-to-right" ? "96vw" : "-96vw",
+                        "--bug-x5":
+                          item.direction === "left-to-right" ? "114vw" : "-114vw",
+                        "--bug-y1": `${item.wiggle * -0.9}px`,
+                        "--bug-y2": `${item.wiggle * 0.55}px`,
+                        "--bug-y3": `${item.wiggle * -0.45}px`,
+                        "--bug-y4": `${item.wiggle * 0.3}px`,
+                        "--bug-y5": `${item.wiggle * -0.2}px`,
+                        "--motion-start-rotate": `${item.startRotation}deg`,
+                        "--motion-end-rotate": `${item.endRotation}deg`,
                       } as CSSProperties
                     }
                   >
-                    {item.type === "petal" ? "🌸" : "🐛"}
+                    {item.type === "petal" ? "🌸" : "🐝"}
                   </button>
                 ))}
                 <div className="absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,rgba(214,162,177,0),rgba(151,99,125,0.22))]" />
