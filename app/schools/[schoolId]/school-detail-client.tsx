@@ -37,6 +37,7 @@ export function SchoolDetailClient({
   const [shakeSeconds, setShakeSeconds] = useState(8);
   const [shakeCount, setShakeCount] = useState(0);
   const [droppedCount, setDroppedCount] = useState(0);
+  const [reducedScore, setReducedScore] = useState(0);
   const [shakeResult, setShakeResult] = useState<ShakePetalResult | null>(null);
   const lastMotionRef = useRef(0);
 
@@ -135,11 +136,13 @@ export function SchoolDetailClient({
 
     void (async () => {
       const result = await shakePetals(schoolId, shakeCount);
-      await applyShake(schoolId, result.removedCount);
+      const scorePenalty = Math.max(1, shakeCount);
+      await applyShake(schoolId, scorePenalty);
       const nextSchool = await getStoredSchoolById(schoolId);
       setPetals(result.petals);
       setSchool(nextSchool);
       setDroppedCount(result.removedCount);
+      setReducedScore(scorePenalty);
       setShakeResult(result);
       setShakeMode("result");
     })();
@@ -148,6 +151,7 @@ export function SchoolDetailClient({
   function handleShakeStart() {
     setShakeCount(0);
     setDroppedCount(0);
+    setReducedScore(0);
     setShakeResult(null);
     setShakeSeconds(8);
     setShakeMode("countdown");
@@ -268,8 +272,22 @@ export function SchoolDetailClient({
             <p className="mt-4 text-sm leading-6 text-white/70">
               {shakeResult?.reason === "removed" ? (
                 <>
-                  이번 방해에서 <span className="font-semibold text-white">{droppedCount}개</span>
-                  의 벚꽃잎이 떨어졌어요.
+                  이번 방해로{" "}
+                  <span className="font-semibold text-white">{reducedScore}</span>점만큼 벚꽃 수가
+                  줄었고, 저장된 꽃잎{" "}
+                  <span className="font-semibold text-white">{droppedCount}개</span>가 떨어졌어요.
+                </>
+              ) : shakeResult?.reason === "no_petals" ? (
+                <>
+                  이번 방해로{" "}
+                  <span className="font-semibold text-white">{reducedScore}</span>점만큼 벚꽃 수가
+                  줄었어요. 아직 이 학교에 저장된 꽃잎이 없어서 화면에서 떨어진 꽃잎은 0개예요.
+                </>
+              ) : shakeResult?.reason === "delete_failed" ? (
+                <>
+                  이번 방해로{" "}
+                  <span className="font-semibold text-white">{reducedScore}</span>점만큼 벚꽃 수가
+                  줄었지만, 저장된 꽃잎 삭제는 실패했어요.
                 </>
               ) : (
                 shakeResult?.message ?? "이번 방해 결과를 불러오지 못했어요."
@@ -278,7 +296,7 @@ export function SchoolDetailClient({
             {shakeResult?.reason === "no_petals" ? (
               <p className="mt-3 text-xs leading-5 text-white/50">
                 참고: 나무 이미지에 원래 그려진 꽃은 제외되고, 게임으로 실제 저장된 꽃잎만
-                흔들기로 떨어집니다.
+                흔들기 연출로 떨어집니다.
               </p>
             ) : null}
             <div className="mt-6 flex flex-col gap-3">
