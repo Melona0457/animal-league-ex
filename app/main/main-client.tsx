@@ -11,7 +11,7 @@ import {
   type SchoolRecord,
 } from "../_lib/mock-data";
 import { signOutAccount } from "../_lib/mock-auth";
-import { getStoredSchoolById } from "../_lib/school-state";
+import { getStoredSchoolById, getStoredSchools } from "../_lib/school-state";
 
 type MainClientProps = {
   school: SchoolRecord;
@@ -22,15 +22,23 @@ export function MainClient({ school, score }: MainClientProps) {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentSchool, setCurrentSchool] = useState(school);
+  const [schools, setSchools] = useState<SchoolRecord[]>([]);
 
   useEffect(() => {
     let isActive = true;
 
     async function loadSchool() {
-      const storedSchool = await getStoredSchoolById(school.id);
+      const [storedSchool, storedSchools] = await Promise.all([
+        getStoredSchoolById(school.id),
+        getStoredSchools(),
+      ]);
 
       if (isActive && storedSchool) {
         setCurrentSchool(storedSchool);
+      }
+
+       if (isActive) {
+        setSchools(storedSchools);
       }
     }
 
@@ -43,6 +51,16 @@ export function MainClient({ school, score }: MainClientProps) {
 
   const totalPetals = currentSchool.totalPetals;
   const progressPercent = currentSchool.progressPercent;
+  const currentIndex = schools.findIndex((item) => item.id === currentSchool.id);
+  const previousSchool = currentIndex > 0 ? schools[currentIndex - 1] : null;
+  const nextSchool =
+    currentIndex >= 0 && currentIndex < schools.length - 1 ? schools[currentIndex + 1] : null;
+  const gapToPrevious = previousSchool
+    ? Math.max(0, previousSchool.totalPetals - currentSchool.totalPetals)
+    : 0;
+  const gapToNext = nextSchool
+    ? Math.max(0, currentSchool.totalPetals - nextSchool.totalPetals)
+    : 0;
 
   async function handleLogout() {
     await signOutAccount();
@@ -59,20 +77,29 @@ export function MainClient({ school, score }: MainClientProps) {
       }}
     >
       <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl flex-col">
-        <header className="grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border border-white/15 bg-black/30 p-3 backdrop-blur-sm sm:gap-3 sm:p-4">
-          <div className="rounded-2xl bg-white/10 px-3 py-3">
+        <header className="grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border border-white/15 bg-black/22 p-3 backdrop-blur-sm sm:gap-3 sm:p-4">
+          <div className="px-3 py-3">
             <p className="text-[11px] font-medium text-white/65 sm:text-xs">현재 순위</p>
             <p className="mt-1 text-xl font-bold sm:text-3xl">#{currentSchool.rank}</p>
+            <div className="mt-3 space-y-1 text-[11px] text-white/65 sm:text-xs">
+              <p>
+                {previousSchool
+                  ? `${previousSchool.rank}위까지 ${gapToPrevious.toLocaleString()}표 차이`
+                  : "현재 1위 학교예요"}
+              </p>
+              <p>
+                {nextSchool
+                  ? `${nextSchool.rank}위와 ${gapToNext.toLocaleString()}표 차이`
+                  : "현재 마지막 순위 학교예요"}
+              </p>
+            </div>
           </div>
-          <div className="rounded-2xl bg-white/10 px-3 py-3">
+          <div className="px-3 py-3">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="text-[11px] font-medium text-white/65 sm:text-xs">레벨</p>
                 <p className="mt-1 text-base font-bold sm:text-2xl">
-                  {getLevelLabel(currentSchool.level)} · {progressPercent.toFixed(0)}%
-                </p>
-                <p className="mt-1 text-[11px] text-white/65 sm:text-xs">
-                  총 벚꽃 수 {totalPetals.toLocaleString()}
+                  {getLevelLabel(currentSchool.level)}
                 </p>
               </div>
               {score > 0 ? (
@@ -81,20 +108,35 @@ export function MainClient({ school, score }: MainClientProps) {
                 </span>
               ) : null}
             </div>
-            <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white/12">
-              <div
-                className="h-full rounded-full bg-[linear-gradient(90deg,#fda4af_0%,#fb7185_50%,#fecdd3_100%)] transition-[width] duration-700"
-                style={{ width: `${progressPercent}%` }}
-              />
+            <div className="mt-3">
+              <p className="mb-2 text-[11px] text-white/65 sm:text-xs">
+                총 벚꽃 수 {totalPetals.toLocaleString()}
+              </p>
+              <div className="relative h-7 overflow-hidden rounded-full bg-white/12 sm:h-8">
+                <div
+                  className="h-full rounded-full bg-[linear-gradient(90deg,#fda4af_0%,#fb7185_50%,#fecdd3_100%)] transition-[width] duration-700"
+                  style={{ width: `${progressPercent}%` }}
+                />
+                <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[11px] font-semibold leading-none text-stone-950 sm:text-xs">
+                  {progressPercent.toFixed(0)}%
+                </div>
+              </div>
+              <div className="mt-2 flex items-center justify-between text-[10px] text-white/65 sm:text-xs">
+                <span>{getLevelLabel(currentSchool.level)}</span>
+                <span>
+                  {currentSchool.level >= 5
+                    ? "만개"
+                    : `LV.${currentSchool.level + 1}`}
+                </span>
+              </div>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setIsMenuOpen(true)}
-            className="rounded-2xl bg-white/10 px-3 py-3 text-left"
+            className="flex items-center justify-end px-3 py-3 text-left"
           >
-            <p className="text-[11px] font-medium text-white/65 sm:text-xs">메뉴</p>
-            <p className="mt-1 text-lg font-bold sm:text-2xl">≡</p>
+            <p className="text-3xl font-bold leading-none sm:text-4xl">≡</p>
           </button>
         </header>
 
