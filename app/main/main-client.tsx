@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { PetalOverlay } from "../_components/petal-overlay";
 import {
   getLevelLabel,
   getSchoolBackgroundImage,
@@ -12,6 +13,7 @@ import {
   type SchoolRecord,
 } from "../_lib/mock-data";
 import { signOutAccount } from "../_lib/mock-auth";
+import { getPetalsBySchoolId, type PetalPlacement } from "../_lib/petal-state";
 import { getStoredSchoolById, getStoredSchools } from "../_lib/school-state";
 
 type MainClientProps = {
@@ -76,6 +78,7 @@ export function MainClient({ school, score }: MainClientProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentSchool, setCurrentSchool] = useState(school);
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
+  const [petals, setPetals] = useState<PetalPlacement[]>([]);
 
   useEffect(() => {
     let isActive = true;
@@ -85,13 +88,15 @@ export function MainClient({ school, score }: MainClientProps) {
         getStoredSchoolById(school.id),
         getStoredSchools(),
       ]);
+      const storedPetals = await getPetalsBySchoolId(school.id);
 
       if (isActive && storedSchool) {
         setCurrentSchool(storedSchool);
       }
 
-       if (isActive) {
+      if (isActive) {
         setSchools(storedSchools);
+        setPetals(storedPetals);
       }
     }
 
@@ -191,11 +196,12 @@ export function MainClient({ school, score }: MainClientProps) {
               {currentSchool.name} · {getTreeStage(currentSchool.bloomRate)}
             </p>
             <div
-              className="flex h-[46vh] min-h-[300px] w-full items-end justify-center bg-contain bg-bottom bg-no-repeat"
+              className="relative flex h-[46vh] min-h-[300px] w-full items-end justify-center bg-contain bg-bottom bg-no-repeat"
               style={{
                 backgroundImage: `url('${getTreeImage(currentSchool.level)}')`,
               }}
             >
+              <PetalOverlay petals={petals} className="z-10" />
               <div className="mb-6 rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
                 나무 이미지 슬롯: `/public${getTreeImage(currentSchool.level)}`
               </div>
@@ -205,7 +211,7 @@ export function MainClient({ school, score }: MainClientProps) {
 
         <section className="grid gap-3 pb-2 sm:grid-cols-2">
           <Link
-            href={`/game?schoolId=${currentSchool.id}`}
+            href={`/game/select?schoolId=${currentSchool.id}`}
             className="rounded-3xl bg-rose-400 px-4 py-4 text-center text-base font-semibold text-stone-950 shadow-[0_16px_40px_rgba(0,0,0,0.2)]"
           >
             벚꽃 붙이기

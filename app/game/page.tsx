@@ -4,6 +4,7 @@ import { GameClient } from "./game-client";
 type GamePageProps = {
   searchParams: Promise<{
     schoolId?: string;
+    mode?: "fall" | "tap" | "drag";
   }>;
 };
 
@@ -17,5 +18,12 @@ export default async function GamePage({ searchParams }: GamePageProps) {
     return null;
   }
 
-  return <GameClient schoolId={school.id} schoolName={school.name} />;
+  return (
+    <GameClient
+      schoolId={school.id}
+      schoolName={school.name}
+      treeLevel={school.level}
+      mode={params.mode === "drag" ? "drag" : params.mode === "tap" ? "tap" : "fall"}
+    />
+  );
 }

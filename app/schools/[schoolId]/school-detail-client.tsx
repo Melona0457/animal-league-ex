@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
+import { PetalOverlay } from "../../_components/petal-overlay";
 import {
   getDefaultSchoolRecords,
   getLevelLabel,
@@ -10,6 +11,7 @@ import {
   getTreeStage,
   type SchoolRecord,
 } from "../../_lib/mock-data";
+import { getPetalsBySchoolId, shakePetals, type PetalPlacement } from "../../_lib/petal-state";
 import { applyShake, getStoredSchoolById } from "../../_lib/school-state";
 
 type SchoolDetailClientProps = {
@@ -23,21 +25,30 @@ export function SchoolDetailClient({
   fromSchoolId,
   shakenCount,
 }: SchoolDetailClientProps) {
-  const [isShaking, startShakeTransition] = useTransition();
+  const [petals, setPetals] = useState<PetalPlacement[]>([]);
   const [school, setSchool] = useState<SchoolRecord | undefined>(
     getDefaultSchoolRecords().find((item) => item.id === schoolId),
   );
+  const [shakeMode, setShakeMode] = useState<"idle" | "countdown" | "result">("idle");
+  const [shakeSeconds, setShakeSeconds] = useState(8);
+  const [shakeCount, setShakeCount] = useState(0);
+  const [droppedCount, setDroppedCount] = useState(0);
+  const lastMotionRef = useRef(0);
 
   useEffect(() => {
     let isActive = true;
 
     async function loadSchool() {
-      const storedSchool =
-        (await getStoredSchoolById(schoolId)) ??
-        getDefaultSchoolRecords().find((item) => item.id === schoolId);
+      const [storedSchool, storedPetals] = await Promise.all([
+        getStoredSchoolById(schoolId),
+        getPetalsBySchoolId(schoolId),
+      ]);
+      const fallbackSchool =
+        storedSchool ?? getDefaultSchoolRecords().find((item) => item.id === schoolId);
 
       if (isActive) {
-        setSchool(storedSchool);
+        setSchool(fallbackSchool);
+        setPetals(storedPetals);
       }
     }
 
@@ -48,12 +59,91 @@ export function SchoolDetailClient({
     };
   }, [schoolId, shakenCount]);
 
-  function handleShake() {
-    startShakeTransition(async () => {
-      await applyShake(schoolId);
+  useEffect(() => {
+    if (shakeMode !== "countdown") {
+      return;
+    }
+
+    async function requestMotionPermissionIfNeeded() {
+      const requestPermission = (
+        DeviceMotionEvent as typeof DeviceMotionEvent & {
+          requestPermission?: () => Promise<"granted" | "denied">;
+        }
+      ).requestPermission;
+
+      if (typeof requestPermission === "function") {
+        await requestPermission().catch(() => null);
+      }
+    }
+
+    void requestMotionPermissionIfNeeded();
+
+    function handleMotion(event: DeviceMotionEvent) {
+      const acceleration = event.accelerationIncludingGravity;
+
+      if (!acceleration) {
+        return;
+      }
+
+      const power =
+        Math.abs(acceleration.x ?? 0) +
+        Math.abs(acceleration.y ?? 0) +
+        Math.abs(acceleration.z ?? 0);
+
+      if (power < 28) {
+        return;
+      }
+
+      const now = Date.now();
+
+      if (now - lastMotionRef.current < 220) {
+        return;
+      }
+
+      lastMotionRef.current = now;
+      setShakeCount((current) => current + 1);
+    }
+
+    const timer = window.setInterval(() => {
+      setShakeSeconds((current) => {
+        if (current <= 1) {
+          window.clearInterval(timer);
+          return 0;
+        }
+
+        return current - 1;
+      });
+    }, 1000);
+
+    window.addEventListener("devicemotion", handleMotion);
+
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("devicemotion", handleMotion);
+    };
+  }, [shakeMode]);
+
+  useEffect(() => {
+    if (shakeMode !== "countdown" || shakeSeconds > 0) {
+      return;
+    }
+
+    void (async () => {
+      const result = await shakePetals(schoolId, shakeCount);
+      await applyShake(schoolId, result.removedCount);
       const nextSchool = await getStoredSchoolById(schoolId);
+      setPetals(result.petals);
       setSchool(nextSchool);
-    });
+      setDroppedCount(result.removedCount);
+      setShakeMode("result");
+    })();
+  }, [shakeMode, shakeSeconds, schoolId, shakeCount]);
+
+  function handleShakeStart() {
+    setShakeCount(0);
+    setDroppedCount(0);
+    setShakeSeconds(8);
+    setShakeMode("countdown");
   }
 
   if (!school) {
@@ -99,11 +189,12 @@ export function SchoolDetailClient({
               {school.name} · {getTreeStage(school.bloomRate)}
             </p>
             <div
-              className="flex h-[46vh] min-h-[300px] w-full items-end justify-center bg-contain bg-bottom bg-no-repeat"
+              className="relative flex h-[46vh] min-h-[300px] w-full items-end justify-center bg-contain bg-bottom bg-no-repeat"
               style={{
                 backgroundImage: `url('${getTreeImage(school.level)}')`,
               }}
             >
+              <PetalOverlay petals={petals} className="z-10" />
               <div className="mb-6 rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
                 나무 이미지 슬롯: `/public${getTreeImage(school.level)}`
               </div>
@@ -113,16 +204,16 @@ export function SchoolDetailClient({
 
         <section className="space-y-3 pb-2">
           <div className="rounded-2xl border border-white/15 bg-black/30 px-4 py-3 text-sm text-white/85 backdrop-blur-sm">
-            테스트 확인용으로 흔들기 제한을 잠시 풀어둔 상태예요. 현재 사용 횟수 표시: {shakenCount}회
+            다른 학교를 8초 동안 흔들어 벚꽃잎을 떨어뜨려보세요. 현재 확인용 사용 횟수: {shakenCount}회
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Link
-              href={`/schools/${school.id}?fromSchoolId=${fromSchoolId}&shaken=${shakenCount + 1}`}
-              onClick={handleShake}
+            <button
+              type="button"
+              onClick={handleShakeStart}
               className="rounded-3xl bg-rose-400 px-4 py-4 text-center text-base font-semibold text-stone-950 shadow-[0_16px_40px_rgba(0,0,0,0.2)]"
             >
-              {isShaking ? "흔드는 중..." : "흔들기 사용하기"}
-            </Link>
+              흔들기 사용하기
+            </button>
             <Link
               href={`/main?schoolId=${fromSchoolId}`}
               className="rounded-3xl border border-white/20 bg-white/10 px-4 py-4 text-center text-base font-semibold text-white shadow-[0_16px_40px_rgba(0,0,0,0.16)]"
@@ -132,6 +223,63 @@ export function SchoolDetailClient({
           </div>
         </section>
       </div>
+
+      {shakeMode === "countdown" ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4">
+          <div className="w-full max-w-md rounded-[2rem] border border-white/15 bg-stone-950/92 p-6 text-center text-white backdrop-blur-sm">
+            <p className="text-sm font-semibold tracking-[0.24em] text-rose-300">SHAKE MODE</p>
+            <h2 className="mt-3 text-3xl font-bold">지금 흔들어주세요</h2>
+            <p className="mt-4 text-sm leading-6 text-white/70">
+              휴대폰을 흔들면 카운트가 올라가고, 끝나면 그 수만큼 벚꽃잎이 떨어져요.
+            </p>
+            <div className="mt-6 grid grid-cols-2 gap-3 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+              <div>
+                <p className="text-xs text-white/55">남은 시간</p>
+                <p className="mt-2 text-3xl font-bold">{shakeSeconds}s</p>
+              </div>
+              <div>
+                <p className="text-xs text-white/55">흔든 횟수</p>
+                <p className="mt-2 text-3xl font-bold">{shakeCount}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShakeCount((current) => current + 1)}
+              className="mt-5 rounded-2xl border border-white/15 bg-white/8 px-4 py-3 text-sm font-semibold text-white"
+            >
+              흔들기 감지가 안 되면 탭해서 +1
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {shakeMode === "result" ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4">
+          <div className="w-full max-w-md rounded-[2rem] border border-white/15 bg-stone-950/92 p-6 text-center text-white backdrop-blur-sm">
+            <p className="text-sm font-semibold tracking-[0.24em] text-rose-300">RESULT</p>
+            <h2 className="mt-3 text-3xl font-bold">시간이 다 되었어요</h2>
+            <p className="mt-4 text-sm leading-6 text-white/70">
+              이번 방해에서 <span className="font-semibold text-white">{droppedCount}개</span>의
+              벚꽃잎이 떨어졌어요.
+            </p>
+            <div className="mt-6 flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => setShakeMode("idle")}
+                className="rounded-2xl bg-white px-4 py-4 text-sm font-semibold text-stone-950"
+              >
+                확인
+              </button>
+              <Link
+                href={`/ranking?schoolId=${fromSchoolId}`}
+                className="rounded-2xl border border-white/15 px-4 py-4 text-sm font-semibold text-white"
+              >
+                모아보기로 돌아가기
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

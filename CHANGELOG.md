@@ -422,3 +422,53 @@
 - 메인 상단 좌측 순위 영역을 `윗순위 학교 / 내 순위 / 아랫순위 학교` 구조로 재배치
 - 바로 위와 아래 학교에 로고 이미지, 학교명, 순위, 점수 차이를 함께 표시하도록 추가
 - 현재 순위는 가운데에 두어 상대 위치를 직관적으로 비교할 수 있게 정리
+
+## 2026-04-06 벚꽃 붙이기/흔들기 확장 구조 추가
+
+### 생성한 파일
+- `app/_lib/petal-state.ts`
+- `app/_components/petal-overlay.tsx`
+- `app/game/select/page.tsx`
+- `app/game/game-client.tsx`
+
+### 수정한 파일
+- `app/game/page.tsx`
+- `app/main/main-client.tsx`
+- `app/schools/[schoolId]/school-detail-client.tsx`
+- `app/globals.css`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- `벚꽃 붙이기` 진입 전에 모드 선택 화면을 추가
+- 벚꽃 붙이기 방식을 `터치로 바로 붙이기`, `바닥 꽃잎 끌어다 놓기` 두 가지로 확장
+- 각 모드에서 사용자가 배치한 꽃잎 위치를 퍼센트 좌표로 저장하는 구조 추가
+- 메인 화면과 다른 학교 상세 화면에서 저장된 꽃잎 위치를 실제로 렌더링하도록 연결
+- 다른 학교 흔들기 기능을 8초 카운트 기반 흔들기 세션으로 확장
+- 모바일 흔들기 감지 외에도 브라우저 호환용 탭 +1 보조 입력을 추가
+- 흔들기 종료 후 몇 개의 꽃잎이 떨어졌는지 결과 모달로 안내하도록 구현
+
+### Supabase 추가 작업 필요
+- `petal_placements` 테이블 생성 필요
+- 학교별 꽃잎 위치를 저장하려면 `school_id`, `x_percent`, `y_percent`, `rotation`, `scale`, `created_at` 컬럼과 읽기/쓰기 정책이 필요
+
+## 2026-04-06 드래그 모드 바닥 영역/꽃잎 시인성 보정
+
+### 수정한 파일
+- `app/game/game-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 드래그 모드 하단 바닥 영역의 연핑크 그라데이션을 더 중립적인 흰색 계열로 변경
+- 아직 붙이지 않은 바닥 꽃잎에는 회색에 가까운 필터를 적용해 고정된 꽃잎과 구분되도록 보정
+- 드래그 중 프리뷰 꽃잎은 원래 색으로 보여 배치 위치를 더 명확하게 확인할 수 있도록 유지
+
+## 2026-04-06 꽃잎 이미지 파일 형식 조정
+
+### 수정한 파일
+- `app/_components/petal-overlay.tsx`
+- `app/game/game-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 꽃잎 이미지 경로를 `.avif`에서 `.png` 기준으로 변경
+- 꽃잎 정적 자산 위치를 `/public/images/petals/petal.png` 기준으로 통일

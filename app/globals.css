@@ -40,6 +40,10 @@ h3 {
   font-family: var(--font-display);
 }
 
+img {
+  display: block;
+}
+
 .falling-item {
   animation-name: falling-item;
   animation-timing-function: linear;
