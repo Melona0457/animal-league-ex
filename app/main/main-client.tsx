@@ -25,6 +25,10 @@ type MainClientProps = {
   score: number;
 };
 
+function getAttackAlertStorageKey(schoolId: string) {
+  return `blossom-save:attack-alert-dismissed:${schoolId}`;
+}
+
 function NearbySchoolRow({
   school,
   gap,
@@ -84,6 +88,13 @@ export function MainClient({ school, score }: MainClientProps) {
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
   const [petals, setPetals] = useState<PetalPlacement[]>([]);
   const [attackLogs, setAttackLogs] = useState<AttackLog[]>([]);
+  const [dismissedAttackAt, setDismissedAttackAt] = useState<string | null>(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    return window.localStorage.getItem(getAttackAlertStorageKey(school.id));
+  });
   const [shareNotice, setShareNotice] = useState("");
 
   useEffect(() => {
@@ -96,6 +107,12 @@ export function MainClient({ school, score }: MainClientProps) {
         getAttackLogsForSchool(school.id, 3),
       ]);
       const storedPetals = await getPetalsBySchoolId(school.id);
+      const dismissedAt =
+        typeof window === "undefined"
+          ? null
+          : window.localStorage.getItem(
+              getAttackAlertStorageKey(storedSchool?.id ?? school.id),
+            );
 
       if (isActive && storedSchool) {
         setCurrentSchool(storedSchool);
@@ -105,6 +122,7 @@ export function MainClient({ school, score }: MainClientProps) {
         setSchools(storedSchools);
         setPetals(storedPetals);
         setAttackLogs(storedAttackLogs);
+        setDismissedAttackAt(dismissedAt);
       }
     }
 
@@ -131,9 +149,24 @@ export function MainClient({ school, score }: MainClientProps) {
   const gapToNext = nextSchool
     ? Math.max(0, currentSchool.totalPetals - nextSchool.totalPetals)
     : 0;
+  const latestAttackAt = attackLogs[0]?.createdAt ?? null;
+  const hasUnreadAttackAlert =
+    latestAttackAt !== null &&
+    (dismissedAttackAt === null ||
+      new Date(latestAttackAt).getTime() > new Date(dismissedAttackAt).getTime());
+  const visibleAttackLogs = hasUnreadAttackAlert ? attackLogs : [];
 
   function handleSelectAnotherSchool() {
     router.push("/select-school");
+  }
+
+  function handleDismissAttackAlert() {
+    if (typeof window === "undefined" || !latestAttackAt) {
+      return;
+    }
+
+    window.localStorage.setItem(getAttackAlertStorageKey(currentSchool.id), latestAttackAt);
+    setDismissedAttackAt(latestAttackAt);
   }
 
   async function handleShare() {
@@ -231,9 +264,9 @@ export function MainClient({ school, score }: MainClientProps) {
           </button>
         </header>
 
-        {attackLogs.length > 0 ? (
+        {visibleAttackLogs.length > 0 ? (
           <section className="mt-3 grid gap-2">
-            {attackLogs.map((log, index) => (
+            {visibleAttackLogs.map((log, index) => (
               <div
                 key={log.id}
                 className={`rounded-3xl border px-4 py-3 backdrop-blur-sm ${
@@ -242,16 +275,55 @@ export function MainClient({ school, score }: MainClientProps) {
                     : "border-white/12 bg-black/22"
                 }`}
               >
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-100/80">
-                  {index === 0 ? "최근 공격 알림" : "이전 공격 기록"}
-                </p>
-                <p className="mt-1 text-sm font-semibold text-white sm:text-base">
-                  {log.attackerSchoolName}에게 공격당해 {log.reducedPetals.toLocaleString()}점을
-                  빼앗겼어요
-                </p>
-                <p className="mt-1 text-xs text-white/65">
-                  {formatAttackTime(log.createdAt)} · 우리 학교 벚꽃 방어 중
-                </p>
+                <div className="flex items-start gap-3">
+                  <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/12 bg-white/6">
+                    <img
+                      src={getSchoolLogoImage(log.attackerSchoolId)}
+                      alt={`${log.attackerSchoolName} 로고`}
+                      className="h-full w-full object-contain"
+                      onError={(event) => {
+                        const image = event.currentTarget;
+
+                        if (image.dataset.fallbackApplied === "true") {
+                          image.style.display = "none";
+                          return;
+                        }
+
+                        image.dataset.fallbackApplied = "true";
+                        image.src = `/images/schools/${log.attackerSchoolId}/logo.webp`;
+                      }}
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-100/80">
+                      {index === 0 ? "최근 공격 알림" : "이전 공격 기록"}
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-white sm:text-base">
+                      {log.attackerSchoolName}에게 공격당해{" "}
+                      {log.reducedPetals.toLocaleString()}점을 빼앗겼어요
+                    </p>
+                    <p className="mt-1 text-xs text-white/65">
+                      {formatAttackTime(log.createdAt)} · 우리 학교 벚꽃 방어 중
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-3 flex justify-end">
+                  {index === 0 ? (
+                    <button
+                      type="button"
+                      onClick={handleDismissAttackAlert}
+                      className="mr-2 rounded-2xl border border-white/12 bg-black/18 px-4 py-2 text-sm font-medium text-white/85 transition hover:bg-black/28"
+                    >
+                      확인
+                    </button>
+                  ) : null}
+                  <Link
+                    href={`/schools/${log.attackerSchoolId}?fromSchoolId=${currentSchool.id}`}
+                    className="rounded-2xl border border-white/15 bg-white/8 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/12"
+                  >
+                    복수하러 가기
+                  </Link>
+                </div>
               </div>
             ))}
           </section>
