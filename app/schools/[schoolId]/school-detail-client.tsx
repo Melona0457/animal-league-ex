@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import { TreeScene } from "../../_components/tree-scene";
+import { createAttackLog } from "../../_lib/attack-log";
 import {
   getDefaultSchoolRecords,
   getLevelLabel,
   getSchoolBackgroundImage,
+  getSchoolLogoImage,
   getTreeStage,
   type SchoolRecord,
 } from "../../_lib/mock-data";
@@ -16,13 +18,65 @@ import {
   type PetalPlacement,
   type ShakePetalResult,
 } from "../../_lib/petal-state";
-import { applyShake, getStoredSchoolById } from "../../_lib/school-state";
+import { applyShake, getStoredSchoolById, getStoredSchools } from "../../_lib/school-state";
 
 type SchoolDetailClientProps = {
   schoolId: string;
   fromSchoolId: string;
   shakenCount: number;
 };
+
+function NearbySchoolRow({
+  school,
+  gap,
+}: {
+  school: SchoolRecord | null;
+  gap: number;
+}) {
+  if (!school) {
+    return (
+      <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/4 px-3 py-2 text-white/45">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[10px]">
+          -
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs font-medium">경쟁 학교 없음</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/4 px-3 py-2">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5">
+          <img
+            src={getSchoolLogoImage(school.id)}
+            alt={`${school.name} 로고`}
+            className="h-full w-full object-contain"
+            onError={(event) => {
+              const image = event.currentTarget;
+
+              if (image.dataset.fallbackApplied === "true") {
+                image.style.display = "none";
+                return;
+              }
+
+              image.dataset.fallbackApplied = "true";
+              image.src = `/images/schools/${school.id}/logo.webp`;
+            }}
+          />
+          <span className="hidden text-[10px] text-white/45">로고</span>
+        </div>
+        <div className="min-w-0">
+          <p className="text-[11px] text-white/55">#{school.rank}</p>
+          <p className="truncate text-sm font-semibold text-white">{school.name}</p>
+        </div>
+      </div>
+      <p className="shrink-0 text-[11px] text-rose-100/80">{gap.toLocaleString()}표</p>
+    </div>
+  );
+}
 
 export function SchoolDetailClient({
   schoolId,
@@ -31,6 +85,7 @@ export function SchoolDetailClient({
 }: SchoolDetailClientProps) {
   const fallingPetalIdRef = useRef(0);
   const [petals, setPetals] = useState<PetalPlacement[]>([]);
+  const [schools, setSchools] = useState<SchoolRecord[]>([]);
   const [school, setSchool] = useState<SchoolRecord | undefined>(
     getDefaultSchoolRecords().find((item) => item.id === schoolId),
   );
@@ -86,9 +141,10 @@ export function SchoolDetailClient({
     let isActive = true;
 
     async function loadSchool() {
-      const [storedSchool, storedPetals] = await Promise.all([
+      const [storedSchool, storedPetals, storedSchools] = await Promise.all([
         getStoredSchoolById(schoolId),
         getPetalsBySchoolId(schoolId),
+        getStoredSchools(),
       ]);
       const fallbackSchool =
         storedSchool ?? getDefaultSchoolRecords().find((item) => item.id === schoolId);
@@ -96,6 +152,7 @@ export function SchoolDetailClient({
       if (isActive) {
         setSchool(fallbackSchool);
         setPetals(storedPetals);
+        setSchools(storedSchools);
       }
     }
 
@@ -200,6 +257,11 @@ export function SchoolDetailClient({
       const result = await shakePetals(schoolId, shakeCount);
       const scorePenalty = Math.max(1, shakeCount);
       await applyShake(schoolId, scorePenalty);
+      await createAttackLog({
+        attackerSchoolId: fromSchoolId,
+        targetSchoolId: schoolId,
+        reducedPetals: scorePenalty,
+      });
       const nextSchool = await getStoredSchoolById(schoolId);
       setPetals(result.petals);
       setSchool(nextSchool);
@@ -209,7 +271,7 @@ export function SchoolDetailClient({
       setFallingPetals([]);
       setShakeMode("result");
     })();
-  }, [shakeMode, shakeSeconds, schoolId, shakeCount]);
+  }, [fromSchoolId, shakeMode, shakeSeconds, schoolId, shakeCount]);
 
   function handleShakeStart() {
     setShakeCount(0);
@@ -225,6 +287,17 @@ export function SchoolDetailClient({
     return null;
   }
 
+  const currentIndex = schools.findIndex((item) => item.id === school.id);
+  const previousSchool = currentIndex > 0 ? schools[currentIndex - 1] : null;
+  const nextSchool =
+    currentIndex >= 0 && currentIndex < schools.length - 1 ? schools[currentIndex + 1] : null;
+  const gapToPrevious = previousSchool
+    ? Math.max(0, previousSchool.totalPetals - school.totalPetals)
+    : 0;
+  const gapToNext = nextSchool
+    ? Math.max(0, school.totalPetals - nextSchool.totalPetals)
+    : 0;
+
   return (
     <main
       className="min-h-screen bg-stone-900 px-4 py-5 text-white"
@@ -235,26 +308,51 @@ export function SchoolDetailClient({
       }}
     >
       <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl flex-col">
-        <header className="grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border border-white/15 bg-black/30 p-3 backdrop-blur-sm sm:gap-3 sm:p-4">
-          <div className="rounded-2xl bg-white/10 px-3 py-3">
-            <p className="text-[11px] font-medium text-white/65 sm:text-xs">현재 순위</p>
-            <p className="mt-1 text-xl font-bold sm:text-3xl">#{school.rank}</p>
+        <header className="grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border border-white/15 bg-black/22 p-3 backdrop-blur-sm sm:gap-3 sm:p-4">
+          <div className="flex flex-col justify-between px-3 py-3">
+            <NearbySchoolRow school={previousSchool} gap={gapToPrevious} />
+            <div className="py-3 text-center">
+              <p className="text-[11px] font-medium text-white/65 sm:text-xs">현재 순위</p>
+              <p className="mt-1 text-xl font-bold sm:text-3xl">#{school.rank}</p>
+            </div>
+            <NearbySchoolRow school={nextSchool} gap={gapToNext} />
           </div>
-          <div className="rounded-2xl bg-white/10 px-3 py-3">
-            <p className="text-[11px] font-medium text-white/65 sm:text-xs">레벨</p>
-            <p className="mt-1 text-base font-bold sm:text-2xl">
-              {getLevelLabel(school.level)} · {school.bloomRate}%
-            </p>
-            <p className="mt-1 text-[11px] text-white/65 sm:text-xs">
-              총 벚꽃 수 {school.totalPetals.toLocaleString()}
-            </p>
+          <div className="px-3 py-3">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="text-[11px] font-medium text-white/65 sm:text-xs">레벨</p>
+                <p className="mt-1 text-base font-bold sm:text-2xl">
+                  {getLevelLabel(school.level)}
+                </p>
+              </div>
+            </div>
+            <div className="mt-3">
+              <p className="mb-2 text-[11px] text-white/65 sm:text-xs">
+                총 벚꽃 수 {school.totalPetals.toLocaleString()}
+              </p>
+              <div className="relative h-7 overflow-hidden rounded-full bg-white/12 sm:h-8">
+                <div
+                  className="h-full rounded-full bg-[linear-gradient(90deg,#fda4af_0%,#fb7185_50%,#fecdd3_100%)] transition-[width] duration-700"
+                  style={{ width: `${school.progressPercent}%` }}
+                />
+                <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[11px] font-semibold leading-none text-stone-950 sm:text-xs">
+                  {school.progressPercent.toFixed(0)}%
+                </div>
+              </div>
+              <div className="mt-2 flex items-center justify-between text-[10px] text-white/65 sm:text-xs">
+                <span>{getLevelLabel(school.level)}</span>
+                <span>{school.level >= 5 ? "만개" : `LV.${school.level + 1}`}</span>
+              </div>
+            </div>
           </div>
           <Link
             href={`/ranking?schoolId=${fromSchoolId}`}
-            className="rounded-2xl bg-white/10 px-3 py-3 text-left"
+            className="flex items-center justify-end px-3 py-3 text-left"
           >
-            <p className="text-[11px] font-medium text-white/65 sm:text-xs">돌아가기</p>
-            <p className="mt-1 text-lg font-bold sm:text-2xl">목록</p>
+            <div>
+              <p className="text-[11px] font-medium text-white/65 sm:text-xs">돌아가기</p>
+              <p className="mt-1 text-lg font-bold sm:text-2xl">목록</p>
+            </div>
           </Link>
         </header>
 

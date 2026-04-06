@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { TreeScene } from "../_components/tree-scene";
 import {
+  formatAttackTime,
+  getAttackLogsForSchool,
+  type AttackLog,
+} from "../_lib/attack-log";
+import {
   getLevelLabel,
   getSchoolBackgroundImage,
   getSchoolLogoImage,
@@ -78,15 +83,17 @@ export function MainClient({ school, score }: MainClientProps) {
   const [currentSchool, setCurrentSchool] = useState(school);
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
   const [petals, setPetals] = useState<PetalPlacement[]>([]);
+  const [attackLogs, setAttackLogs] = useState<AttackLog[]>([]);
   const [shareNotice, setShareNotice] = useState("");
 
   useEffect(() => {
     let isActive = true;
 
     async function loadSchool() {
-      const [storedSchool, storedSchools] = await Promise.all([
+      const [storedSchool, storedSchools, storedAttackLogs] = await Promise.all([
         getStoredSchoolById(school.id),
         getStoredSchools(),
+        getAttackLogsForSchool(school.id, 3),
       ]);
       const storedPetals = await getPetalsBySchoolId(school.id);
 
@@ -97,6 +104,7 @@ export function MainClient({ school, score }: MainClientProps) {
       if (isActive) {
         setSchools(storedSchools);
         setPetals(storedPetals);
+        setAttackLogs(storedAttackLogs);
       }
     }
 
@@ -222,6 +230,32 @@ export function MainClient({ school, score }: MainClientProps) {
             <p className="text-3xl font-bold leading-none sm:text-4xl">≡</p>
           </button>
         </header>
+
+        {attackLogs.length > 0 ? (
+          <section className="mt-3 grid gap-2">
+            {attackLogs.map((log, index) => (
+              <div
+                key={log.id}
+                className={`rounded-3xl border px-4 py-3 backdrop-blur-sm ${
+                  index === 0
+                    ? "border-rose-300/30 bg-rose-500/16"
+                    : "border-white/12 bg-black/22"
+                }`}
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-100/80">
+                  {index === 0 ? "최근 공격 알림" : "이전 공격 기록"}
+                </p>
+                <p className="mt-1 text-sm font-semibold text-white sm:text-base">
+                  {log.attackerSchoolName}에게 공격당해 {log.reducedPetals.toLocaleString()}점을
+                  빼앗겼어요
+                </p>
+                <p className="mt-1 text-xs text-white/65">
+                  {formatAttackTime(log.createdAt)} · 우리 학교 벚꽃 방어 중
+                </p>
+              </div>
+            ))}
+          </section>
+        ) : null}
 
         <section className="flex flex-1 flex-col justify-center py-4">
           <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center">
