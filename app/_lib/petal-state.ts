@@ -12,6 +12,19 @@ export type PetalPlacement = {
   createdAt: string;
 };
 
+export type ShakePetalResult =
+  | {
+      removedCount: number;
+      petals: PetalPlacement[];
+      reason: "removed";
+    }
+  | {
+      removedCount: 0;
+      petals: PetalPlacement[];
+      reason: "no_petals" | "delete_failed";
+      message?: string;
+    };
+
 type PetalRow = {
   id: string;
   school_id: string;
@@ -34,6 +47,17 @@ function mapRows(rows: PetalRow[]) {
   }));
 }
 
+function pickRandomPetals<T>(items: T[], count: number) {
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+  }
+
+  return shuffled.slice(0, count);
+}
+
 export async function getPetalsBySchoolId(schoolId: string) {
   const { data, error } = await supabase
     .from("petal_placements")
@@ -42,6 +66,9 @@ export async function getPetalsBySchoolId(schoolId: string) {
     .order("created_at", { ascending: true });
 
   if (error || !data) {
+    if (error) {
+      console.error("[petal-state] failed to load petals", { schoolId, error });
+    }
     return [] as PetalPlacement[];
   }
 
@@ -68,18 +95,24 @@ export async function addPetalPlacements(
   const { error } = await supabase.from("petal_placements").insert(rows);
 
   if (error) {
+    console.error("[petal-state] failed to insert petals", { schoolId, error });
     return [] as PetalPlacement[];
   }
 
   return getPetalsBySchoolId(schoolId);
 }
 
-export async function shakePetals(schoolId: string, shakeCount: number) {
+export async function shakePetals(schoolId: string, shakeCount: number): Promise<ShakePetalResult> {
   const petals = await getPetalsBySchoolId(schoolId);
-  const removable = petals.slice(0, Math.min(shakeCount, petals.length));
+  const removable = pickRandomPetals(petals, Math.min(shakeCount, petals.length));
 
   if (removable.length === 0) {
-    return { removedCount: 0, petals };
+    return {
+      removedCount: 0,
+      petals,
+      reason: "no_petals",
+      message: "이 학교에 저장된 벚꽃잎이 아직 없어서 떨어뜨릴 수 없어요.",
+    };
   }
 
   const { error } = await supabase
@@ -91,7 +124,19 @@ export async function shakePetals(schoolId: string, shakeCount: number) {
     );
 
   if (error) {
-    return { removedCount: 0, petals };
+    console.error("[petal-state] failed to delete petals", {
+      schoolId,
+      shakeCount,
+      removableIds: removable.map((petal) => petal.id),
+      error,
+    });
+
+    return {
+      removedCount: 0,
+      petals,
+      reason: "delete_failed",
+      message: "벚꽃잎을 삭제하지 못했어요. petal_placements 정책을 확인해주세요.",
+    };
   }
 
   const nextPetals = await getPetalsBySchoolId(schoolId);
@@ -99,5 +144,6 @@ export async function shakePetals(schoolId: string, shakeCount: number) {
   return {
     removedCount: removable.length,
     petals: nextPetals,
+    reason: "removed",
   };
 }

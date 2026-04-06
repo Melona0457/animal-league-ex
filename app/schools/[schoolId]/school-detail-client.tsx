@@ -10,7 +10,12 @@ import {
   getTreeStage,
   type SchoolRecord,
 } from "../../_lib/mock-data";
-import { getPetalsBySchoolId, shakePetals, type PetalPlacement } from "../../_lib/petal-state";
+import {
+  getPetalsBySchoolId,
+  shakePetals,
+  type PetalPlacement,
+  type ShakePetalResult,
+} from "../../_lib/petal-state";
 import { applyShake, getStoredSchoolById } from "../../_lib/school-state";
 
 type SchoolDetailClientProps = {
@@ -32,6 +37,7 @@ export function SchoolDetailClient({
   const [shakeSeconds, setShakeSeconds] = useState(8);
   const [shakeCount, setShakeCount] = useState(0);
   const [droppedCount, setDroppedCount] = useState(0);
+  const [shakeResult, setShakeResult] = useState<ShakePetalResult | null>(null);
   const lastMotionRef = useRef(0);
 
   useEffect(() => {
@@ -134,6 +140,7 @@ export function SchoolDetailClient({
       setPetals(result.petals);
       setSchool(nextSchool);
       setDroppedCount(result.removedCount);
+      setShakeResult(result);
       setShakeMode("result");
     })();
   }, [shakeMode, shakeSeconds, schoolId, shakeCount]);
@@ -141,6 +148,7 @@ export function SchoolDetailClient({
   function handleShakeStart() {
     setShakeCount(0);
     setDroppedCount(0);
+    setShakeResult(null);
     setShakeSeconds(8);
     setShakeMode("countdown");
   }
@@ -258,9 +266,21 @@ export function SchoolDetailClient({
             <p className="text-sm font-semibold tracking-[0.24em] text-rose-300">RESULT</p>
             <h2 className="mt-3 text-3xl font-bold">시간이 다 되었어요</h2>
             <p className="mt-4 text-sm leading-6 text-white/70">
-              이번 방해에서 <span className="font-semibold text-white">{droppedCount}개</span>의
-              벚꽃잎이 떨어졌어요.
+              {shakeResult?.reason === "removed" ? (
+                <>
+                  이번 방해에서 <span className="font-semibold text-white">{droppedCount}개</span>
+                  의 벚꽃잎이 떨어졌어요.
+                </>
+              ) : (
+                shakeResult?.message ?? "이번 방해 결과를 불러오지 못했어요."
+              )}
             </p>
+            {shakeResult?.reason === "no_petals" ? (
+              <p className="mt-3 text-xs leading-5 text-white/50">
+                참고: 나무 이미지에 원래 그려진 꽃은 제외되고, 게임으로 실제 저장된 꽃잎만
+                흔들기로 떨어집니다.
+              </p>
+            ) : null}
             <div className="mt-6 flex flex-col gap-3">
               <button
                 type="button"
