@@ -284,3 +284,16 @@
 ### 아직 더미 데이터인 부분
 - 댓글은 아직 Supabase가 아니라 로컬 스토리지 기준으로 저장됨
 - 다른 사용자와 댓글을 실시간 공유하려면 별도 댓글 테이블과 API 연동이 필요
+
+## 2026-04-06 커뮤니티 Supabase 연동
+
+### 수정한 파일
+- `app/_lib/community-comments.ts`
+- `app/community/community-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 커뮤니티 댓글 조회를 로컬 스토리지에서 Supabase `comments` 테이블 조회 방식으로 변경
+- 댓글 등록도 Supabase `insert` 기준으로 변경
+- 댓글 등록 후 전체 목록을 다시 읽어와 다른 사용자와 공유 가능한 형태로 전환
+- Supabase 연결 실패 시에는 기본 더미 댓글을 fallback으로 유지

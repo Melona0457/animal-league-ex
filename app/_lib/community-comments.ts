@@ -1,6 +1,7 @@
 "use client";
 
 import { getSchoolName } from "./mock-auth";
+import { supabase } from "./supabase";
 
 export type CommunityComment = {
   id: string;
@@ -10,8 +11,6 @@ export type CommunityComment = {
   revealSchool: boolean;
   createdAt: string;
 };
-
-const STORAGE_KEY = "blossom-community-comments";
 
 const DEFAULT_COMMENTS: CommunityComment[] = [
   {
@@ -40,61 +39,70 @@ const DEFAULT_COMMENTS: CommunityComment[] = [
   },
 ];
 
-function canUseStorage() {
-  return typeof window !== "undefined";
+type CommentRow = {
+  id: string;
+  content: string;
+  school_id: string;
+  school_name: string;
+  reveal_school: boolean;
+  created_at: string;
+};
+
+function mapRows(rows: CommentRow[]) {
+  return rows.map((row) => ({
+    id: row.id,
+    content: row.content,
+    schoolId: row.school_id,
+    schoolName: row.school_name,
+    revealSchool: row.reveal_school,
+    createdAt: row.created_at,
+  }));
 }
 
-export function getCommunityComments() {
-  if (!canUseStorage()) {
+export async function getCommunityComments() {
+  const { data, error } = await supabase
+    .from("comments")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error || !data) {
     return DEFAULT_COMMENTS;
   }
 
-  const saved = window.localStorage.getItem(STORAGE_KEY);
-
-  if (!saved) {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_COMMENTS));
-    return DEFAULT_COMMENTS;
-  }
-
-  try {
-    const comments = JSON.parse(saved) as CommunityComment[];
-    return comments.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
-  } catch {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_COMMENTS));
-    return DEFAULT_COMMENTS;
-  }
+  return mapRows(data as CommentRow[]);
 }
 
-export function createCommunityComment(input: {
+export async function createCommunityComment(input: {
   content: string;
   schoolId: string;
   revealSchool: boolean;
 }) {
-  const comments = getCommunityComments();
   const trimmedContent = input.content.trim();
 
   if (!trimmedContent) {
     return { ok: false as const, message: "댓글 내용을 입력해주세요." };
   }
 
-  const nextComment: CommunityComment = {
+  const schoolName = getSchoolName(input.schoolId);
+
+  const { error } = await supabase.from("comments").insert({
     id: `comment-${Date.now()}`,
     content: trimmedContent,
-    schoolId: input.schoolId,
-    schoolName: getSchoolName(input.schoolId),
-    revealSchool: input.revealSchool,
-    createdAt: new Date().toISOString(),
-  };
+    school_id: input.schoolId,
+    school_name: schoolName,
+    reveal_school: input.revealSchool,
+  });
 
-  const nextComments = [nextComment, ...comments].sort((a, b) =>
-    a.createdAt < b.createdAt ? 1 : -1,
-  );
-
-  if (canUseStorage()) {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextComments));
+  if (error) {
+    return {
+      ok: false as const,
+      message: "댓글을 저장하지 못했어요. 잠시 후 다시 시도해주세요.",
+    };
   }
 
-  return { ok: true as const, comments: nextComments };
+  const comments = await getCommunityComments();
+
+  return { ok: true as const, comments };
 }
 
 export function formatCommunityTime(createdAt: string) {

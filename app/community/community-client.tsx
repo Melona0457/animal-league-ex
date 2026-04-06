@@ -22,10 +22,13 @@ export function CommunityClient({
   const [content, setContent] = useState("");
   const [revealSchool, setRevealSchool] = useState(false);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
-      setComments(getCommunityComments());
+      void (async () => {
+        setComments(await getCommunityComments());
+      })();
     });
 
     return () => {
@@ -33,10 +36,11 @@ export function CommunityClient({
     };
   }, []);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setIsSubmitting(true);
 
-    const result = createCommunityComment({
+    const result = await createCommunityComment({
       content,
       schoolId,
       revealSchool,
@@ -44,6 +48,7 @@ export function CommunityClient({
 
     if (!result.ok) {
       setError(result.message);
+      setIsSubmitting(false);
       return;
     }
 
@@ -51,6 +56,7 @@ export function CommunityClient({
     setContent("");
     setRevealSchool(false);
     setError("");
+    setIsSubmitting(false);
   }
 
   return (
@@ -126,7 +132,7 @@ export function CommunityClient({
               type="submit"
               className="w-full rounded-2xl bg-stone-900 px-4 py-3 text-sm font-semibold text-white"
             >
-              익명 댓글 등록
+              {isSubmitting ? "등록 중..." : "익명 댓글 등록"}
             </button>
           </form>
         </section>
