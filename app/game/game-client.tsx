@@ -11,8 +11,7 @@ import {
   useState,
   useTransition,
 } from "react";
-import { PetalOverlay } from "../_components/petal-overlay";
-import { getTreeImage } from "../_lib/mock-data";
+import { TreeScene } from "../_components/tree-scene";
 import {
   addPetalPlacements,
   getPetalsBySchoolId,
@@ -434,47 +433,43 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
                 onPointerLeave={handlePointerLeave}
                 className="absolute inset-x-4 top-24 bottom-4 overflow-hidden rounded-[2rem] border border-rose-100/60 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.88),rgba(255,255,255,0.26))]"
               >
-                <div
-                  className="absolute inset-0 bg-contain bg-bottom bg-no-repeat opacity-95"
-                  style={{ backgroundImage: `url('${getTreeImage(treeLevel)}')` }}
-                />
-                <div className="absolute inset-x-0 bottom-0 h-[42%] bg-[linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,0.9))]" />
-                <PetalOverlay petals={combinedPetals} className="z-10" />
+                <TreeScene treeLevel={treeLevel} petals={combinedPetals} className="w-full">
+                  <div className="absolute inset-x-0 bottom-0 h-[42%] bg-[linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,0.9))]" />
+                  {mode === "drag"
+                    ? loosePetals.map((petal) => (
+                        <button
+                          key={petal.id}
+                          type="button"
+                          onPointerDown={(event) => handleLoosePetalPointerDown(event, petal)}
+                          className="absolute z-20 h-8 w-8 -translate-x-1/2 -translate-y-1/2 bg-contain bg-center bg-no-repeat"
+                          style={{
+                            left: `${petal.xPercent}%`,
+                            top: `${petal.yPercent}%`,
+                            transform: `translate(-50%, -50%) rotate(${petal.rotation}deg) scale(${petal.scale})`,
+                            backgroundImage: "url('/images/petals/petal.png')",
+                            filter: "grayscale(0.8) saturate(0.45) brightness(0.88)",
+                            opacity: 0.92,
+                          }}
+                        >
+                          <span className="flex h-full w-full items-center justify-center text-xl opacity-0">🌸</span>
+                        </button>
+                      ))
+                    : null}
 
-                {mode === "drag"
-                  ? loosePetals.map((petal) => (
-                      <button
-                        key={petal.id}
-                        type="button"
-                        onPointerDown={(event) => handleLoosePetalPointerDown(event, petal)}
-                        className="absolute z-20 h-8 w-8 -translate-x-1/2 -translate-y-1/2 bg-contain bg-center bg-no-repeat"
-                        style={{
-                          left: `${petal.xPercent}%`,
-                          top: `${petal.yPercent}%`,
-                          transform: `translate(-50%, -50%) rotate(${petal.rotation}deg) scale(${petal.scale})`,
-                          backgroundImage: "url('/images/petals/petal.png')",
-                          filter: "grayscale(0.8) saturate(0.45) brightness(0.88)",
-                          opacity: 0.92,
-                        }}
-                      >
-                        <span className="flex h-full w-full items-center justify-center text-xl opacity-0">🌸</span>
-                      </button>
-                    ))
-                  : null}
-
-                {draggingPetal && dragPreview ? (
-                  <div
-                    className="pointer-events-none absolute z-30 h-8 w-8 -translate-x-1/2 -translate-y-1/2 bg-contain bg-center bg-no-repeat opacity-85"
-                    style={{
-                      left: `${dragPreview.xPercent}%`,
-                      top: `${dragPreview.yPercent}%`,
-                      transform: `translate(-50%, -50%) rotate(${draggingPetal.rotation}deg) scale(${draggingPetal.scale})`,
-                      backgroundImage: "url('/images/petals/petal.png')",
-                    }}
-                  >
-                    <span className="flex h-full w-full items-center justify-center text-xl opacity-0">🌸</span>
-                  </div>
-                ) : null}
+                  {draggingPetal && dragPreview ? (
+                    <div
+                      className="pointer-events-none absolute z-30 h-8 w-8 -translate-x-1/2 -translate-y-1/2 bg-contain bg-center bg-no-repeat opacity-85"
+                      style={{
+                        left: `${dragPreview.xPercent}%`,
+                        top: `${dragPreview.yPercent}%`,
+                        transform: `translate(-50%, -50%) rotate(${draggingPetal.rotation}deg) scale(${draggingPetal.scale})`,
+                        backgroundImage: "url('/images/petals/petal.png')",
+                      }}
+                    >
+                      <span className="flex h-full w-full items-center justify-center text-xl opacity-0">🌸</span>
+                    </div>
+                  ) : null}
+                </TreeScene>
 
                 {mode === "tap" ? (
                   <div className="absolute inset-x-4 bottom-4 rounded-[1.75rem] border border-white/70 bg-white/70 px-4 py-3 text-sm text-stone-600 backdrop-blur-sm">

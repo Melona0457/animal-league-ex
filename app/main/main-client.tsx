@@ -3,12 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { PetalOverlay } from "../_components/petal-overlay";
+import { TreeScene } from "../_components/tree-scene";
 import {
   getLevelLabel,
   getSchoolBackgroundImage,
   getSchoolLogoImage,
-  getTreeImage,
   getTreeStage,
   type SchoolRecord,
 } from "../_lib/mock-data";
@@ -196,15 +195,15 @@ export function MainClient({ school, score }: MainClientProps) {
               {currentSchool.name} · {getTreeStage(currentSchool.bloomRate)}
             </p>
             <div
-              className="relative flex h-[46vh] min-h-[300px] w-full items-end justify-center bg-contain bg-bottom bg-no-repeat"
-              style={{
-                backgroundImage: `url('${getTreeImage(currentSchool.level)}')`,
-              }}
+              className="flex h-[46vh] min-h-[300px] w-full items-end justify-center"
             >
-              <PetalOverlay petals={petals} className="z-10" />
-              <div className="mb-6 rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
-                나무 이미지 슬롯: `/public${getTreeImage(currentSchool.level)}`
-              </div>
+              <TreeScene treeLevel={currentSchool.level} petals={petals} className="w-full max-w-[640px]">
+                <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center">
+                  <div className="rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
+                    현재 붙은 벚꽃 {petals.length}개
+                  </div>
+                </div>
+              </TreeScene>
             </div>
           </div>
         </section>
