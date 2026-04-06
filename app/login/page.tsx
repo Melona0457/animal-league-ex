@@ -5,13 +5,18 @@ type LoginPageProps = {
   searchParams: Promise<{
     signup?: string;
     user?: string;
+    emailConfirm?: string;
   }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const signupNotice =
-    params.signup === "success"
+    params.signup === "verify"
+      ? params.user
+        ? `${params.user} 계정이 만들어졌어요. 인증 메일을 확인한 뒤 로그인해주세요.`
+        : "회원가입이 완료됐어요. 인증 메일을 확인한 뒤 로그인해주세요."
+      : params.signup === "success"
       ? params.user
         ? `${params.user} 계정이 만들어졌어요. 바로 로그인해보세요.`
         : "회원가입이 완료됐어요. 이제 로그인해보세요."

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   getLevelLabel,
@@ -9,6 +10,7 @@ import {
   getTreeStage,
   type SchoolRecord,
 } from "../_lib/mock-data";
+import { signOutAccount } from "../_lib/mock-auth";
 import { getStoredSchoolById } from "../_lib/school-state";
 
 type MainClientProps = {
@@ -17,6 +19,7 @@ type MainClientProps = {
 };
 
 export function MainClient({ school, score }: MainClientProps) {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentSchool, setCurrentSchool] = useState(school);
 
@@ -40,6 +43,11 @@ export function MainClient({ school, score }: MainClientProps) {
 
   const totalPetals = currentSchool.totalPetals;
   const progressPercent = currentSchool.progressPercent;
+
+  async function handleLogout() {
+    await signOutAccount();
+    router.push("/");
+  }
 
   return (
     <main
@@ -158,9 +166,13 @@ export function MainClient({ school, score }: MainClientProps) {
             >
               실시간 댓글 커뮤니티
             </Link>
-            <Link href="/" className="mt-auto rounded-2xl bg-white px-4 py-4 text-center font-semibold text-stone-950">
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="mt-auto rounded-2xl bg-white px-4 py-4 text-center font-semibold text-stone-950"
+            >
               로그아웃
-            </Link>
+            </button>
           </div>
         </div>
       ) : null}

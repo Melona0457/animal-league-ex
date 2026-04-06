@@ -3,37 +3,63 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { createAccount, SCHOOL_OPTIONS } from "../_lib/mock-auth";
+import {
+  isValidPassword,
+  isValidSchoolEmail,
+  SCHOOL_OPTIONS,
+  signUpAccount,
+} from "../_lib/mock-auth";
 
 export function SignupForm() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [schoolId, setSchoolId] = useState(SCHOOL_OPTIONS[0].id);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setIsSubmitting(true);
 
-    if (!username.trim() || !password.trim()) {
-      setError("아이디와 비밀번호를 모두 입력해주세요.");
+    if (!nickname.trim() || !email.trim() || !password.trim()) {
+      setError("닉네임, 이메일, 비밀번호를 모두 입력해주세요.");
+      setIsSubmitting(false);
       return;
     }
 
-    const result = createAccount({
-      username,
+    if (!isValidSchoolEmail(email)) {
+      setError("학교 이메일만 사용할 수 있어요. `@ac.kr` 또는 `@edu` 도메인을 확인해주세요.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!isValidPassword(password)) {
+      setError("비밀번호는 영문+숫자를 포함한 8~20자로 입력해주세요.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const result = await signUpAccount({
+      nickname,
+      email,
       password,
       schoolId,
     });
 
     if (!result.ok) {
       setError(result.message);
+      setIsSubmitting(false);
       return;
     }
 
-    router.push(
-      `/login?signup=success&user=${encodeURIComponent(username.trim())}`,
-    );
+    if (result.needsEmailConfirmation) {
+      router.push(`/login?signup=verify&user=${encodeURIComponent(result.nickname)}`);
+      return;
+    }
+
+    router.push(`/main?schoolId=${result.schoolId}`);
   }
 
   return (
@@ -62,15 +88,35 @@ export function SignupForm() {
       <div className="space-y-4">
         <label className="block">
           <span className="mb-2 block text-sm font-medium text-stone-700">
-            아이디
+            닉네임
           </span>
           <input
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
+            value={nickname}
+            onChange={(event) => setNickname(event.target.value)}
             placeholder="예: cherrycaptain"
             className="h-13 w-full rounded-2xl border border-rose-100 bg-white px-4 text-base text-stone-900 outline-none transition focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
-            autoComplete="username"
+            autoComplete="nickname"
           />
+          <p className="mt-2 text-xs text-stone-500">
+            커뮤니티에서 익명 해제 시 보이는 이름이에요.
+          </p>
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-sm font-medium text-stone-700">
+            이메일
+          </span>
+          <input
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="example@school.com"
+            className="h-13 w-full rounded-2xl border border-rose-100 bg-white px-4 text-base text-stone-900 outline-none transition focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
+            autoComplete="email"
+          />
+          <p className="mt-2 text-xs text-stone-500">
+            학교 이메일만 가능해요. `@ac.kr`, `@edu`
+          </p>
         </label>
 
         <label className="block">
@@ -85,6 +131,9 @@ export function SignupForm() {
             className="h-13 w-full rounded-2xl border border-rose-100 bg-white px-4 text-base text-stone-900 outline-none transition focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
             autoComplete="new-password"
           />
+          <p className="mt-2 text-xs text-stone-500">
+            영문과 숫자를 모두 포함한 8~20자
+          </p>
         </label>
 
         <label className="block">
@@ -110,7 +159,7 @@ export function SignupForm() {
           type="submit"
           className="h-13 rounded-2xl bg-rose-500 text-base font-semibold text-white transition hover:bg-rose-400"
         >
-          회원가입 완료
+          {isSubmitting ? "회원가입 중..." : "회원가입 완료"}
         </button>
         <Link
           href="/login"

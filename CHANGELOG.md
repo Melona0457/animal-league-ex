@@ -297,3 +297,42 @@
 - 댓글 등록도 Supabase `insert` 기준으로 변경
 - 댓글 등록 후 전체 목록을 다시 읽어와 다른 사용자와 공유 가능한 형태로 전환
 - Supabase 연결 실패 시에는 기본 더미 댓글을 fallback으로 유지
+
+## 2026-04-06 Supabase Auth 전환
+
+### 수정한 파일
+- `app/_lib/mock-auth.ts`
+- `app/login/login-form.tsx`
+- `app/login/page.tsx`
+- `app/signup/signup-form.tsx`
+- `app/main/main-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 로그인 방식을 로컬 스토리지 계정 비교에서 Supabase Auth 이메일/비밀번호 로그인으로 변경
+- 회원가입 시 이메일, 비밀번호, 표시용 아이디, 소속 대학을 받아 Supabase Auth user metadata에 저장하도록 변경
+- 이메일 인증이 필요한 경우 로그인 화면에서 인증 안내 문구가 보이도록 수정
+- 메인 화면 로그아웃을 실제 Supabase 세션 종료 방식으로 변경
+
+### 사용 전 필요한 설정
+- Supabase Auth의 Email provider가 켜져 있어야 함
+- 즉시 로그인 흐름을 원하면 Auth 설정에서 Confirm email을 끄거나, 메일 인증을 사용할 경우 Redirect URL에 배포 주소를 추가해야 함
+
+## 2026-04-06 회원가입/커뮤니티 표시 규칙 보강
+
+### 수정한 파일
+- `app/_lib/mock-auth.ts`
+- `app/_lib/community-comments.ts`
+- `app/signup/signup-form.tsx`
+- `app/community/community-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 회원가입 화면의 `아이디`를 `닉네임` 표시로 변경
+- 학교 이메일 도메인을 `@ac.kr`, `@edu`로 제한하는 검증 추가
+- 비밀번호를 영문+숫자 포함 8~20자로 제한하고 안내 문구 추가
+- 커뮤니티 댓글 작성 시 `익명으로 작성` 여부와 `소속 대학 공개` 여부를 각각 선택할 수 있도록 변경
+- 익명 해제 시에는 Supabase Auth metadata의 닉네임이 댓글 작성자 이름으로 표시되도록 수정
+
+### Supabase 추가 작업 필요
+- `comments` 테이블에 `nickname text`, `is_anonymous boolean default true` 컬럼 추가 필요

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { findAccount, getSchoolName } from "../_lib/mock-auth";
+import { signInAccount } from "../_lib/mock-auth";
 
 type LoginFormProps = {
   signupNotice?: string;
@@ -11,26 +11,25 @@ type LoginFormProps = {
 
 export function LoginForm({ signupNotice = "" }: LoginFormProps) {
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const demoNotice = "테스트 계정: springhero / 1234";
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setIsSubmitting(true);
 
-    const account = findAccount(username, password);
+    const result = await signInAccount(email, password);
 
-    if (!account) {
-      setError("존재하지 않는 계정 정보예요. 아이디와 비밀번호를 다시 확인해주세요.");
+    if (!result.ok) {
+      setError(result.message);
+      setIsSubmitting(false);
       return;
     }
 
     setError("");
-    router.push(
-      `/main?schoolId=${account.schoolId}&school=${encodeURIComponent(getSchoolName(account.schoolId))}`,
-    );
+    router.push(`/main?schoolId=${result.schoolId}`);
   }
 
   return (
@@ -50,15 +49,15 @@ export function LoginForm({ signupNotice = "" }: LoginFormProps) {
         </p>
       </div>
 
-      <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-        {demoNotice}
-      </div>
-
       {signupNotice ? (
         <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
           {signupNotice}
         </div>
       ) : null}
+
+      <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        Supabase Auth 기준으로 이메일과 비밀번호로 로그인해요.
+      </div>
 
       {error ? (
         <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -69,14 +68,15 @@ export function LoginForm({ signupNotice = "" }: LoginFormProps) {
       <div className="space-y-4">
         <label className="block">
           <span className="mb-2 block text-sm font-medium text-stone-700">
-            아이디
+            이메일
           </span>
           <input
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-            placeholder="아이디를 입력하세요"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="example@school.com"
             className="h-13 w-full rounded-2xl border border-rose-100 bg-white px-4 text-base text-stone-900 outline-none transition focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
-            autoComplete="username"
+            autoComplete="email"
           />
         </label>
 
@@ -100,7 +100,7 @@ export function LoginForm({ signupNotice = "" }: LoginFormProps) {
           type="submit"
           className="h-13 rounded-2xl bg-stone-900 text-base font-semibold text-white transition hover:bg-stone-800"
         >
-          로그인
+          {isSubmitting ? "로그인 중..." : "로그인"}
         </button>
         <Link
           href="/signup"

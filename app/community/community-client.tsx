@@ -8,6 +8,7 @@ import {
   getCommunityComments,
   type CommunityComment,
 } from "../_lib/community-comments";
+import { getCurrentAuthProfile } from "../_lib/mock-auth";
 
 type CommunityClientProps = {
   schoolId: string;
@@ -20,6 +21,8 @@ export function CommunityClient({
 }: CommunityClientProps) {
   const [comments, setComments] = useState<CommunityComment[]>([]);
   const [content, setContent] = useState("");
+  const [nickname, setNickname] = useState("벚꽃러");
+  const [isAnonymous, setIsAnonymous] = useState(true);
   const [revealSchool, setRevealSchool] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,6 +30,10 @@ export function CommunityClient({
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
       void (async () => {
+        const profile = await getCurrentAuthProfile();
+        if (profile?.nickname) {
+          setNickname(profile.nickname);
+        }
         setComments(await getCommunityComments());
       })();
     });
@@ -42,7 +49,9 @@ export function CommunityClient({
 
     const result = await createCommunityComment({
       content,
+      nickname,
       schoolId,
+      isAnonymous,
       revealSchool,
     });
 
@@ -54,6 +63,7 @@ export function CommunityClient({
 
     setComments(result.comments);
     setContent("");
+    setIsAnonymous(true);
     setRevealSchool(false);
     setError("");
     setIsSubmitting(false);
@@ -112,15 +122,35 @@ export function CommunityClient({
               </p>
             </div>
 
-            <label className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-700">
-              <input
-                type="checkbox"
-                checked={revealSchool}
-                onChange={(event) => setRevealSchool(event.target.checked)}
-                className="h-4 w-4 rounded border-stone-300 text-rose-500 focus:ring-rose-200"
-              />
-              소속 대학 공개
-            </label>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-700">
+                <input
+                  type="checkbox"
+                  checked={isAnonymous}
+                  onChange={(event) => setIsAnonymous(event.target.checked)}
+                  className="h-4 w-4 rounded border-stone-300 text-rose-500 focus:ring-rose-200"
+                />
+                익명으로 작성
+              </label>
+
+              <label className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-700">
+                <input
+                  type="checkbox"
+                  checked={revealSchool}
+                  onChange={(event) => setRevealSchool(event.target.checked)}
+                  className="h-4 w-4 rounded border-stone-300 text-rose-500 focus:ring-rose-200"
+                />
+                소속 대학 공개
+              </label>
+            </div>
+
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-600">
+              현재 표시 방식:{" "}
+              <span className="font-semibold text-stone-800">
+                {isAnonymous ? "익명" : nickname}
+                {revealSchool ? ` · ${schoolName}` : ""}
+              </span>
+            </div>
 
             {error ? (
               <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -152,7 +182,7 @@ export function CommunityClient({
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-stone-800">
-                        익명
+                        {comment.isAnonymous ? "익명" : comment.nickname}
                         {comment.revealSchool ? ` · ${comment.schoolName}` : ""}
                       </p>
                       <p className="mt-1 text-sm leading-6 text-stone-600">
