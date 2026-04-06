@@ -95,6 +95,9 @@ export function SchoolDetailClient({
   const [droppedCount, setDroppedCount] = useState(0);
   const [reducedScore, setReducedScore] = useState(0);
   const [shakeResult, setShakeResult] = useState<ShakePetalResult | null>(null);
+  const [shareNotice, setShareNotice] = useState("");
+  const [shareBonusDamage, setShareBonusDamage] = useState(0);
+  const [hasAppliedShareBonus, setHasAppliedShareBonus] = useState(false);
   const [fallingPetals, setFallingPetals] = useState<
     Array<{
       id: string;
@@ -278,9 +281,72 @@ export function SchoolDetailClient({
     setDroppedCount(0);
     setReducedScore(0);
     setShakeResult(null);
+    setShareNotice("");
+    setShareBonusDamage(0);
+    setHasAppliedShareBonus(false);
     setFallingPetals([]);
     setShakeSeconds(8);
     setShakeMode("countdown");
+  }
+
+  async function handleShareAttackResult() {
+    const shareUrl =
+      typeof window === "undefined"
+        ? ""
+        : `${window.location.origin}/schools/${schoolId}?fromSchoolId=${fromSchoolId}`;
+
+    if (!shareUrl) {
+      return;
+    }
+
+    const shareText = `${school.name} 방금 ${reducedScore}점 털었다. 지금 들어와서 같이 흔들어.`;
+
+    async function applyShareBonusIfNeeded() {
+      if (hasAppliedShareBonus || reducedScore <= 0) {
+        return false;
+      }
+
+      const bonusDamage = reducedScore * 3;
+      await applyShake(schoolId, bonusDamage);
+      await createAttackLog({
+        attackerSchoolId: fromSchoolId,
+        targetSchoolId: schoolId,
+        reducedPetals: bonusDamage,
+      });
+      const nextSchool = await getStoredSchoolById(schoolId);
+
+      setSchool(nextSchool);
+      setShareBonusDamage(bonusDamage);
+      setHasAppliedShareBonus(true);
+      return true;
+    }
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${school.name} 방해 결과`,
+          text: shareText,
+          url: shareUrl,
+        });
+        const applied = await applyShareBonusIfNeeded();
+        setShareNotice(
+          applied
+            ? `공유했고 추가 피해 ${shareBonusDamage || reducedScore * 3}점을 더 넣었어요.`
+            : "공유창을 열었어요.",
+        );
+        return;
+      }
+
+      await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      const applied = await applyShareBonusIfNeeded();
+      setShareNotice(
+        applied
+          ? `링크를 복사했고 추가 피해 ${shareBonusDamage || reducedScore * 3}점을 더 넣었어요.`
+          : "공유 문구와 링크를 복사했어요.",
+      );
+    } catch {
+      setShareNotice("공유를 완료하지 못했어요. 다시 시도해주세요.");
+    }
   }
 
   if (!school) {
@@ -477,13 +543,32 @@ export function SchoolDetailClient({
                 shakeResult?.message ?? "이번 방해 결과를 불러오지 못했어요."
               )}
             </p>
+            <p className="mt-3 text-xs leading-5 text-white/55">
+              총 감소 점수 {reducedScore + shareBonusDamage}
+              {shareBonusDamage > 0 ? ` · 공유 보너스 +${shareBonusDamage}` : ""}
+            </p>
             {shakeResult?.reason === "no_petals" ? (
               <p className="mt-3 text-xs leading-5 text-white/50">
                 참고: 나무 이미지에 원래 그려진 꽃은 제외되고, 게임으로 실제 저장된 꽃잎만
                 흔들기 연출로 떨어집니다.
               </p>
             ) : null}
+            {shareNotice ? (
+              <div className="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
+                {shareNotice}
+              </div>
+            ) : null}
             <div className="mt-6 flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={handleShareAttackResult}
+                disabled={hasAppliedShareBonus && reducedScore > 0}
+                className="rounded-2xl border border-white/15 px-4 py-4 text-sm font-semibold text-white"
+              >
+                {hasAppliedShareBonus && reducedScore > 0
+                  ? "공유 보너스 반영 완료"
+                  : "친구에게 결과 공유하기"}
+              </button>
               <button
                 type="button"
                 onClick={() => setShakeMode("idle")}

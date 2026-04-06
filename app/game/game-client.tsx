@@ -75,6 +75,8 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
   const [fallScore, setFallScore] = useState(0);
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
   const [shareNotice, setShareNotice] = useState("");
+  const [shareBonus, setShareBonus] = useState(0);
+  const [hasAppliedShareBonus, setHasAppliedShareBonus] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -246,7 +248,8 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
 
   function handleApplyScore() {
     startSavingTransition(async () => {
-      const finalScore = mode === "fall" ? fallScore : placedPetals.length;
+      const baseScore = mode === "fall" ? fallScore : placedPetals.length;
+      const finalScore = baseScore + shareBonus;
 
       if (placedPetals.length > 0) {
         await addPetalPlacements(
@@ -271,6 +274,9 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
     setPlacedPetals([]);
     setFallingItems([]);
     setFallScore(0);
+    setShareBonus(0);
+    setHasAppliedShareBonus(false);
+    setShareNotice("");
   }
 
   const currentScore = mode === "fall" ? fallScore : placedPetals.length;
@@ -293,6 +299,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
     mode === "fall"
       ? `이번 판 점수는 ${currentScore}점이에요. 벚꽃은 +1점, 벌은 -2점으로 반영됐어요.`
       : `이번 판에서 ${placedPetals.length}개의 벚꽃잎을 직접 고정했어요.`;
+  const finalAppliedScore = currentScore + shareBonus;
 
   async function handleShareResult() {
     const shareUrl =
@@ -319,11 +326,27 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
           text: shareText,
           url: shareUrl,
         });
+        if (!hasAppliedShareBonus && currentScore > 0) {
+          const bonus = currentScore * 3;
+          setShareBonus(bonus);
+          setHasAppliedShareBonus(true);
+          setShareNotice(`결과를 공유했고 공유 보너스 +${bonus}점을 얻었어요.`);
+          return;
+        }
+
         setShareNotice("결과 공유창을 열었어요.");
         return;
       }
 
       await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      if (!hasAppliedShareBonus && currentScore > 0) {
+        const bonus = currentScore * 3;
+        setShareBonus(bonus);
+        setHasAppliedShareBonus(true);
+        setShareNotice(`공유 문구와 링크를 복사했고 공유 보너스 +${bonus}점을 얻었어요.`);
+        return;
+      }
+
       setShareNotice("공유 문구와 링크를 복사했어요.");
     } catch {
       setShareNotice("공유를 완료하지 못했어요. 다시 시도해주세요.");
@@ -445,6 +468,10 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
                   </p>
                   <h2 className="mt-3 text-3xl font-bold">벚꽃 붙이기 종료</h2>
                   <p className="mt-4 text-base leading-7 text-stone-600">{resultDescription}</p>
+                  <p className="mt-2 text-sm text-stone-500">
+                    최종 반영 점수 {finalAppliedScore}점
+                    {shareBonus > 0 ? ` · 공유 보너스 +${shareBonus}` : ""}
+                  </p>
                   {currentSchool ? (
                     <p className="mt-2 text-sm text-stone-500">
                       현재 {schoolName} 순위는 #{currentSchool.rank}
@@ -460,9 +487,12 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
                     <button
                       type="button"
                       onClick={handleShareResult}
+                      disabled={hasAppliedShareBonus && currentScore > 0}
                       className="rounded-2xl border border-stone-200 bg-white px-4 py-4 text-sm font-semibold text-stone-700"
                     >
-                      친구에게 결과 공유하기
+                      {hasAppliedShareBonus && currentScore > 0
+                        ? "공유 보너스 반영 완료"
+                        : "친구에게 결과 공유하기"}
                     </button>
                     <button
                       type="button"
