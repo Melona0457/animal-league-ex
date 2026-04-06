@@ -205,15 +205,13 @@ export function MainClient({ school, score }: MainClientProps) {
   }
 
   return (
-    <main
-      className="min-h-screen bg-stone-900 px-4 py-5 text-white"
-      style={{
-        backgroundImage: `linear-gradient(180deg, rgba(34, 18, 26, 0.28), rgba(34, 18, 26, 0.72)), url('${getSchoolBackgroundImage(currentSchool.id)}')`,
-        backgroundPosition: "center",
-        backgroundSize: "cover",
-      }}
-    >
-      <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl flex-col">
+    <main className="relative min-h-screen overflow-hidden bg-stone-900 px-4 py-5 text-white">
+      <div
+        className="pointer-events-none absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-lg"
+        style={{ backgroundImage: `url('${getSchoolBackgroundImage(currentSchool.id)}')` }}
+      />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(24,10,18,0.34),rgba(24,10,18,0.76))]" />
+      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl flex-col">
         <header className="grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border border-white/15 bg-black/22 p-3 backdrop-blur-sm sm:gap-3 sm:p-4">
           <div className="flex flex-col justify-between px-3 py-3">
             <NearbySchoolRow
@@ -261,7 +259,7 @@ export function MainClient({ school, score }: MainClientProps) {
               <div className="mt-2 flex items-center justify-between text-[10px] text-white/65 sm:text-xs">
                 <span>{getLevelLabel(currentSchool.level)}</span>
                 <span>
-                  {currentSchool.level >= 5
+                  {currentSchool.level >= 7
                     ? "만개"
                     : `LV.${currentSchool.level + 1}`}
                 </span>
@@ -342,18 +340,19 @@ export function MainClient({ school, score }: MainClientProps) {
           </section>
         ) : null}
 
-        <section className="flex flex-1 flex-col justify-center py-4">
-          <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center">
-            <p className="mb-3 rounded-full bg-black/30 px-4 py-2 text-xs text-white/75 backdrop-blur-sm">
+        <section className="flex flex-1 flex-col py-2">
+          <div className="relative flex w-full flex-1 overflow-hidden rounded-[2rem]">
+            <p className="pointer-events-none absolute left-1/2 top-4 z-30 -translate-x-1/2 rounded-full bg-black/30 px-4 py-2 text-xs text-white/75 backdrop-blur-sm">
               {currentSchool.name} · {getTreeStage(currentSchool.bloomRate)}
             </p>
-            <div className="flex h-[calc(100vh-15rem)] min-h-[560px] w-full items-end justify-center">
+            <div className="flex h-[calc(100vh-14rem)] min-h-[620px] w-full items-end justify-center">
               <TreeScene
                 treeLevel={currentSchool.level}
                 petals={petals}
-                className="w-full max-w-[1160px]"
+                fillContainer
+                className="min-h-full w-full"
               >
-                <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center">
+                <div className="pointer-events-none absolute inset-x-0 bottom-6 z-30 flex justify-center">
                   <div className="rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
                     현재 붙은 벚꽃 {petals.length}개
                   </div>

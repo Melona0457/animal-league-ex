@@ -26,16 +26,47 @@ function rankSchools(schools: SchoolRecord[]) {
     }));
 }
 
-function progressFromTotal(totalPetals: number) {
-  return Math.max(0, Math.min(100, Math.floor(totalPetals / 100)));
+function getLevelRange(totalPetals: number) {
+  if (totalPetals <= 300) {
+    return { level: 1, start: 0, end: 300 };
+  }
+  if (totalPetals <= 600) {
+    return { level: 2, start: 300, end: 600 };
+  }
+  if (totalPetals <= 1000) {
+    return { level: 3, start: 600, end: 1000 };
+  }
+  if (totalPetals <= 2000) {
+    return { level: 4, start: 1000, end: 2000 };
+  }
+  if (totalPetals <= 4000) {
+    return { level: 5, start: 2000, end: 4000 };
+  }
+  if (totalPetals < 12000) {
+    return { level: 6, start: 4000, end: 12000 };
+  }
+
+  return { level: 7, start: 12000, end: 12000 };
 }
 
-function levelFromProgress(progressPercent: number) {
-  if (progressPercent >= 80) return 5;
-  if (progressPercent >= 60) return 4;
-  if (progressPercent >= 40) return 3;
-  if (progressPercent >= 20) return 2;
-  return 1;
+function progressFromTotal(totalPetals: number) {
+  const range = getLevelRange(totalPetals);
+
+  if (range.level >= 7) {
+    return 100;
+  }
+
+  const span = range.end - range.start;
+
+  if (span <= 0) {
+    return 100;
+  }
+
+  return Math.max(0, Math.min(100, Math.floor(((totalPetals - range.start) / span) * 100)));
+}
+
+function levelFromTotal(totalPetals: number) {
+  return getLevelRange(totalPetals).level;
 }
 
 function mapRows(rows: SchoolRow[]) {
@@ -46,10 +77,10 @@ function mapRows(rows: SchoolRow[]) {
     id: row.id,
     name: row.name,
     totalPetals: row.total_petals,
-    bloomRate: row.bloom_rate,
-    level: row.level,
+    bloomRate: progressFromTotal(row.total_petals),
+    level: levelFromTotal(row.total_petals),
     rank: row.rank,
-    progressPercent: row.progress_percent,
+    progressPercent: progressFromTotal(row.total_petals),
     shakeAvailable: true,
     order: orderMap.get(row.id) ?? 9999,
   }));
@@ -85,7 +116,7 @@ export async function applyGameScore(schoolId: string, score: number) {
 
   const totalPetals = Math.max(0, (data as SchoolRow).total_petals + score);
   const progressPercent = progressFromTotal(totalPetals);
-  const level = levelFromProgress(progressPercent);
+  const level = levelFromTotal(totalPetals);
 
   await supabase
     .from("schools")
@@ -111,7 +142,7 @@ export async function applyShake(schoolId: string, amount = 30) {
 
   const totalPetals = Math.max(0, (data as SchoolRow).total_petals - amount);
   const progressPercent = progressFromTotal(totalPetals);
-  const level = levelFromProgress(progressPercent);
+  const level = levelFromTotal(totalPetals);
 
   await supabase
     .from("schools")
