@@ -12,11 +12,13 @@ const GAME_MODES = [
     id: "fall",
     title: "클래식 낙하형",
     description: "위에서 떨어지는 벚꽃과 벌레를 빠르게 눌러 점수를 쌓는 기존 방식이에요.",
+    video: "/videos/game-modes/classic-fall.mp4",
   },
   {
     id: "tap",
     title: "터치로 바로 붙이기",
     description: "현재 나무와 기존 꽃잎을 보면서 원하는 위치를 톡 누르면 그 자리에 바로 붙어요.",
+    video: "/videos/game-modes/tap-bloom.mp4",
   },
 ];
 
@@ -51,13 +53,28 @@ export default async function GameSelectPage({
               key={mode.id}
               className="rounded-[2rem] border border-white/70 bg-white/55 p-5 shadow-[0_16px_50px_rgba(120,73,96,0.08)] backdrop-blur-sm"
             >
-              <p className="text-xs font-semibold tracking-[0.18em] text-rose-500">
-                MODE
-              </p>
-              <h2 className="mt-3 text-2xl font-bold">{mode.title}</h2>
-              <p className="mt-3 min-h-16 text-sm leading-6 text-stone-600">
-                {mode.description}
-              </p>
+              <div className="flex flex-col gap-4 md:flex-row md:items-start">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold tracking-[0.18em] text-rose-500">
+                    MODE
+                  </p>
+                  <h2 className="mt-3 text-2xl font-bold">{mode.title}</h2>
+                  <p className="mt-3 min-h-16 text-sm leading-6 text-stone-600">
+                    {mode.description}
+                  </p>
+                </div>
+                <div className="w-full shrink-0 overflow-hidden rounded-[1.5rem] border border-stone-200 bg-stone-950/85 md:w-44">
+                  <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="aspect-[4/5] h-full w-full object-cover"
+                  >
+                    <source src={mode.video} type="video/mp4" />
+                  </video>
+                </div>
+              </div>
               <Link
                 href={`/game?schoolId=${school.id}&mode=${mode.id}`}
                 className="mt-6 flex items-center justify-center rounded-2xl bg-stone-900 px-4 py-4 text-sm font-semibold text-white"
