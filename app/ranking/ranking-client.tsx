@@ -74,7 +74,7 @@ export function RankingClient({ currentSchoolId, sort }: RankingClientProps) {
   const podiumSchools = [...schools].sort((a, b) => a.rank - b.rank).slice(0, 3);
 
   return (
-    <main className="min-h-screen bg-background px-4 py-5 text-stone-900">
+    <main className="min-h-screen px-4 py-5 text-stone-900">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-4">
         <header className="rounded-2xl border border-stone-200 bg-white p-4">
           <div className="flex items-start justify-between gap-3">

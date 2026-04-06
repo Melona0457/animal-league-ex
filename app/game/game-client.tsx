@@ -18,7 +18,10 @@ import {
   type PetalPlacement,
 } from "../_lib/petal-state";
 import { applyGameScore, getStoredSchools } from "../_lib/school-state";
-import { type SchoolRecord } from "../_lib/mock-data";
+import {
+  getTreeStage,
+  type SchoolRecord,
+} from "../_lib/mock-data";
 
 type GameMode = "fall" | "tap";
 
@@ -44,6 +47,19 @@ type FallingItem = {
   direction?: "left-to-right" | "right-to-left";
 };
 
+type TapBurstPetal = {
+  id: string;
+  xPercent: number;
+  yPercent: number;
+  ringX: number;
+  ringY: number;
+  rise: number;
+  drop: number;
+  duration: number;
+  rotationStart: number;
+  rotationEnd: number;
+};
+
 type GameClientProps = {
   schoolId: string;
   schoolName: string;
@@ -65,6 +81,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
   const boardRef = useRef<HTMLDivElement | null>(null);
   const draftIdRef = useRef(0);
   const fallingItemIdRef = useRef(0);
+  const tapBurstIdRef = useRef(0);
   const itemTimersRef = useRef<number[]>([]);
   const [isSaving, startSavingTransition] = useTransition();
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
@@ -72,6 +89,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
   const [existingPetals, setExistingPetals] = useState<PetalPlacement[]>([]);
   const [placedPetals, setPlacedPetals] = useState<DraftPetal[]>([]);
   const [fallingItems, setFallingItems] = useState<FallingItem[]>([]);
+  const [tapBursts, setTapBursts] = useState<TapBurstPetal[]>([]);
   const [fallScore, setFallScore] = useState(0);
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
   const [shareNotice, setShareNotice] = useState("");
@@ -176,8 +194,8 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
   );
 
   const combinedPetals = useMemo(
-    () => [...existingPetals, ...savedPetalPreview],
-    [existingPetals, savedPetalPreview],
+    () => (mode === "tap" ? existingPetals : [...existingPetals, ...savedPetalPreview]),
+    [existingPetals, mode, savedPetalPreview],
   );
 
   function getRelativePosition(clientX: number, clientY: number) {
@@ -222,6 +240,31 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
       return;
     }
 
+    const burstPetals = Array.from({ length: 6 }, (_, index) => {
+      const angle = (Math.PI * 2 * index) / 6;
+      const ringDistance = 34 + Math.random() * 12;
+
+      return {
+        id: `tap-burst-${tapBurstIdRef.current++}`,
+        xPercent: position.xPercent,
+        yPercent: position.yPercent,
+        ringX: Math.cos(angle) * ringDistance,
+        ringY: Math.sin(angle) * ringDistance * 0.7,
+        rise: -34 - Math.random() * 16,
+        drop: 70 + Math.random() * 40,
+        duration: 850 + Math.floor(Math.random() * 250),
+        rotationStart: -30 + Math.random() * 60,
+        rotationEnd: -120 + Math.random() * 240,
+      } satisfies TapBurstPetal;
+    });
+
+    setTapBursts((current) => [...current, ...burstPetals]);
+    burstPetals.forEach((petal) => {
+      window.setTimeout(() => {
+        setTapBursts((current) => current.filter((item) => item.id !== petal.id));
+      }, petal.duration + 120);
+    });
+
     setPlacedPetals((current) => [
       ...current,
       createDraftPetal(position.xPercent, position.yPercent),
@@ -251,7 +294,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
       const baseScore = mode === "fall" ? fallScore : placedPetals.length;
       const finalScore = baseScore + shareBonus;
 
-      if (placedPetals.length > 0) {
+      if (mode !== "tap" && placedPetals.length > 0) {
         await addPetalPlacements(
           schoolId,
           placedPetals.map((petal) => ({
@@ -273,6 +316,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
     setIsFinished(false);
     setPlacedPetals([]);
     setFallingItems([]);
+    setTapBursts([]);
     setFallScore(0);
     setShareBonus(0);
     setHasAppliedShareBonus(false);
@@ -293,12 +337,12 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
   const modeGuide =
     mode === "fall"
       ? "위에서 떨어지는 벚꽃은 잡고 벌레는 피하면서 점수를 모으세요."
-      : "현재 나무와 기존 꽃잎을 보면서 원하는 위치를 바로 눌러 붙이세요.";
+      : "메인 화면처럼 보이는 나무 위를 터치하면 벚꽃이 퍼졌다가 떨어지며 점수가 올라가요.";
 
   const resultDescription =
     mode === "fall"
       ? `이번 판 점수는 ${currentScore}점이에요. 벚꽃은 +10점, 벌은 -2점으로 반영됐어요.`
-      : `이번 판에서 ${placedPetals.length}개의 벚꽃잎을 직접 고정했어요.`;
+      : `이번 판에서 ${placedPetals.length}번 터치해 벚꽃 연출과 함께 점수를 올렸어요.`;
   const finalAppliedScore = currentScore + shareBonus;
 
   async function handleShareResult() {
@@ -317,7 +361,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
     const shareText =
       mode === "fall"
         ? `${schoolName} 방금 클래식 낙하형에서 ${currentScore}점 획득. ${rivalryLine} 같이 들어와서 벚꽃 붙여줘.`
-        : `${schoolName} 방금 벚꽃 ${currentScore}개 추가 배치. ${rivalryLine} 같이 들어와서 우리 학교 밀어줘.`;
+        : `${schoolName} 방금 터치 벚꽃 연출로 ${currentScore}점 획득. ${rivalryLine} 같이 들어와서 우리 학교 밀어줘.`;
 
     try {
       if (navigator.share) {
@@ -354,38 +398,67 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[linear-gradient(180deg,#fff7fb_0%,#ffe7ef_48%,#ffd7e8_100%)] text-stone-900">
-      <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5">
-        <header className="grid grid-cols-3 gap-2 rounded-[1.75rem] border border-white/70 bg-white/45 p-3 backdrop-blur-sm sm:gap-3 sm:p-4">
-          <div className="rounded-2xl bg-white/65 px-3 py-3">
-            <p className="text-[11px] text-stone-500 sm:text-xs">남은 시간</p>
+    <main
+      className={`relative min-h-screen overflow-hidden ${
+        mode === "tap" ? "text-white" : "text-stone-900"
+      }`}
+    >
+      <div className={`relative z-10 mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5 ${mode === "tap" ? "text-white" : ""}`}>
+        <header
+          className={`grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border p-3 backdrop-blur-sm sm:gap-3 sm:p-4 ${
+            mode === "tap"
+              ? "border-white/15 bg-black/22"
+              : "border-white/70 bg-white/35"
+          }`}
+        >
+          <div className="px-3 py-3">
+            <p className={`text-[11px] font-medium sm:text-xs ${mode === "tap" ? "text-white/65" : "text-stone-500"}`}>남은 시간</p>
             <p className="mt-1 text-xl font-bold sm:text-3xl">{timeLeft}s</p>
+            <p className={`mt-2 text-[11px] sm:text-xs ${mode === "tap" ? "text-white/55" : "text-stone-500"}`}>{modeTitle}</p>
           </div>
-          <div className="rounded-2xl bg-white/65 px-3 py-3">
-            <p className="text-[11px] text-stone-500 sm:text-xs">현재 점수</p>
-            <p className="mt-1 text-xl font-bold sm:text-3xl">{currentScore}</p>
-            <p className="mt-1 text-[11px] text-stone-500 sm:text-xs">{modeTitle}</p>
+          <div className="px-3 py-3">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className={`text-[11px] font-medium sm:text-xs ${mode === "tap" ? "text-white/65" : "text-stone-500"}`}>현재 점수</p>
+                <p className="mt-1 text-xl font-bold sm:text-3xl">{currentScore}</p>
+              </div>
+              <span
+                className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
+                  mode === "tap"
+                    ? "bg-white/10 text-rose-100"
+                    : "bg-rose-100 text-rose-600"
+                }`}
+              >
+                {mode === "fall" ? "클래식" : "터치"}
+              </span>
+            </div>
+            <p className={`mt-3 text-[11px] leading-5 sm:text-xs ${mode === "tap" ? "text-white/55" : "text-stone-500"}`}>{modeGuide}</p>
           </div>
           <Link
             href={`/game/select?schoolId=${schoolId}`}
-            className="rounded-2xl bg-white/65 px-3 py-3 text-left"
+            className="flex items-center justify-end px-3 py-3 text-left"
           >
-            <p className="text-[11px] text-stone-500 sm:text-xs">다시 선택</p>
-            <p className="mt-1 text-lg font-bold sm:text-2xl">모드</p>
+            <div>
+              <p className={`text-[11px] font-medium sm:text-xs ${mode === "tap" ? "text-white/65" : "text-stone-500"}`}>다시 선택</p>
+              <p className="mt-1 text-lg font-bold sm:text-2xl">모드</p>
+            </div>
           </Link>
         </header>
 
-        <section className="relative flex flex-1 items-stretch justify-center py-4">
-          <div className="relative h-full min-h-[65vh] w-full overflow-hidden rounded-[2rem] border border-white/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.6),rgba(255,255,255,0.18))] shadow-[0_24px_80px_rgba(120,73,96,0.12)]">
+        <section className={`relative flex flex-1 flex-col items-stretch justify-center ${mode === "tap" ? "py-2" : "py-4"}`}>
+          <div
+            className={`relative h-full min-h-[65vh] w-full ${
+              mode === "tap"
+                ? ""
+                : "overflow-hidden rounded-[2.5rem] border border-white/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.6),rgba(255,255,255,0.18))] shadow-[0_24px_80px_rgba(120,73,96,0.12)]"
+            }`}
+          >
             <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-5 py-4">
               <div>
-                <p className="text-xs font-semibold tracking-[0.2em] text-rose-500">
-                  MINI GAME
-                </p>
+                <p className="text-xs font-semibold tracking-[0.2em] text-rose-500">MINI GAME</p>
                 <h1 className="mt-1 text-2xl font-bold">{schoolName} 벚꽃 붙이기</h1>
-                <p className="mt-2 text-sm text-stone-500">{modeGuide}</p>
               </div>
-              <p className="text-sm text-stone-500">
+              <p className={`text-sm ${mode === "tap" ? "text-white/70" : "text-stone-500"}`}>
                 {mode === "fall" ? `현재 점수 ${currentScore}점` : `배치 완료 ${placedPetals.length}개`}
               </p>
             </div>
@@ -448,15 +521,43 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
               <div
                 ref={boardRef}
                 onPointerDown={handleBoardClick}
-                className="absolute inset-x-4 top-24 bottom-4 overflow-hidden rounded-[2rem] border border-rose-100/60 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.88),rgba(255,255,255,0.26))]"
+                className="absolute inset-0"
               >
-                <TreeScene treeLevel={treeLevel} petals={combinedPetals} className="w-full max-w-[1040px]">
-                  <div className="absolute inset-x-0 bottom-0 h-[42%] bg-[linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,0.9))]" />
-                </TreeScene>
-
-                <div className="absolute inset-x-4 bottom-4 rounded-[1.75rem] border border-white/70 bg-white/70 px-4 py-3 text-sm text-stone-600 backdrop-blur-sm">
-                  현재 나무 모양과 이미 붙은 벚꽃을 보면서 원하는 가지를 눌러 배치하세요.
+                <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center">
+                  <div className="rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm">
+                    {schoolName} · {getTreeStage(currentSchool?.bloomRate ?? 0)}
+                  </div>
                 </div>
+                <div className="flex h-[calc(100vh-14rem)] min-h-[620px] w-full items-end justify-center">
+                  <TreeScene treeLevel={treeLevel} petals={combinedPetals} fillContainer className="min-h-full w-full" />
+                </div>
+                {tapBursts.map((petal) => (
+                  <span
+                    key={petal.id}
+                    className="pointer-events-none absolute z-30"
+                    style={{
+                      left: `${petal.xPercent}%`,
+                      top: `${petal.yPercent}%`,
+                    }}
+                  >
+                    <span
+                      className="absolute block text-[28px] tap-burst-petal"
+                      style={
+                        {
+                          animationDuration: `${petal.duration}ms`,
+                          "--tap-ring-x": `${petal.ringX}px`,
+                          "--tap-ring-y": `${petal.ringY}px`,
+                          "--tap-rise": `${petal.rise}px`,
+                          "--tap-drop": `${petal.drop}px`,
+                          "--tap-rotate-start": `${petal.rotationStart}deg`,
+                          "--tap-rotate-end": `${petal.rotationEnd}deg`,
+                        } as CSSProperties
+                      }
+                    >
+                      🌸
+                    </span>
+                  </span>
+                ))}
               </div>
             )}
 
@@ -514,6 +615,16 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
               </div>
             ) : null}
           </div>
+          {mode === "tap" ? (
+            <div className="mt-4 flex flex-col items-center gap-3 px-2">
+              <div className="rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
+                터치 성공 {placedPetals.length}회
+              </div>
+              <div className="mx-auto w-full max-w-3xl rounded-[1.75rem] border border-white/15 bg-black/30 px-4 py-3 text-sm text-white/80 backdrop-blur-sm">
+                누른 자리에서 벚꽃이 퍼졌다가 위로 뜬 뒤 아래로 떨어져요.
+              </div>
+            </div>
+          ) : null}
         </section>
       </div>
     </main>
