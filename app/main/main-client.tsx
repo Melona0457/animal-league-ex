@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import {
   getLevelLabel,
   getSchoolBackgroundImage,
-  getSchoolTreeImage,
+  getTreeImage,
   getTreeStage,
   type SchoolRecord,
 } from "../_lib/mock-data";
@@ -98,11 +98,11 @@ export function MainClient({ school, score }: MainClientProps) {
             <div
               className="flex h-[46vh] min-h-[300px] w-full items-end justify-center bg-contain bg-bottom bg-no-repeat"
               style={{
-                backgroundImage: `url('${getSchoolTreeImage(currentSchool.id, currentSchool.level)}')`,
+                backgroundImage: `url('${getTreeImage(currentSchool.level)}')`,
               }}
             >
               <div className="mb-6 rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
-                나무 이미지 슬롯: `/public${getSchoolTreeImage(currentSchool.id, currentSchool.level)}`
+                나무 이미지 슬롯: `/public${getTreeImage(currentSchool.level)}`
               </div>
             </div>
           </div>

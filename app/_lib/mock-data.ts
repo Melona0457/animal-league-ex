@@ -83,6 +83,10 @@ export function getSchoolBackgroundImage(schoolId: string) {
   return `/images/schools/${schoolId}/main-background.jpg`;
 }
 
-export function getSchoolTreeImage(schoolId: string, level: number) {
-  return `/images/schools/${schoolId}/tree-level-${level}.png`;
+export function getTreeImage(level: number) {
+  return `/images/trees/tree-level-${level}.png`;
+}
+
+export function getSchoolLogoImage(schoolId: string) {
+  return `/images/schools/${schoolId}/logo.avif`;
 }

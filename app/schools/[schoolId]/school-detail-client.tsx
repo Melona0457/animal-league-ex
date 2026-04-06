@@ -6,7 +6,7 @@ import {
   getDefaultSchoolRecords,
   getLevelLabel,
   getSchoolBackgroundImage,
-  getSchoolTreeImage,
+  getTreeImage,
   getTreeStage,
   type SchoolRecord,
 } from "../../_lib/mock-data";
@@ -101,11 +101,11 @@ export function SchoolDetailClient({
             <div
               className="flex h-[46vh] min-h-[300px] w-full items-end justify-center bg-contain bg-bottom bg-no-repeat"
               style={{
-                backgroundImage: `url('${getSchoolTreeImage(school.id, school.level)}')`,
+                backgroundImage: `url('${getTreeImage(school.level)}')`,
               }}
             >
               <div className="mb-6 rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
-                나무 이미지 슬롯: `/public${getSchoolTreeImage(school.id, school.level)}`
+                나무 이미지 슬롯: `/public${getTreeImage(school.level)}`
               </div>
             </div>
           </div>

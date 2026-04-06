@@ -207,3 +207,48 @@
 ### 이번 작업에서 수정한 내용
 - 기본 테스트 계정 학교를 숭실대(`school-044`)로 변경
 - 메인/게임/랭킹/학교상세의 fallback 학교를 숭실대로 변경
+
+## 2026-04-06 랭킹 이미지 슬롯 추가
+
+### 수정한 파일
+- `app/_lib/mock-data.ts`
+- `app/ranking/ranking-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 랭킹순 TOP3 단상에 학교별 나무 이미지 슬롯 추가
+- 랭킹순/가나다순 리스트에 학교 로고 이미지 슬롯 추가
+- 학교 로고 파일 경로 helper 추가
+
+### 이미지 파일 경로
+- 단상 나무 이미지: `/public/images/schools/{schoolId}/tree-level-{level}.png`
+- 리스트 로고 이미지: `/public/images/schools/{schoolId}/logo.avif`
+
+## 2026-04-06 공통 나무 이미지 구조 변경
+
+### 수정한 파일
+- `app/_lib/mock-data.ts`
+- `app/main/main-client.tsx`
+- `app/ranking/ranking-client.tsx`
+- `app/schools/[schoolId]/school-detail-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 학교별 나무 이미지 경로를 공통 레벨 이미지 경로로 변경
+- 메인 화면, 학교 상세 화면, 랭킹 TOP3 단상이 모두 같은 레벨 기준 나무를 사용하도록 정리
+- 학교별로 다른 비주얼은 로고와 배경만 남기고, 나무는 공통 자산으로 정리
+
+### 이미지 파일 경로
+- 공통 나무 이미지: `/public/images/trees/tree-level-{level}.png`
+- 학교별 로고 이미지: `/public/images/schools/{schoolId}/logo.avif`
+- 학교별 메인 배경 이미지: `/public/images/schools/{schoolId}/main-background.jpg`
+
+## 2026-04-06 로고 확장자 폴백 추가
+
+### 수정한 파일
+- `app/ranking/ranking-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 랭킹 리스트의 학교 로고가 `logo.avif`를 우선 시도하고, 없으면 `logo.webp`로 자동 폴백되도록 수정
+- 두 확장자 모두 없을 때만 기존 로고 자리 안내 텍스트가 보이도록 유지

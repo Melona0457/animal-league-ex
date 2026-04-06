@@ -2,13 +2,51 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getLevelLabel, type SchoolRecord } from "../_lib/mock-data";
+import {
+  getLevelLabel,
+  getTreeImage,
+  type SchoolRecord,
+} from "../_lib/mock-data";
 import { getStoredSchools } from "../_lib/school-state";
 
 type RankingClientProps = {
   currentSchoolId: string;
   sort: "rank" | "name";
 };
+
+function SchoolLogo({ schoolId, schoolName }: { schoolId: string; schoolName: string }) {
+  const [logoSrc, setLogoSrc] = useState(`/images/schools/${schoolId}/logo.avif`);
+  const [isMissing, setIsMissing] = useState(false);
+
+  function handleError() {
+    if (logoSrc.endsWith(".avif")) {
+      setLogoSrc(`/images/schools/${schoolId}/logo.webp`);
+      return;
+    }
+
+    setIsMissing(true);
+  }
+
+  return (
+    <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-stone-200 bg-stone-50">
+      {!isMissing ? (
+        <img
+          src={logoSrc}
+          alt={`${schoolName} 로고`}
+          className="h-full w-full object-contain"
+          onError={handleError}
+        />
+      ) : null}
+      <span
+        className={`rounded-full bg-white/90 px-2 py-1 text-[10px] text-stone-500 ${
+          isMissing ? "" : "absolute inset-auto"
+        }`}
+      >
+        로고
+      </span>
+    </div>
+  );
+}
 
 export function RankingClient({ currentSchoolId, sort }: RankingClientProps) {
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
@@ -103,10 +141,22 @@ export function RankingClient({ currentSchoolId, sort }: RankingClientProps) {
                   <Link
                     key={school.id}
                     href={`/schools/${school.id}?fromSchoolId=${currentSchoolId}`}
-                    className="flex min-w-24 flex-col items-center text-center"
+                    className="flex min-w-[104px] flex-col items-center text-center"
                   >
-                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full border border-stone-200 bg-rose-50 text-2xl">
-                      {school.rank === 1 ? "👑" : school.rank === 2 ? "🥈" : "🥉"}
+                    <div className="mb-3 flex flex-col items-center">
+                      <div className="mb-2 flex h-10 items-center justify-center text-2xl">
+                        {school.rank === 1 ? "👑" : school.rank === 2 ? "🥈" : "🥉"}
+                      </div>
+                      <div
+                        className="flex h-24 w-24 items-end justify-center rounded-[1.5rem] border border-stone-200 bg-rose-50 bg-contain bg-bottom bg-no-repeat"
+                        style={{
+                          backgroundImage: `url('${getTreeImage(school.level)}')`,
+                        }}
+                      >
+                        <span className="mb-2 rounded-full bg-white/85 px-2 py-1 text-[10px] text-stone-500">
+                          나무 이미지
+                        </span>
+                      </div>
                     </div>
                     <p className="mb-2 text-sm font-semibold">{school.name}</p>
                     <div className={`flex w-full items-center justify-center rounded-t-2xl px-3 text-lg font-bold ${heightClass}`}>
@@ -127,12 +177,15 @@ export function RankingClient({ currentSchoolId, sort }: RankingClientProps) {
                   href={`/schools/${school.id}?fromSchoolId=${currentSchoolId}`}
                   className="flex items-center justify-between gap-3 p-4"
                 >
-                  <div className="min-w-0">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <SchoolLogo schoolId={school.id} schoolName={school.name} />
+                    <div className="min-w-0">
                     <p className="text-sm text-stone-500">#{school.rank}</p>
                     <p className="truncate text-base font-semibold">{school.name}</p>
                     <p className="mt-1 text-sm text-stone-600">
                       {getLevelLabel(school.level)} / 개화율 {school.bloomRate}%
                     </p>
+                    </div>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-semibold text-stone-900">
