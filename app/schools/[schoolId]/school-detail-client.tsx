@@ -115,7 +115,7 @@ export function SchoolDetailClient({
     const nextPetals = Array.from({ length: count }, () => ({
       id: `shake-fall-${fallingPetalIdRef.current++}`,
       xPercent: 28 + Math.random() * 44,
-      yPercent: 6 + Math.random() * 10,
+      yPercent: 14 + Math.random() * 12,
       drift: -52 + Math.random() * 104,
       duration: 1100 + Math.floor(Math.random() * 700),
       rotationStart: -35 + Math.random() * 70,
@@ -311,7 +311,7 @@ export function SchoolDetailClient({
         return false;
       }
 
-      const bonusDamage = reducedScore * 3;
+      const bonusDamage = reducedScore;
       await applyShake(schoolId, bonusDamage);
       await createAttackLog({
         attackerSchoolId: fromSchoolId,
@@ -336,7 +336,7 @@ export function SchoolDetailClient({
         const applied = await applyShareBonusIfNeeded();
         setShareNotice(
           applied
-            ? `공유했고 추가 피해 ${shareBonusDamage || reducedScore * 3}점을 더 넣었어요.`
+            ? `공유했고 추가 피해 ${shareBonusDamage || reducedScore}점을 더 넣었어요.`
             : "공유창을 열었어요.",
         );
         return;
@@ -346,7 +346,7 @@ export function SchoolDetailClient({
       const applied = await applyShareBonusIfNeeded();
       setShareNotice(
         applied
-          ? `링크를 복사했고 추가 피해 ${shareBonusDamage || reducedScore * 3}점을 더 넣었어요.`
+          ? `링크를 복사했고 추가 피해 ${shareBonusDamage || reducedScore}점을 더 넣었어요.`
           : "공유 문구와 링크를 복사했어요.",
       );
     } catch {
@@ -370,15 +370,13 @@ export function SchoolDetailClient({
     : 0;
 
   return (
-    <main
-      className="min-h-screen bg-stone-900 px-4 py-5 text-white"
-      style={{
-        backgroundImage: `linear-gradient(180deg, rgba(34, 18, 26, 0.28), rgba(34, 18, 26, 0.72)), url('${getSchoolBackgroundImage(school.id)}')`,
-        backgroundPosition: "center",
-        backgroundSize: "cover",
-      }}
-    >
-      <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl flex-col">
+    <main className="relative min-h-screen overflow-hidden bg-stone-900 px-4 py-5 text-white">
+      <div
+        className="pointer-events-none absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-lg"
+        style={{ backgroundImage: `url('${getSchoolBackgroundImage(school.id)}')` }}
+      />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(24,10,18,0.34),rgba(24,10,18,0.76))]" />
+      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl flex-col">
         <header className="grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border border-white/15 bg-black/22 p-3 backdrop-blur-sm sm:gap-3 sm:p-4">
           <div className="flex flex-col justify-between px-3 py-3">
             <NearbySchoolRow school={previousSchool} gap={gapToPrevious} />
@@ -412,7 +410,7 @@ export function SchoolDetailClient({
               </div>
               <div className="mt-2 flex items-center justify-between text-[10px] text-white/65 sm:text-xs">
                 <span>{getLevelLabel(school.level)}</span>
-                <span>{school.level >= 5 ? "만개" : `LV.${school.level + 1}`}</span>
+                <span>{school.level >= 7 ? "만개" : `LV.${school.level + 1}`}</span>
               </div>
             </div>
           </div>
@@ -427,13 +425,13 @@ export function SchoolDetailClient({
           </Link>
         </header>
 
-        <section className="flex flex-1 flex-col justify-center py-4">
-          <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center">
-            <p className="mb-3 rounded-full bg-black/30 px-4 py-2 text-xs text-white/75 backdrop-blur-sm">
+        <section className="flex flex-1 flex-col py-2">
+          <div className="relative flex w-full flex-1 overflow-hidden rounded-[2rem]">
+            <p className="pointer-events-none absolute left-1/2 top-4 z-30 -translate-x-1/2 rounded-full bg-black/30 px-4 py-2 text-xs text-white/75 backdrop-blur-sm">
               {school.name} · {getTreeStage(school.bloomRate)}
             </p>
-            <div className="flex h-[calc(100vh-15rem)] min-h-[560px] w-full items-end justify-center">
-              <TreeScene treeLevel={school.level} petals={petals} className="w-full max-w-[1160px]">
+            <div className="flex h-[calc(100vh-14rem)] min-h-[620px] w-full items-end justify-center">
+              <TreeScene treeLevel={school.level} petals={petals} fillContainer className="min-h-full w-full">
                 {shakeMode === "countdown"
                   ? fallingPetals.map((petal) => (
                       <span
@@ -455,7 +453,7 @@ export function SchoolDetailClient({
                       </span>
                     ))
                   : null}
-                <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center">
+                <div className="pointer-events-none absolute inset-x-0 bottom-6 z-30 flex justify-center">
                   <div className="rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
                     현재 붙은 벚꽃 {petals.length}개
                   </div>

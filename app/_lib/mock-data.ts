@@ -14,17 +14,34 @@ export type SchoolRecord = {
 
 export const SCHOOLS: SchoolRecord[] = SCHOOL_CATALOG.map((school, index) => {
   const totalPetals = 9600 - index * 87;
-  const progressPercent = Math.max(12, Math.min(100, Math.floor(totalPetals / 100)));
   const level =
-    progressPercent >= 80
-      ? 5
-      : progressPercent >= 60
-        ? 4
-        : progressPercent >= 40
-          ? 3
-          : progressPercent >= 20
-            ? 2
-            : 1;
+    totalPetals >= 12000
+      ? 7
+      : totalPetals >= 4001
+        ? 6
+        : totalPetals >= 2001
+          ? 5
+          : totalPetals >= 1001
+            ? 4
+            : totalPetals >= 601
+              ? 3
+              : totalPetals >= 301
+                ? 2
+                : 1;
+  const progressPercent =
+    level >= 7
+      ? 100
+      : level === 6
+        ? Math.floor(((totalPetals - 4000) / 8000) * 100)
+        : level === 5
+          ? Math.floor(((totalPetals - 2000) / 2000) * 100)
+          : level === 4
+            ? Math.floor(((totalPetals - 1000) / 1000) * 100)
+            : level === 3
+              ? Math.floor(((totalPetals - 600) / 400) * 100)
+              : level === 2
+                ? Math.floor(((totalPetals - 300) / 300) * 100)
+                : Math.floor((totalPetals / 300) * 100);
 
   return {
     id: school.id,
@@ -60,18 +77,11 @@ export function getLevelLabel(level: number) {
 }
 
 export function getTreeStage(bloomRate: number) {
-  if (bloomRate >= 80) {
-    return "만개 직전";
-  }
-  if (bloomRate >= 60) {
-    return "벚꽃 풍성";
-  }
-  if (bloomRate >= 40) {
-    return "가지가 차오름";
-  }
-  if (bloomRate >= 20) {
-    return "꽃눈 생성";
-  }
+  if (bloomRate >= 100) return "만개";
+  if (bloomRate >= 80) return "절정 직전";
+  if (bloomRate >= 60) return "벚꽃 풍성";
+  if (bloomRate >= 40) return "가지가 차오름";
+  if (bloomRate >= 20) return "꽃눈 생성";
   return "새싹 단계";
 }
 
@@ -79,8 +89,9 @@ export function getLandingBackgroundImage() {
   return "/images/landing/hero-background.jpg";
 }
 
-export function getSchoolBackgroundImage(schoolId: string) {
-  return `/images/schools/${schoolId}/main-background.jpg`;
+export function getSchoolBackgroundImage(_schoolId: string) {
+  void _schoolId;
+  return "/images/backgrounds/main-background.png";
 }
 
 export function getTreeImage(level: number) {

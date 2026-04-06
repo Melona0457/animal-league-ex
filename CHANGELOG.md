@@ -752,6 +752,68 @@
 - 흔들기 결과 공유 함수에서 `school`이 아직 없는 경우를 안전하게 가드 처리
 - Vercel 빌드 시 발생하던 `'school' is possibly 'undefined'` 타입 에러를 해결
 
+## 2026-04-06 레벨 7단계와 점수 규칙 변경 반영
+
+### 수정한 파일
+- `app/_lib/school-state.ts`
+- `app/_lib/mock-data.ts`
+- `app/game/game-client.tsx`
+- `app/schools/[schoolId]/school-detail-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 나무 레벨 규칙을 5단계에서 7단계로 확장하고, 총 벚꽃 수 기준 새 구간값에 맞춰 레벨과 진행도 계산을 재정의
+- 학교 상태를 읽을 때 기존 DB에 저장된 예전 `level/progress_percent` 값 대신 `total_petals` 기준으로 다시 계산하도록 변경
+- 클래식 낙하형에서 벚꽃 클릭 점수를 `+1`에서 `+10`으로 상향
+- 결과 공유 보너스를 3배에서 2배로 조정해 벚꽃 붙이기와 흔들기 결과 화면 모두에 반영
+
+## 2026-04-06 메인과 다른 학교 화면 나무 배경화
+
+### 수정한 파일
+- `app/_components/tree-scene.tsx`
+- `app/main/main-client.tsx`
+- `app/schools/[schoolId]/school-detail-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 트리 장면 컴포넌트에 섹션 전체를 채우는 `fillContainer` 구조를 추가
+- 메인 화면과 다른 학교 상세 화면에서 나무 이미지를 중앙 오브젝트가 아니라 화면의 큰 배경처럼 보이도록 재구성
+- 나무는 잘리지 않도록 `contain`을 유지하면서, 정보 칩과 꽃잎 수 표시만 위에 오버레이 형태로 배치
+
+## 2026-04-06 나무 배경 빈 영역 제거 조정
+
+### 수정한 파일
+- `app/_components/tree-scene.tsx`
+- `app/main/main-client.tsx`
+- `app/schools/[schoolId]/school-detail-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 트리 장면 뒤에도 같은 나무 이미지를 채워 넣어 검붉은 바깥 배경이 드러나지 않도록 조정
+- 나무 상태 칩을 섹션 상단 오버레이로 옮겨 위쪽이 붕 떠 보이던 구조를 정리
+- 메인 화면과 다른 학교 상세 화면의 트리 영역 높이를 더 키워 이미지가 화면을 더 크게 차지하도록 개선
+
+## 2026-04-06 메인과 다른 학교 화면 트리 단일 배경화
+
+### 수정한 파일
+- `app/_components/tree-scene.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 메인 화면과 다른 학교 상세 화면에서 나무 이미지를 두 겹으로 깔던 구조를 제거
+- 트리 장면이 바디 영역 전체를 하나의 큰 배경 이미지처럼 채우도록 `fillContainer` 렌더링을 `cover + center` 기준으로 변경
+- 버튼, 상태 칩, 꽃잎 수 표시만 나무 배경 위에 오버레이되는 구조로 정리
+
+## 2026-04-06 나무 배경 잘림 방지 재조정
+
+### 수정한 파일
+- `app/_components/tree-scene.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 메인 화면과 다른 학교 화면의 트리 배경 렌더링을 다시 `contain` 기준으로 변경
+- 화면을 꽉 채우기보다 나무 이미지 전체가 잘리지 않고 온전히 보이도록 우선순위를 조정
+
 ## 2026-04-06 메인 상단 경쟁 학교 바로 이동 추가
 
 ### 수정한 파일
@@ -761,3 +823,64 @@
 ### 이번 작업에서 수정한 내용
 - 메인 화면 상단 좌측의 바로 위 학교/바로 아래 학교 카드 자체를 클릭 가능한 링크로 변경
 - 경쟁 학교를 누르면 해당 학교 상세 화면으로 바로 이동해 방해하러 가기 흐름을 더 빠르게 진입할 수 있도록 연결
+
+## 2026-04-06 메인과 다른 학교 화면 전체 블러 배경 추가
+
+### 수정한 파일
+- `app/main/main-client.tsx`
+- `app/schools/[schoolId]/school-detail-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 메인 화면과 다른 학교 상세 화면 전체 뒤배경에 학교별 이미지를 한 번 더 깔고 블러 처리한 레이어를 추가
+- 본문 카드와 트리 장면 뒤쪽이 단색으로 비어 보이지 않도록 페이지 전체 분위기를 이미지 중심으로 통일
+- 정보 영역과 버튼은 기존처럼 오버레이 형태를 유지하면서 가독성을 위한 어두운 그라데이션 마스크를 함께 적용
+
+## 2026-04-06 학교별 블러 배경 PNG 전환
+
+### 수정한 파일
+- `app/_lib/mock-data.ts`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 메인 화면과 다른 학교 상세 화면의 학교별 전체 뒤배경 이미지를 `.jpg` 대신 `.png` 기준으로 읽도록 변경
+- 학교별 배경 자산은 `public/images/schools/{schoolId}/main-background.png` 규칙으로 통일
+
+## 2026-04-06 공통 전체 배경 이미지 구조 정리
+
+### 생성한 파일
+- `public/images/backgrounds/.gitkeep`
+
+### 수정한 파일
+- `app/_lib/mock-data.ts`
+- `app/main/main-client.tsx`
+- `app/schools/[schoolId]/school-detail-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 메인 화면과 다른 학교 상세 화면 전체 뒤배경이 학교별 79장 대신 공통 이미지 1장을 사용하도록 변경
+- 공통 뒤배경 경로를 `public/images/backgrounds/main-background.png` 기준으로 정리
+- 전체 뒤배경 블러 강도를 `blur-xl`에서 `blur-lg`로 낮춰 배경 디테일이 조금 더 보이도록 조정
+
+## 2026-04-06 레벨 구간 및 공유 보너스 규칙 재조정
+
+### 수정한 파일
+- `app/_lib/mock-data.ts`
+- `app/_lib/school-state.ts`
+- `app/game/game-client.tsx`
+- `app/schools/[schoolId]/school-detail-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 나무 레벨 구간을 새 7단계 규칙에 맞게 다시 조정
+- 레벨 계산 공백이 생기지 않도록 `0~300 / 301~600 / 601~1000 / 1001~2000 / 2001~4000 / 4001~11999 / 12000+` 기준으로 연속 구간 처리
+- 결과 공유 보너스를 `2배 추가`에서 `1배 추가`로 낮춰 벚꽃 붙이기와 흔들기 결과 화면 모두에 반영
+
+## 2026-04-06 흔들기 벚꽃 낙하 시작 위치 조정
+
+### 수정한 파일
+- `app/schools/[schoolId]/school-detail-client.tsx`
+- `CHANGELOG.md`
+
+### 이번 작업에서 수정한 내용
+- 흔들기 사용 시 떨어지는 벚꽃 이모지의 시작 위치를 조금 더 아래로 내려 나무 중상단 부근에서 떨어지는 느낌이 더 자연스럽게 보이도록 조정
