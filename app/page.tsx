@@ -53,10 +53,6 @@ export default function Home() {
               우리 학교 벚꽃은 살리고, 남의 학교는 흔들고, 랭킹은 끝까지
               확인하게 되는 봄 시즌 대항전.
             </p>
-            <p className="mt-4 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs text-white/70">
-              인트로 영상 슬롯: <span>/public/videos/intro.mp4</span>
-            </p>
-
             <div className="mt-10 rounded-full border border-white/20 bg-white/10 px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(0,0,0,0.18)] backdrop-blur transition group-hover:scale-[1.02] sm:text-base">
               화면 아무 곳이나 눌러 입장하기
             </div>
