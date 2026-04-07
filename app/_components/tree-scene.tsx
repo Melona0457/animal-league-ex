@@ -12,6 +12,7 @@ type TreeSceneProps = {
   className?: string;
   fillContainer?: boolean;
   backgroundMode?: "contain" | "cover";
+  showPetals?: boolean;
 };
 
 export function TreeScene({
@@ -21,6 +22,7 @@ export function TreeScene({
   className = "",
   fillContainer = false,
   backgroundMode = "contain",
+  showPetals = true,
 }: TreeSceneProps) {
   return (
     <div
@@ -40,7 +42,7 @@ export function TreeScene({
         }`}
         style={{ backgroundImage: `url('${getTreeImage(treeLevel)}')` }}
       />
-      <PetalOverlay petals={petals} className={fillContainer ? "z-10" : "z-10"} />
+      {showPetals ? <PetalOverlay petals={petals} className="z-10" /> : null}
       {children}
     </div>
   );

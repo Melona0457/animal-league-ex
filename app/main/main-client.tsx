@@ -350,6 +350,7 @@ export function MainClient({ school, score }: MainClientProps) {
                 treeLevel={currentSchool.level}
                 petals={petals}
                 fillContainer
+                showPetals={false}
                 className="min-h-full w-full"
               >
                 <div className="pointer-events-none absolute inset-x-0 bottom-6 z-30 flex justify-center">
