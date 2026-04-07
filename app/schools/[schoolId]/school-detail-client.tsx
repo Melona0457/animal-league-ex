@@ -442,6 +442,7 @@ export function SchoolDetailClient({
                 petals={petals}
                 fillContainer
                 backgroundMode="cover"
+                showPetals={false}
                 className="min-h-full w-full"
               >
                 {shakeMode === "countdown"
