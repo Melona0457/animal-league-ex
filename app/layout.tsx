@@ -13,6 +13,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="h-full antialiased">
+      <head>
+        <link rel="preload" as="video" href="/videos/game-modes/classic-fall.mp4" />
+        <link rel="preload" as="video" href="/videos/game-modes/tap-bloom.mp4" />
+      </head>
       <body className="min-h-full">
         <div className="app-global-background" aria-hidden="true" />
         <div className="app-global-background-overlay" aria-hidden="true" />
