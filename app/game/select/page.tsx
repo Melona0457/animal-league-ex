@@ -10,7 +10,7 @@ type GameSelectPageProps = {
 const COPY = {
   titleSuffix: " \ubc9a\uaf43 \ubd99\uc774\uae30",
   startMode: "\uc774 \ubaa8\ub4dc\ub85c \uc2dc\uc791\ud558\uae30",
-  backToMainShort: "\uba54\uc778\uc73c\ub85c",
+  backToMainShort: "\ub4a4\ub85c\uac00\uae30",
 };
 
 const GAME_MODES = [
@@ -49,18 +49,9 @@ export default async function GameSelectPage({
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,rgba(255,244,248,0.26),rgba(255,247,250,0.14)_28%,rgba(255,255,255,0)_58%)] px-4 py-5 text-stone-900">
+    <main className="h-screen overflow-hidden bg-[radial-gradient(circle_at_top,rgba(255,244,248,0.26),rgba(255,247,250,0.14)_28%,rgba(255,255,255,0)_58%)] px-4 py-5 text-stone-900">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,245,248,0.12),rgba(255,255,255,0.02)_36%,rgba(255,241,246,0.1)_100%)]" />
-      <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-4 pt-10 sm:pt-12">
-        <div className="flex justify-center">
-          <Link
-            href={`/main?schoolId=${school.id}`}
-            className="inline-flex items-center justify-center rounded-full border border-white/80 bg-white/78 px-4 py-2 text-sm font-semibold text-stone-600 shadow-[0_10px_24px_rgba(120,73,96,0.08)] backdrop-blur-sm transition-colors duration-200 hover:bg-white/88"
-          >
-            {COPY.backToMainShort}
-          </Link>
-        </div>
-
+      <div className="relative mx-auto flex h-full w-full max-w-6xl flex-col gap-4 overflow-hidden pt-9 sm:pt-11">
         <header className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/55 p-5 shadow-[0_18px_50px_rgba(120,73,96,0.08)] backdrop-blur-md sm:p-7">
           <div className="absolute inset-x-0 top-0 h-1.5 bg-[linear-gradient(90deg,rgba(251,113,133,0.9),rgba(255,255,255,0.92),rgba(253,186,116,0.9),rgba(255,255,255,0.92),rgba(244,114,182,0.9))]" />
           <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-rose-200/45 blur-3xl" />
@@ -150,6 +141,13 @@ export default async function GameSelectPage({
             </article>
           ))}
         </section>
+
+        <Link
+          href={`/main?schoolId=${school.id}`}
+          className="mt-1 block rounded-[1.6rem] border border-white/80 bg-white/78 px-4 py-4 text-center text-sm font-semibold text-stone-700 shadow-[0_12px_28px_rgba(120,73,96,0.08)] backdrop-blur-sm transition-colors duration-200 hover:bg-white/88"
+        >
+          {COPY.backToMainShort}
+        </Link>
 
       </div>
     </main>
