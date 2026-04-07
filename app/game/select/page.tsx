@@ -10,14 +10,16 @@ type GameSelectPageProps = {
 const GAME_MODES = [
   {
     id: "fall",
-    title: "클래식 낙하형",
-    description: "위에서 떨어지는 벚꽃과 벌레를 빠르게 눌러 점수를 쌓는 기존 방식이에요.",
+    title: "벚꽃 받아내기",
+    description:
+      "이리저리 움직이는 벌들을 피해 위에서 떨어지는 벚꽃을 클릭해 점수를 쌓아보세요.",
     video: "/videos/game-modes/classic-fall.mp4",
   },
   {
     id: "tap",
     title: "터치로 바로 붙이기",
-    description: "현재 나무와 기존 꽃잎을 보면서 원하는 위치를 톡 누르면 그 자리에 바로 붙어요.",
+    description:
+      "원하는 자리를 톡톡 눌러 벚꽃을 직접 붙여보세요. 많이 붙일수록 점수가 올라가고, 나무도 더 풍성해져요.",
     video: "/videos/game-modes/tap-bloom.mp4",
   },
 ];
@@ -43,7 +45,7 @@ export default async function GameSelectPage({
           </p>
           <h1 className="mt-3 text-3xl font-bold">{school.name} 벚꽃 붙이기 선택</h1>
           <p className="mt-3 text-sm leading-6 text-stone-600">
-            벚꽃을 붙이는 방식을 먼저 고르고, 선택한 방식으로 바로 미니게임에 들어가요.
+            오늘은 어떤 방식으로 벚꽃을 붙여볼까요? 손맛 좋은 낙하형으로 갈지, 원하는 자리에 직접 붙일지 골라보세요.
           </p>
         </header>
 
