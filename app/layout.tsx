@@ -16,6 +16,7 @@ export default function RootLayout({
       <head>
         <link rel="preload" as="video" href="/videos/game-modes/classic-fall.mp4" />
         <link rel="preload" as="video" href="/videos/game-modes/tap-bloom.mp4" />
+        <link rel="preload" as="video" href="/videos/game-modes/prototype1.mp4" />
       </head>
       <body className="min-h-full">
         <div className="app-global-background" aria-hidden="true" />

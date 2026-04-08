@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BackgroundVideoWarmup } from "../_components/background-video-warmup";
 import { TreeScene } from "../_components/tree-scene";
 import {
   formatAttackTime,
@@ -24,6 +25,12 @@ type MainClientProps = {
   school: SchoolRecord;
   score: number;
 };
+
+const MAIN_PAGE_WARMUP_VIDEOS = [
+  "/videos/game-modes/classic-fall.mp4",
+  "/videos/game-modes/tap-bloom.mp4",
+  "/videos/game-modes/prototype1.mp4",
+] as const;
 
 function getAttackAlertStorageKey(schoolId: string) {
   return `blossom-save:attack-alert-dismissed:${schoolId}`;
@@ -206,6 +213,7 @@ export function MainClient({ school, score }: MainClientProps) {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-stone-900 px-4 py-5 text-white">
+      <BackgroundVideoWarmup sources={MAIN_PAGE_WARMUP_VIDEOS} />
       <div
         className="pointer-events-none absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-lg"
         style={{ backgroundImage: `url('${getSchoolBackgroundImage(currentSchool.id)}')` }}
