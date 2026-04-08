@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -45,6 +46,9 @@ const PETAL_SPAWN_INTERVAL = 0.22;
 const BEE_WIDTH = 0.072;
 const BEE_HEIGHT = 0.045;
 const BEE_SPAWN_INTERVAL = 1.1;
+const PROTOTYPE_ONE_PETAL_IMAGE = "/images/game/prototype1/petal.png";
+const PROTOTYPE_ONE_BEE_IMAGE = "/images/game/prototype1/bee.png";
+const PROTOTYPE_ONE_TREE_IMAGE = "/images/game/prototype1/tree.png";
 
 const INITIAL_PLAYER: PlayerState = {
   x: 0.5,
@@ -219,7 +223,7 @@ export function PrototypeOneGameClient({
       const toPlayerX = playerTargetX - spawnX;
       const toPlayerY = playerTargetY - spawnY;
       const length = Math.hypot(toPlayerX, toPlayerY) || 1;
-      const beeSpeed = 0.34 + Math.random() * 0.18;
+      const beeSpeed = 0.42 + Math.random() * 0.22;
 
       const bee: FlyingBee = {
         id: nextBeeIdRef.current++,
@@ -485,13 +489,16 @@ export function PrototypeOneGameClient({
               <div className="absolute inset-0 opacity-20 [background-size:14px_14px] [background-image:linear-gradient(to_right,rgba(255,255,255,0.28)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.26)_1px,transparent_1px)]" />
             </div>
 
-            <div className="pointer-events-none absolute left-1/2 top-[14%] h-[56%] w-[50%] -translate-x-1/2">
-              <div className="absolute bottom-[6%] left-1/2 h-[46%] w-[18%] -translate-x-1/2 border-[5px] border-[#5f311f] bg-[#8e4f2b]" />
-              <div className="absolute bottom-[36%] left-[12%] h-[12%] w-[24%] border-[4px] border-[#5f311f] bg-[#8e4f2b]" />
-              <div className="absolute bottom-[42%] right-[12%] h-[11%] w-[22%] border-[4px] border-[#5f311f] bg-[#8e4f2b]" />
-              <div className="absolute left-1/2 top-0 h-[64%] w-full -translate-x-1/2 border-[6px] border-[#b8527f] bg-[#f9b0cf]" />
-              <div className="absolute left-[6%] top-[10%] h-[26%] w-[24%] border-[5px] border-[#b8527f] bg-[#ffc0dc]" />
-              <div className="absolute right-[5%] top-[13%] h-[24%] w-[24%] border-[5px] border-[#b8527f] bg-[#ffc0dc]" />
+            <div className="pointer-events-none absolute left-1/2 top-[0%] h-[84%] w-[94%] -translate-x-1/2">
+              <Image
+                src={PROTOTYPE_ONE_TREE_IMAGE}
+                alt=""
+                fill
+                unoptimized
+                sizes="(max-width: 768px) 98vw, 78vw"
+                draggable={false}
+                className="object-contain [image-rendering:pixelated]"
+              />
             </div>
 
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[22%] border-t-[6px] border-[#295529] bg-[repeating-linear-gradient(90deg,#4fa24b_0px,#4fa24b_20px,#4aa046_20px,#4aa046_40px)]" />
@@ -508,7 +515,15 @@ export function PrototypeOneGameClient({
                   transform: `translate(-50%, 50%) rotate(${petal.rotation}deg)`,
                 }}
               >
-                <div className="h-full w-full border-2 border-[#c2507f] bg-[#ffd0e6]" />
+                <Image
+                  src={PROTOTYPE_ONE_PETAL_IMAGE}
+                  alt=""
+                  fill
+                  unoptimized
+                  sizes="(max-width: 768px) 28px, 40px"
+                  draggable={false}
+                  className="object-contain [image-rendering:pixelated]"
+                />
               </div>
             ))}
 
@@ -523,12 +538,15 @@ export function PrototypeOneGameClient({
                   height: `${BEE_HEIGHT * 100}%`,
                 }}
               >
-                <div className="relative h-full w-full border-2 border-black bg-[#ffd447]">
-                  <span className="absolute inset-y-0 left-[30%] w-[2px] bg-black" />
-                  <span className="absolute inset-y-0 left-[54%] w-[2px] bg-black" />
-                  <span className="absolute -top-[34%] left-[10%] h-[38%] w-[36%] border-2 border-[#6ed8ff] bg-[#c7f2ff]" />
-                  <span className="absolute -top-[34%] right-[10%] h-[38%] w-[36%] border-2 border-[#6ed8ff] bg-[#c7f2ff]" />
-                </div>
+                <Image
+                  src={PROTOTYPE_ONE_BEE_IMAGE}
+                  alt=""
+                  fill
+                  unoptimized
+                  sizes="(max-width: 768px) 52px, 72px"
+                  draggable={false}
+                  className="object-contain [image-rendering:pixelated]"
+                />
               </div>
             ))}
 

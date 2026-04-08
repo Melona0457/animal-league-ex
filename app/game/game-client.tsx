@@ -371,6 +371,15 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
     setShareNotice("");
   }
 
+  function handleCloseGame() {
+    router.push(`/game/select?schoolId=${schoolId}`);
+  }
+
+  function handleHudPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   const currentScore = mode === "fall" ? fallScore : placedPetals.length;
   const currentSchool = schools.find((item) => item.id === schoolId) ?? null;
   const currentSchoolIndex = schools.findIndex((item) => item.id === schoolId);
@@ -477,7 +486,8 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
                       <button
                         type="button"
                         aria-label="close"
-                        className="flex h-8 w-8 items-center justify-center rounded-md border border-rose-200/90 bg-rose-300 text-white shadow-[0_4px_12px_rgba(244,114,182,0.18)]"
+                        onClick={handleCloseGame}
+                        className="flex h-8 w-8 items-center justify-center rounded-md border border-rose-200/90 bg-rose-300 text-white shadow-[0_4px_12px_rgba(244,114,182,0.18)] transition-colors duration-150 hover:bg-rose-400 active:bg-rose-500"
                       >
                         <span className="text-sm font-bold leading-none">×</span>
                       </button>
@@ -520,7 +530,8 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
                     <button
                       type="button"
                       aria-label="close"
-                      className="flex h-8 w-8 items-center justify-center rounded-md border border-rose-200/90 bg-rose-300 text-white shadow-[0_4px_12px_rgba(244,114,182,0.18)]"
+                      onClick={handleCloseGame}
+                      className="flex h-8 w-8 items-center justify-center rounded-md border border-rose-200/90 bg-rose-300 text-white shadow-[0_4px_12px_rgba(244,114,182,0.18)] transition-colors duration-150 hover:bg-rose-400 active:bg-rose-500"
                     >
                       <span className="text-sm font-bold leading-none">×</span>
                     </button>
@@ -530,8 +541,11 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
             )}
 
             {mode === "fall" ? (
-              <div className="absolute inset-x-4 bottom-4 top-20 overflow-hidden rounded-[1.7rem] border border-white/60 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.9),rgba(255,255,255,0.24))] sm:inset-x-5 sm:bottom-5 sm:top-[88px]">
-                <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-4 sm:px-6">
+              <div className="absolute inset-x-4 bottom-4 top-20 overflow-hidden rounded-[1.7rem] border border-white/60 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.9),rgba(255,255,255,0.24))] select-none touch-none sm:inset-x-5 sm:bottom-5 sm:top-[88px]">
+                <div
+                  onPointerDown={handleHudPointerDown}
+                  className="absolute inset-x-0 top-0 z-20 flex select-none items-center justify-between px-5 py-4 sm:px-6"
+                >
                   <div className="text-stone-900">
                     <p className="text-2xl font-black sm:text-3xl">
                       {timeLeft}
@@ -556,6 +570,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
                     type="button"
                     onClick={() => handleFallingItemClick(item)}
                     disabled={isFinished}
+                    draggable={false}
                     className={`falling-item absolute left-0 top-0 z-10 flex items-center justify-center rounded-full border text-base font-semibold shadow-lg ${
                       item.type === "petal"
                         ? "border-rose-200 bg-rose-50 text-rose-700"
@@ -613,9 +628,18 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
               <div
                 ref={boardRef}
                 onPointerDown={handleBoardClick}
-                className="absolute inset-x-4 bottom-4 top-20 overflow-hidden rounded-[1.7rem] border border-white/50 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.82),rgba(255,255,255,0.18))] touch-none sm:inset-x-5 sm:bottom-5 sm:top-[88px]"
+                className="absolute inset-x-4 bottom-4 top-20 overflow-hidden rounded-[1.7rem] select-none touch-none sm:inset-x-5 sm:bottom-5 sm:top-[88px]"
               >
-                <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-7 py-4 sm:px-9">
+                <TreeScene
+                  treeLevel={treeLevel}
+                  petals={combinedPetals}
+                  fillContainer
+                  className="h-full w-full overflow-hidden rounded-[1.7rem]"
+                />
+                <div
+                  onPointerDown={handleHudPointerDown}
+                  className="absolute inset-x-0 top-0 z-20 flex select-none items-center justify-between px-7 py-4 sm:px-9"
+                >
                   <div className="text-stone-900">
                     <p className="text-[11px] font-semibold tracking-[0.2em] text-stone-500 sm:text-xs">남은 시간</p>
                     <p className="mt-1 text-2xl font-black sm:text-3xl">
@@ -632,50 +656,6 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
                   </div>
                 </div>
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0.85),rgba(255,255,255,0))]" />
-                <div className="absolute inset-x-4 top-24 bottom-10 sm:inset-x-8 sm:top-28 sm:bottom-12">
-                  <div className="h-full w-full overflow-hidden rounded-[2rem] border border-stone-900/85 bg-[#fff8fc] shadow-[0_24px_60px_rgba(120,73,96,0.18)]">
-                    <div className="flex h-12 items-center justify-between border-b border-rose-100/80 bg-[linear-gradient(180deg,#fff7fb,#ffe8f2)] px-4 sm:h-14 sm:px-5">
-                      <div className="w-[76px]" />
-                      <p className="text-[11px] font-semibold tracking-[0.16em] text-rose-400 sm:text-xs">
-                        preview.png
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          aria-label="preview-minimize"
-                          className="flex h-8 w-8 items-center justify-center rounded-md border border-white/90 bg-white text-stone-500 shadow-[0_4px_12px_rgba(202,88,135,0.18)]"
-                        >
-                          <span className="block h-[2px] w-3 rounded-full bg-stone-400" />
-                        </button>
-                        <button
-                          type="button"
-                          aria-label="preview-maximize"
-                          className="flex h-8 w-8 items-center justify-center rounded-md border border-white/90 bg-white text-stone-500 shadow-[0_4px_12px_rgba(202,88,135,0.18)]"
-                        >
-                          <span className="relative block h-3.5 w-3.5">
-                            <span className="absolute right-0 top-0 h-3 w-3 rounded-[2px] border border-stone-400 bg-white" />
-                            <span className="absolute bottom-0 left-0 h-3 w-3 rounded-[2px] border border-stone-400 bg-white" />
-                          </span>
-                        </button>
-                        <button
-                          type="button"
-                          aria-label="preview-close"
-                          className="flex h-8 w-8 items-center justify-center rounded-md border border-rose-200/90 bg-rose-300 text-white shadow-[0_4px_12px_rgba(244,114,182,0.18)]"
-                        >
-                          <span className="text-sm font-bold leading-none">×</span>
-                        </button>
-                      </div>
-                    </div>
-                    <div className="h-[calc(100%-3rem)] bg-[linear-gradient(180deg,#fffafc,#ffeef6)] p-3 sm:h-[calc(100%-3.5rem)] sm:p-4">
-                      <TreeScene
-                        treeLevel={treeLevel}
-                        petals={combinedPetals}
-                        fillContainer
-                        className="h-full w-full overflow-hidden rounded-[1.35rem] border border-rose-200/80 bg-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.7)]"
-                      />
-                    </div>
-                  </div>
-                </div>
                 <div className="absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,rgba(214,162,177,0),rgba(151,99,125,0.22))]" />
                 {tapBursts.map((petal) => (
                   <span
