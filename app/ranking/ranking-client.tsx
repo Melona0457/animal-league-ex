@@ -14,6 +14,11 @@ type RankingClientProps = {
   sort: "rank" | "name";
 };
 
+type RankDelta = {
+  label: string;
+  className: string;
+};
+
 function SchoolLogo({
   schoolId,
   schoolName,
@@ -21,36 +26,34 @@ function SchoolLogo({
   schoolId: string;
   schoolName: string;
 }) {
-  const [logoSrc, setLogoSrc] = useState(getSchoolLogoImage(schoolId));
-  const [isMissing, setIsMissing] = useState(false);
-
-  useEffect(() => {
-    setLogoSrc(getSchoolLogoImage(schoolId));
-    setIsMissing(false);
-  }, [schoolId]);
+  const [variant, setVariant] = useState<"avif" | "webp" | "missing">("avif");
+  const logoSrc =
+    variant === "avif"
+      ? getSchoolLogoImage(schoolId)
+      : `/images/schools/${schoolId}/logo.webp`;
 
   function handleError() {
-    if (logoSrc.endsWith(".avif")) {
-      setLogoSrc(`/images/schools/${schoolId}/logo.webp`);
+    if (variant === "avif") {
+      setVariant("webp");
       return;
     }
 
-    setIsMissing(true);
+    setVariant("missing");
   }
 
   return (
     <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-stone-200 bg-stone-50">
-      {!isMissing ? (
+      {variant !== "missing" ? (
         <img
           src={logoSrc}
-          alt={`${schoolName} 로고`}
+          alt={`${schoolName} logo`}
           className="h-full w-full object-contain"
           onError={handleError}
         />
       ) : null}
-      {isMissing ? (
+      {variant === "missing" ? (
         <span className="rounded-full bg-white/90 px-2 py-1 text-[10px] text-stone-500">
-          로고
+          logo
         </span>
       ) : null}
     </div>
@@ -75,11 +78,49 @@ function getPodiumNameOffset(rank: number) {
   return "-mb-8";
 }
 
+function getMobilePodiumHeightClass(rank: number) {
+  if (rank === 1) return "h-36";
+  if (rank === 2) return "h-28";
+  return "h-24";
+}
+
+function getDesktopPodiumHeightClass(rank: number) {
+  if (rank === 1) {
+    return "sm:h-48 sm:border sm:border-rose-200 sm:bg-gradient-to-b sm:from-rose-200 sm:via-rose-300 sm:to-rose-400 sm:text-white sm:shadow-[0_14px_24px_rgba(214,121,149,0.2)]";
+  }
+
+  if (rank === 2) {
+    return "sm:h-34 sm:border sm:border-rose-100 sm:bg-gradient-to-b sm:from-white sm:via-rose-100 sm:to-rose-200 sm:text-rose-900 sm:shadow-[0_12px_22px_rgba(219,176,190,0.16)]";
+  }
+
+  return "sm:h-22 sm:border sm:border-rose-100 sm:bg-gradient-to-b sm:from-white sm:via-rose-50 sm:to-rose-100 sm:text-rose-800 sm:shadow-[0_10px_18px_rgba(221,193,202,0.14)]";
+}
+
 function getRankTextClass(rank: number) {
   if (rank === 1) return "text-rose-500";
   if (rank === 2) return "text-rose-400";
   if (rank === 3) return "text-rose-300";
   return "text-stone-500";
+}
+
+function getRankDelta(previousRank: number | undefined, currentRank: number): RankDelta | null {
+  if (previousRank === undefined || previousRank === currentRank) {
+    return null;
+  }
+
+  const difference = previousRank - currentRank;
+
+  if (difference > 0) {
+    return {
+      label: `▲ ${difference}`,
+      className: "text-rose-500",
+    };
+  }
+
+  return {
+    label: `▼ ${Math.abs(difference)}`,
+    className: "text-sky-500",
+  };
 }
 
 function normalizeSchoolName(name: string) {
@@ -112,24 +153,54 @@ function getSchoolNavigationHref(schoolId: string, currentSchoolId: string) {
     : `/schools/${schoolId}?fromSchoolId=${currentSchoolId}`;
 }
 
+function getRankSnapshotStorageKey() {
+  return "blossom-save:ranking-last-ranks";
+}
+
 export function RankingClient({
   currentSchoolId,
   sort,
 }: RankingClientProps) {
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
+  const [previousRanks, setPreviousRanks] = useState<Record<string, number>>({});
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSearchSchoolId, setSelectedSearchSchoolId] = useState<
-    string | null
-  >(null);
-
+  const [selectedSearchSchoolId, setSelectedSearchSchoolId] = useState<string | null>(null);
   useEffect(() => {
     let isActive = true;
 
     async function loadSchools() {
       const storedSchools = await getStoredSchools();
 
-      if (isActive) {
-        setSchools(storedSchools);
+      if (!isActive) {
+        return;
+      }
+
+      const currentSnapshot = Object.fromEntries(
+        storedSchools.map((school) => [school.id, school.rank]),
+      );
+
+      let fallbackSnapshot: Record<string, number> = {};
+
+      if (typeof window !== "undefined") {
+        const saved = window.localStorage.getItem(getRankSnapshotStorageKey());
+
+        if (saved) {
+          try {
+            fallbackSnapshot = JSON.parse(saved) as Record<string, number>;
+          } catch {
+            fallbackSnapshot = {};
+          }
+        }
+      }
+
+      setPreviousRanks(fallbackSnapshot);
+      setSchools(storedSchools);
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          getRankSnapshotStorageKey(),
+          JSON.stringify(currentSnapshot),
+        );
       }
     }
 
@@ -139,12 +210,6 @@ export function RankingClient({
       isActive = false;
     };
   }, []);
-
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSelectedSearchSchoolId(null);
-    }
-  }, [searchQuery]);
 
   const sortedSchools =
     sort === "name"
@@ -184,7 +249,7 @@ export function RankingClient({
                 <span>학교 벚꽃 랭킹</span>
               </h1>
               <p className="mt-3 text-sm leading-6 text-stone-600">
-                벚꽃 튀기는 전쟁은 이미 시작됐어요. 다른 학교 개화 상황도 한눈에 확인해보세요!
+                지금 가장 빠르게 개화 중인 학교들을 확인하고, 다른 학교 현황도 둘러보세요.
               </p>
             </div>
             <Link
@@ -202,74 +267,79 @@ export function RankingClient({
               <span aria-hidden="true">🔥</span>
               <span>실시간 TOP 3 대학</span>
               <span className="ml-2 text-xs font-medium text-stone-500">
-                지금 가장 앞서 있는 대학들이에요.
+                지금 가장 앞서고 있는 학교들이에요
               </span>
             </div>
           </div>
-          <div className="mt-20 flex items-end justify-center gap-8 overflow-x-auto pb-2">
-            {[podiumSchools[1], podiumSchools[0], podiumSchools[2]].map(
-              (school) => {
-                if (!school) {
-                  return null;
-                }
+          <div className="mt-12 flex items-end justify-center gap-2 overflow-hidden pb-2 sm:mt-20 sm:gap-8 sm:overflow-x-auto">
+            {[podiumSchools[1], podiumSchools[0], podiumSchools[2]].map((school) => {
+              if (!school) {
+                return null;
+              }
 
-                const heightClass =
-                  school.rank === 1
-                    ? "h-48 border border-rose-200 bg-gradient-to-b from-rose-200 via-rose-300 to-rose-400 text-white shadow-[0_14px_24px_rgba(214,121,149,0.2)]"
-                    : school.rank === 2
-                      ? "h-34 border border-rose-100 bg-gradient-to-b from-white via-rose-100 to-rose-200 text-rose-900 shadow-[0_12px_22px_rgba(219,176,190,0.16)]"
-                      : "h-22 border border-rose-100 bg-gradient-to-b from-white via-rose-50 to-rose-100 text-rose-800 shadow-[0_10px_18px_rgba(221,193,202,0.14)]";
+              const heightClass = `${getMobilePodiumHeightClass(school.rank)} border bg-gradient-to-b text-rose-900 shadow-[0_10px_18px_rgba(221,193,202,0.14)] ${
+                school.rank === 1
+                  ? "border-rose-200 from-rose-200 via-rose-300 to-rose-400 text-white shadow-[0_14px_24px_rgba(214,121,149,0.2)]"
+                  : school.rank === 2
+                    ? "border-rose-100 from-white via-rose-100 to-rose-200"
+                    : "border-rose-100 from-white via-rose-50 to-rose-100 text-rose-800"
+              } ${getDesktopPodiumHeightClass(school.rank)}`;
 
-                return (
-                  <Link
-                    key={school.id}
-                    href={getSchoolNavigationHref(school.id, currentSchoolId)}
-                    className="flex min-w-[148px] flex-col items-center text-center"
-                  >
-                    <div
-                      className={`${getPodiumTreeOffset(school.rank)} relative flex flex-col items-center`}
-                    >
-                      {school.rank === 1 ? (
-                        <div
-                          className="mb-1 text-[22px] drop-shadow-[0_3px_6px_rgba(176,122,23,0.28)]"
-                          aria-hidden="true"
-                        >
-                          👑
-                        </div>
-                      ) : null}
+              return (
+                <Link
+                  key={school.id}
+                  href={getSchoolNavigationHref(school.id, currentSchoolId)}
+                  className={`flex flex-1 flex-col items-center text-center sm:flex-none ${
+                    school.rank === 1
+                      ? "max-w-[132px] sm:min-w-[148px] sm:max-w-none"
+                      : "max-w-[104px] sm:min-w-[148px] sm:max-w-none"
+                  }`}
+                >
+                  <div className={`${getPodiumTreeOffset(school.rank)} relative flex flex-col items-center`}>
+                    {school.rank === 1 ? (
                       <div
-                        className={`relative ${getPodiumNameOffset(school.rank)}`}
+                        className="mb-1 text-[22px] drop-shadow-[0_3px_6px_rgba(176,122,23,0.28)]"
+                        aria-hidden="true"
                       >
-                        {school.rank === 1 ? (
-                          <>
-                            <div className="pointer-events-none absolute inset-x-[-12px] top-1/2 h-8 -translate-y-1/2 rounded-full bg-gradient-to-r from-amber-200/0 via-amber-200/45 to-amber-200/0 blur-md" />
-                            <div className="pointer-events-none absolute -left-4 top-1/2 -translate-y-1/2 text-[11px] text-amber-500">
-                              ✦
-                            </div>
-                            <div className="pointer-events-none absolute -right-4 top-1/2 -translate-y-1/2 text-[11px] text-amber-500">
-                              ✦
-                            </div>
-                          </>
-                        ) : null}
-                        <p className="relative z-10 text-sm font-semibold">
-                          {school.name}
-                        </p>
+                        👑
                       </div>
-                      <img
-                        src={getPodiumTreeImage(school.rank)}
-                        alt={`${school.rank}위 벚꽃나무`}
-                        className="relative z-10 h-48 w-auto object-contain"
-                      />
+                    ) : null}
+                    <div className={`relative ${getPodiumNameOffset(school.rank)}`}>
+                      {school.rank === 1 ? (
+                        <>
+                          <div className="pointer-events-none absolute inset-x-[-12px] top-1/2 h-8 -translate-y-1/2 rounded-full bg-gradient-to-r from-amber-200/0 via-amber-200/45 to-amber-200/0 blur-md" />
+                          <div className="pointer-events-none absolute -left-4 top-1/2 -translate-y-1/2 text-[11px] text-amber-500">
+                            ✦
+                          </div>
+                          <div className="pointer-events-none absolute -right-4 top-1/2 -translate-y-1/2 text-[11px] text-amber-500">
+                            ✦
+                          </div>
+                        </>
+                      ) : null}
+                      <p className="relative z-10 line-clamp-2 px-1 text-[11px] font-semibold leading-4 sm:px-0 sm:text-sm sm:leading-5">
+                        {school.name}
+                      </p>
                     </div>
-                    <div
-                      className={`-mt-4 flex w-full items-center justify-center rounded-t-[1.5rem] px-3 text-lg font-bold backdrop-blur-[1px] ${heightClass}`}
-                    >
-                      {school.rank}위
-                    </div>
-                  </Link>
-                );
-              },
-            )}
+                    <img
+                      src={getPodiumTreeImage(school.rank)}
+                      alt={`${school.rank}위 벚꽃나무`}
+                      className={`relative z-10 w-auto object-contain ${
+                        school.rank === 1
+                          ? "h-32 sm:h-48"
+                          : school.rank === 2
+                            ? "h-28 sm:h-48"
+                            : "h-26 sm:h-48"
+                      }`}
+                    />
+                  </div>
+                  <div
+                    className={`-mt-3 flex w-full items-center justify-center rounded-t-[1.25rem] px-2 text-base font-bold backdrop-blur-[1px] sm:-mt-4 sm:rounded-t-[1.5rem] sm:px-3 sm:text-lg ${heightClass}`}
+                  >
+                    {school.rank}위
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </section>
 
@@ -285,8 +355,11 @@ export function RankingClient({
               <div className="rounded-[1.2rem] border border-stone-200 bg-white px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
                 <input
                   value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="어느 대학으로 가볼까요?"
+                  onChange={(event) => {
+                    setSearchQuery(event.target.value);
+                    setSelectedSearchSchoolId(null);
+                  }}
+                  placeholder="어느 학교부터 가볼까요?"
                   className="w-full bg-transparent text-sm text-stone-900 outline-none placeholder:text-stone-400"
                 />
               </div>
@@ -302,8 +375,7 @@ export function RankingClient({
                 {matchedSchools.length > 0 ? (
                   <ul className="space-y-2">
                     {matchedSchools.map((school) => {
-                      const isSelected =
-                        selectedSearchSchool?.id === school.id;
+                      const isSelected = selectedSearchSchool?.id === school.id;
 
                       return (
                         <li key={school.id}>
@@ -334,7 +406,7 @@ export function RankingClient({
                   </ul>
                 ) : (
                   <div className="rounded-[1.2rem] border border-dashed border-stone-200 bg-white/70 px-4 py-6 text-sm text-stone-500">
-                    검색된 학교가 없어요. 학교명 일부만 입력해도 다시 찾아볼 수 있어요.
+                    검색한 학교가 없어요. 학교명을 조금만 다르게 입력해 다시 찾아보세요.
                   </div>
                 )}
               </div>
@@ -347,6 +419,7 @@ export function RankingClient({
                   <div className="mt-3">
                     <div className="flex items-center gap-4">
                       <SchoolLogo
+                        key={selectedSearchSchool.id}
                         schoolId={selectedSearchSchool.id}
                         schoolName={selectedSearchSchool.name}
                       />
@@ -361,25 +434,19 @@ export function RankingClient({
                     </div>
                     <div className="mt-4 grid grid-cols-3 gap-2">
                       <div className="rounded-[1.1rem] bg-rose-50 px-3 py-3 text-center">
-                        <p className="text-xs font-medium text-rose-500">
-                          개화율
-                        </p>
+                        <p className="text-xs font-medium text-rose-500">개화율</p>
                         <p className="mt-1 text-lg font-bold text-stone-900">
                           {selectedSearchSchool.bloomRate}%
                         </p>
                       </div>
                       <div className="rounded-[1.1rem] bg-sky-50 px-3 py-3 text-center">
-                        <p className="text-xs font-medium text-sky-600">
-                          레벨
-                        </p>
+                        <p className="text-xs font-medium text-sky-600">레벨</p>
                         <p className="mt-1 text-lg font-bold text-stone-900">
                           {getLevelLabel(selectedSearchSchool.level)}
                         </p>
                       </div>
                       <div className="rounded-[1.1rem] bg-amber-50 px-3 py-3 text-center">
-                        <p className="text-xs font-medium text-amber-600">
-                          벚꽃
-                        </p>
+                        <p className="text-xs font-medium text-amber-600">벚꽃</p>
                         <p className="mt-1 text-lg font-bold text-stone-900">
                           {selectedSearchSchool.totalPetals.toLocaleString()}
                         </p>
@@ -397,7 +464,7 @@ export function RankingClient({
                   </div>
                 ) : (
                   <div className="mt-3 rounded-[1.2rem] border border-dashed border-stone-200 bg-stone-50 px-4 py-8 text-sm text-stone-500">
-                    검색 결과를 선택하면 이곳에 학교 미니 정보창이 나타나요.
+                    검색 결과를 선택하면 학교 정보가 여기 표시됩니다.
                   </div>
                 )}
               </div>
@@ -409,7 +476,7 @@ export function RankingClient({
           <div className="flex items-center justify-between gap-4 border-b border-rose-100 bg-rose-50/80 px-5 py-4">
             <p className="text-sm font-medium text-rose-700">
               <span aria-hidden="true" className="mr-1">📢</span>
-              방해하고 싶은 대학을 클릭하면 그 대학의 나무를 흔들 수 있어요.
+              학교를 클릭하면 해당 학교 나무 화면으로 이동할 수 있어요.
             </p>
             <div className="flex shrink-0 gap-2">
               <Link
@@ -435,37 +502,54 @@ export function RankingClient({
             </div>
           </div>
           <ul className="divide-y divide-stone-200">
-            {sortedSchools.map((school) => (
-              <li key={school.id}>
-                <Link
-                  href={getSchoolNavigationHref(school.id, currentSchoolId)}
-                  className="flex items-center justify-between gap-3 px-5 py-4 transition hover:bg-rose-50/70"
-                >
-                  <div className="flex min-w-0 items-center gap-4">
-                    <SchoolLogo schoolId={school.id} schoolName={school.name} />
-                    <div className="min-w-0">
-                      <p
-                        className={`text-sm font-semibold ${getRankTextClass(school.rank)}`}
-                      >
-                        {school.rank}위
-                      </p>
-                      <p className="truncate text-base font-semibold">
-                        {school.name}
-                      </p>
-                      <p className="mt-1 text-sm text-stone-600">
-                        {getLevelLabel(school.level)} / 개화율 {school.bloomRate}%
-                      </p>
+            {sortedSchools.map((school) => {
+              const rankDelta = getRankDelta(previousRanks[school.id], school.rank);
+
+              return (
+                <li key={school.id}>
+                  <Link
+                    href={getSchoolNavigationHref(school.id, currentSchoolId)}
+                    className="flex items-center justify-between gap-3 px-5 py-4 transition hover:bg-rose-50/70"
+                  >
+                    <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                      <div className="w-9 shrink-0 text-center">
+                        <p className={`text-sm font-semibold ${getRankTextClass(school.rank)}`}>
+                          {school.rank}위
+                        </p>
+                      </div>
+                      <div className="w-11 shrink-0 text-center">
+                        {rankDelta ? (
+                          <p className={`text-xs font-bold ${rankDelta.className}`}>
+                            {rankDelta.label}
+                          </p>
+                        ) : (
+                          <p className="text-xs font-medium text-stone-300">-</p>
+                        )}
+                      </div>
+                      <SchoolLogo
+                        key={school.id}
+                        schoolId={school.id}
+                        schoolName={school.name}
+                      />
+                      <div className="min-w-0 self-center">
+                        <p className="truncate text-base font-semibold">
+                          {school.name}
+                        </p>
+                        <p className="mt-1 text-sm text-stone-600">
+                          {getLevelLabel(school.level)} / 개화율 {school.bloomRate}%
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-stone-900">
-                      벚꽃 {school.totalPetals.toLocaleString()}개
-                    </p>
-                    <p className="text-xs text-stone-500">상세 보기</p>
-                  </div>
-                </Link>
-              </li>
-            ))}
+                    <div className="shrink-0 self-center text-right">
+                      <p className="text-sm font-semibold text-stone-900">
+                        벚꽃 {school.totalPetals.toLocaleString()}개
+                      </p>
+                      <p className="text-xs text-stone-500">상세 보기</p>
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </section>
       </div>
