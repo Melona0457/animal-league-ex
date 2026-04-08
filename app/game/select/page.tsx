@@ -44,7 +44,8 @@ const GAME_MODES = [
     accent: "from-sky-300 via-cyan-200 to-lime-200",
     frame: "from-sky-900/90 via-emerald-950/80 to-sky-900/90",
     glow: "shadow-[0_24px_60px_rgba(56,120,146,0.22)]",
-    preview: "pixel",
+    preview: "video",
+    video: "/videos/game-modes/prototype1.mp4",
   },
 ] as const;
 
