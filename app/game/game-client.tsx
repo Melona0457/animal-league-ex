@@ -1,6 +1,5 @@
-"use client";
+﻿"use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   type CSSProperties,
@@ -19,7 +18,6 @@ import {
 } from "../_lib/petal-state";
 import { applyGameScore, getStoredSchools } from "../_lib/school-state";
 import {
-  getTreeStage,
   type SchoolRecord,
 } from "../_lib/mock-data";
 
@@ -127,7 +125,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
 
     void (async () => {
       const [petals, storedSchools] = await Promise.all([
-        getPetalsBySchoolId(schoolId),
+        mode === "fall" ? getPetalsBySchoolId(schoolId) : Promise.resolve([] as PetalPlacement[]),
         getStoredSchools(),
       ]);
 
@@ -140,7 +138,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
     return () => {
       isActive = false;
     };
-  }, [schoolId]);
+  }, [mode, schoolId]);
 
   useEffect(() => {
     if (isFinished) {
@@ -242,7 +240,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
   );
 
   const combinedPetals = useMemo(
-    () => (mode === "tap" ? existingPetals : [...existingPetals, ...savedPetalPreview]),
+    () => (mode === "tap" ? savedPetalPreview : [...existingPetals, ...savedPetalPreview]),
     [existingPetals, mode, savedPetalPreview],
   );
 
@@ -379,16 +377,6 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
   const previousSchool =
     currentSchoolIndex > 0 ? schools[currentSchoolIndex - 1] : null;
 
-  const modeTitle =
-    mode === "fall"
-      ? "클래식 낙하형"
-      : "터치로 바로 붙이기";
-
-  const modeGuide =
-    mode === "fall"
-      ? "위에서 떨어지는 벚꽃은 잡고 벌레는 피하면서 점수를 모으세요."
-      : "메인 화면처럼 보이는 나무 위를 터치하면 벚꽃이 퍼졌다가 떨어지며 점수가 올라가요.";
-
   const resultTitle = mode === "fall" ? "벚꽃 캐치 종료" : "벚꽃 톡톡 종료";
   const finalAppliedScore = currentScore + shareBonus;
 
@@ -441,49 +429,16 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
         mode === "tap" ? "text-white" : "text-stone-900"
       }`}
     >
-      <div className={`relative z-10 mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5 ${mode === "tap" ? "text-white" : ""}`}>
-        {mode === "tap" ? (
-          <header
-            className={`grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border p-3 backdrop-blur-sm sm:gap-3 sm:p-4 ${
-              mode === "tap"
-                ? "border-white/15 bg-black/22"
-                : "border-white/70 bg-white/35"
-            }`}
-          >
-            <div className="px-3 py-3">
-              <p className={`text-[11px] font-medium sm:text-xs ${mode === "tap" ? "text-white/65" : "text-stone-500"}`}>남은 시간</p>
-              <p className="mt-1 text-xl font-bold sm:text-3xl">{timeLeft}s</p>
-              <p className={`mt-2 text-[11px] sm:text-xs ${mode === "tap" ? "text-white/55" : "text-stone-500"}`}>{modeTitle}</p>
-            </div>
-            <div className="px-3 py-3">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className={`text-[11px] font-medium sm:text-xs ${mode === "tap" ? "text-white/65" : "text-stone-500"}`}>현재 점수</p>
-                  <p className="mt-1 text-xl font-bold sm:text-3xl">{currentScore}</p>
-                </div>
-                <span className="rounded-full bg-white/10 px-2 py-1 text-[11px] font-semibold text-rose-100">
-                  터치
-                </span>
-              </div>
-              <p className={`mt-3 text-[11px] leading-5 sm:text-xs ${mode === "tap" ? "text-white/55" : "text-stone-500"}`}>{modeGuide}</p>
-            </div>
-            <Link
-              href={`/game/select?schoolId=${schoolId}`}
-              className="flex items-center justify-end px-3 py-3 text-left"
-            >
-              <div>
-                <p className={`text-[11px] font-medium sm:text-xs ${mode === "tap" ? "text-white/65" : "text-stone-500"}`}>다시 선택</p>
-                <p className="mt-1 text-lg font-bold sm:text-2xl">모드</p>
-              </div>
-            </Link>
-          </header>
-        ) : null}
-
+      <div
+        className={`relative z-10 mx-auto flex min-h-screen w-full flex-col px-4 py-5 ${
+          mode === "tap" ? "max-w-[84rem] text-white" : "max-w-5xl"
+        }`}
+      >
         <section className={`relative flex flex-1 flex-col items-stretch justify-center ${mode === "tap" ? "py-2" : "py-8 sm:py-10"}`}>
           <div
             className={`relative h-full min-h-[65vh] w-full ${
               mode === "tap"
-                ? ""
+                ? "mt-4 min-h-[82vh] overflow-hidden rounded-[2rem] border border-white/40 bg-[linear-gradient(180deg,rgba(255,255,255,0.2),rgba(255,255,255,0.08))] shadow-[0_24px_80px_rgba(120,73,96,0.18)] sm:mt-6 sm:min-h-[88vh]"
                 : "mt-4 min-h-[74vh] overflow-hidden rounded-[2rem] border border-white/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.24))] shadow-[0_24px_80px_rgba(120,73,96,0.12)] sm:mt-6 sm:min-h-[78vh]"
             }`}
           >
@@ -532,14 +487,45 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
 
               </>
             ) : (
-              <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-5 py-4">
-                <div>
-                  <p className="text-xs font-semibold tracking-[0.2em] text-rose-500">MINI GAME</p>
-                  <h1 className="mt-1 text-2xl font-bold">{schoolName} 벚꽃 붙이기</h1>
+              <div className="absolute inset-x-0 top-0 z-20 flex h-16 items-center border-b border-rose-200/70 bg-[linear-gradient(180deg,#ffe6f2,#ffbfd8)] px-4 sm:h-[68px] sm:px-5">
+                <div className="flex w-full items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-full border border-white/80 bg-white/82 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-rose-600 shadow-[0_6px_18px_rgba(202,88,135,0.18)]">
+                      BLOSSOM TAP
+                    </div>
+                    <div className="hidden translate-y-1 items-center gap-1.5 sm:flex">
+                      <span className="h-1.5 w-1.5 rounded-full bg-white/95" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-rose-300/95" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-pink-400/95" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      aria-label="minimize"
+                      className="flex h-8 w-8 items-center justify-center rounded-md border border-white/90 bg-white text-stone-500 shadow-[0_4px_12px_rgba(202,88,135,0.18)]"
+                    >
+                      <span className="block h-[2px] w-3 rounded-full bg-stone-400" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="maximize"
+                      className="flex h-8 w-8 items-center justify-center rounded-md border border-white/90 bg-white text-stone-500 shadow-[0_4px_12px_rgba(202,88,135,0.18)]"
+                    >
+                      <span className="relative block h-3.5 w-3.5">
+                        <span className="absolute right-0 top-0 h-3 w-3 rounded-[2px] border border-stone-400 bg-white" />
+                        <span className="absolute bottom-0 left-0 h-3 w-3 rounded-[2px] border border-stone-400 bg-white" />
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="close"
+                      className="flex h-8 w-8 items-center justify-center rounded-md border border-rose-200/90 bg-rose-300 text-white shadow-[0_4px_12px_rgba(244,114,182,0.18)]"
+                    >
+                      <span className="text-sm font-bold leading-none">×</span>
+                    </button>
+                  </div>
                 </div>
-                <p className={`text-sm ${mode === "tap" ? "text-white/70" : "text-stone-500"}`}>
-                  {`배치 완료 ${placedPetals.length}개`}
-                </p>
               </div>
             )}
 
@@ -627,16 +613,70 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
               <div
                 ref={boardRef}
                 onPointerDown={handleBoardClick}
-                className="absolute inset-0"
+                className="absolute inset-x-4 bottom-4 top-20 overflow-hidden rounded-[1.7rem] border border-white/50 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.82),rgba(255,255,255,0.18))] touch-none sm:inset-x-5 sm:bottom-5 sm:top-[88px]"
               >
-                <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center">
-                  <div className="rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm">
-                    {schoolName} · {getTreeStage(currentSchool?.bloomRate ?? 0)}
+                <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-7 py-4 sm:px-9">
+                  <div className="text-stone-900">
+                    <p className="text-[11px] font-semibold tracking-[0.2em] text-stone-500 sm:text-xs">남은 시간</p>
+                    <p className="mt-1 text-2xl font-black sm:text-3xl">
+                      {timeLeft}
+                      <span className="ml-1.5 text-base font-bold text-rose-500 sm:text-lg">초</span>
+                    </p>
+                  </div>
+                  <div className="text-right text-stone-900">
+                    <p className="text-[11px] font-semibold tracking-[0.2em] text-stone-500 sm:text-xs">현재 점수</p>
+                    <p className="mt-1 text-2xl font-black sm:text-3xl">
+                      {currentScore}
+                      <span className="ml-1.5 text-base font-bold text-rose-500 sm:text-lg">점</span>
+                    </p>
                   </div>
                 </div>
-                <div className="flex h-[calc(100vh-14rem)] min-h-[620px] w-full items-end justify-center">
-                  <TreeScene treeLevel={treeLevel} petals={combinedPetals} fillContainer className="min-h-full w-full" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0.85),rgba(255,255,255,0))]" />
+                <div className="absolute inset-x-4 top-24 bottom-10 sm:inset-x-8 sm:top-28 sm:bottom-12">
+                  <div className="h-full w-full overflow-hidden rounded-[2rem] border border-stone-900/85 bg-[#fff8fc] shadow-[0_24px_60px_rgba(120,73,96,0.18)]">
+                    <div className="flex h-12 items-center justify-between border-b border-rose-100/80 bg-[linear-gradient(180deg,#fff7fb,#ffe8f2)] px-4 sm:h-14 sm:px-5">
+                      <div className="w-[76px]" />
+                      <p className="text-[11px] font-semibold tracking-[0.16em] text-rose-400 sm:text-xs">
+                        preview.png
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          aria-label="preview-minimize"
+                          className="flex h-8 w-8 items-center justify-center rounded-md border border-white/90 bg-white text-stone-500 shadow-[0_4px_12px_rgba(202,88,135,0.18)]"
+                        >
+                          <span className="block h-[2px] w-3 rounded-full bg-stone-400" />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="preview-maximize"
+                          className="flex h-8 w-8 items-center justify-center rounded-md border border-white/90 bg-white text-stone-500 shadow-[0_4px_12px_rgba(202,88,135,0.18)]"
+                        >
+                          <span className="relative block h-3.5 w-3.5">
+                            <span className="absolute right-0 top-0 h-3 w-3 rounded-[2px] border border-stone-400 bg-white" />
+                            <span className="absolute bottom-0 left-0 h-3 w-3 rounded-[2px] border border-stone-400 bg-white" />
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="preview-close"
+                          className="flex h-8 w-8 items-center justify-center rounded-md border border-rose-200/90 bg-rose-300 text-white shadow-[0_4px_12px_rgba(244,114,182,0.18)]"
+                        >
+                          <span className="text-sm font-bold leading-none">×</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="h-[calc(100%-3rem)] bg-[linear-gradient(180deg,#fffafc,#ffeef6)] p-3 sm:h-[calc(100%-3.5rem)] sm:p-4">
+                      <TreeScene
+                        treeLevel={treeLevel}
+                        petals={combinedPetals}
+                        fillContainer
+                        className="h-full w-full overflow-hidden rounded-[1.35rem] border border-rose-200/80 bg-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.7)]"
+                      />
+                    </div>
+                  </div>
                 </div>
+                <div className="absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,rgba(214,162,177,0),rgba(151,99,125,0.22))]" />
                 {tapBursts.map((petal) => (
                   <span
                     key={petal.id}
@@ -660,7 +700,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
                         } as CSSProperties
                       }
                     >
-                      🌸
+                      💮
                     </span>
                   </span>
                 ))}
@@ -725,16 +765,6 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
               </div>
             ) : null}
           </div>
-          {mode === "tap" ? (
-            <div className="mt-4 flex flex-col items-center gap-3 px-2">
-              <div className="rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
-                터치 성공 {placedPetals.length}회
-              </div>
-              <div className="mx-auto w-full max-w-3xl rounded-[1.75rem] border border-white/15 bg-black/30 px-4 py-3 text-sm text-white/80 backdrop-blur-sm">
-                누른 자리에서 벚꽃이 퍼졌다가 위로 뜬 뒤 아래로 떨어져요.
-              </div>
-            </div>
-          ) : null}
         </section>
       </div>
     </main>
