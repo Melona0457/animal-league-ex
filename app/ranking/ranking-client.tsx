@@ -408,7 +408,8 @@ export function RankingClient({
         <section className="overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_18px_40px_rgba(36,15,26,0.06)]">
           <div className="flex items-center justify-between gap-4 border-b border-rose-100 bg-rose-50/80 px-5 py-4">
             <p className="text-sm font-medium text-rose-700">
-              📢 방해하고 싶은 대학을 클릭하면 그 대학의 나무를 흔들 수 있어요.
+              <span aria-hidden="true" className="mr-1">📢</span>
+              방해하고 싶은 대학을 클릭하면 그 대학의 나무를 흔들 수 있어요.
             </p>
             <div className="flex shrink-0 gap-2">
               <Link
