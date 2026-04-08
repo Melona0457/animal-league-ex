@@ -22,6 +22,7 @@ const GAME_MODES = [
     accent: "from-rose-300 via-pink-200 to-amber-100",
     frame: "from-stone-900/90 via-rose-950/80 to-stone-900/90",
     glow: "shadow-[0_24px_60px_rgba(120,45,78,0.22)]",
+    preview: "video",
     video: "/videos/game-modes/classic-fall.mp4",
   },
   {
@@ -32,7 +33,18 @@ const GAME_MODES = [
     accent: "from-amber-200 via-rose-100 to-fuchsia-200",
     frame: "from-stone-900/90 via-fuchsia-950/75 to-stone-900/90",
     glow: "shadow-[0_24px_60px_rgba(143,76,111,0.2)]",
+    preview: "video",
     video: "/videos/game-modes/tap-bloom.mp4",
+  },
+  {
+    id: "prototype1",
+    title: "Prototype1",
+    description:
+      "\ub3c4\ud2b8 \uac10\uc131 2D \ud14c\uc2a4\ud2b8 \ubaa8\ub4dc\ub85c, A/D(\ub610\ub294 \u2190/\u2192)\ub85c \uc774\ub3d9\ud558\uace0 Space\ub85c \uc810\ud504\ud558\uba70 \ubc9a\uaf43\uc740 +10\uc810, \ubc8c\uc740 -2\uc810\uc774\uc5d0\uc694.",
+    accent: "from-sky-300 via-cyan-200 to-lime-200",
+    frame: "from-sky-900/90 via-emerald-950/80 to-sky-900/90",
+    glow: "shadow-[0_24px_60px_rgba(56,120,146,0.22)]",
+    preview: "pixel",
   },
 ] as const;
 
@@ -49,9 +61,9 @@ export default async function GameSelectPage({
   }
 
   return (
-    <main className="h-screen overflow-hidden bg-[radial-gradient(circle_at_top,rgba(255,244,248,0.26),rgba(255,247,250,0.14)_28%,rgba(255,255,255,0)_58%)] px-4 py-5 text-stone-900">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,244,248,0.26),rgba(255,247,250,0.14)_28%,rgba(255,255,255,0)_58%)] px-4 py-5 text-stone-900">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,245,248,0.12),rgba(255,255,255,0.02)_36%,rgba(255,241,246,0.1)_100%)]" />
-      <div className="relative mx-auto flex h-full w-full max-w-6xl flex-col gap-4 overflow-hidden pt-9 sm:pt-11">
+      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-4 pt-9 pb-8 sm:pt-11 sm:pb-10">
         <header className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/55 p-5 shadow-[0_18px_50px_rgba(120,73,96,0.08)] backdrop-blur-md sm:p-7">
           <div className="absolute inset-x-0 top-0 h-1.5 bg-[linear-gradient(90deg,rgba(251,113,133,0.9),rgba(255,255,255,0.92),rgba(253,186,116,0.9),rgba(255,255,255,0.92),rgba(244,114,182,0.9))]" />
           <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-rose-200/45 blur-3xl" />
@@ -112,16 +124,27 @@ export default async function GameSelectPage({
                   className={`relative overflow-hidden rounded-[1.6rem] border border-white/35 bg-gradient-to-br ${mode.frame} p-2`}
                 >
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18),transparent_36%,rgba(0,0,0,0.24)_100%)]" />
-                  <video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="auto"
-                    className="relative aspect-[16/10] w-full rounded-[1.1rem] object-cover"
-                  >
-                    <source src={mode.video} type="video/mp4" />
-                  </video>
+                  {mode.preview === "video" ? (
+                    <video
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      preload="auto"
+                      className="relative aspect-[16/10] w-full rounded-[1.1rem] object-cover"
+                    >
+                      <source src={mode.video} type="video/mp4" />
+                    </video>
+                  ) : (
+                    <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[1.1rem] border border-white/25 bg-[linear-gradient(180deg,#59a8f6_0%,#8dd0ff_52%,#58a14f_52%,#4a8e42_100%)] [image-rendering:pixelated]">
+                      <div className="absolute inset-0 opacity-20 [background-size:12px_12px] [background-image:linear-gradient(to_right,rgba(255,255,255,0.28)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.26)_1px,transparent_1px)]" />
+                      <div className="absolute left-1/2 bottom-[30%] h-[45%] w-[34%] -translate-x-1/2">
+                        <div className="absolute bottom-0 left-1/2 h-[42%] w-[18%] -translate-x-1/2 border-[4px] border-[#5f311f] bg-[#8e4f2b]" />
+                        <div className="absolute left-1/2 top-0 h-[62%] w-full -translate-x-1/2 border-[5px] border-[#b8527f] bg-[#f8b5d3]" />
+                      </div>
+                      <div className="absolute bottom-[10%] right-[24%] h-[16%] w-[10%] border-[4px] border-[#6f3f1e] bg-[#f4b355]" />
+                    </div>
+                  )}
 
                 </div>
 
