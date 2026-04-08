@@ -205,6 +205,8 @@ img {
 
 .falling-item {
   will-change: transform, opacity;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 @keyframes petal-float {
@@ -286,6 +288,8 @@ img {
 .tap-burst-petal {
   animation: tap-burst-petal linear forwards;
   will-change: transform, opacity;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 @keyframes shake-falling-petal {
