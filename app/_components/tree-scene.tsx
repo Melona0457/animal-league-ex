@@ -11,6 +11,8 @@ type TreeSceneProps = {
   children?: ReactNode;
   className?: string;
   fillContainer?: boolean;
+  backgroundMode?: "contain" | "cover";
+  showPetals?: boolean;
 };
 
 export function TreeScene({
@@ -19,6 +21,8 @@ export function TreeScene({
   children,
   className = "",
   fillContainer = false,
+  backgroundMode = "contain",
+  showPetals = true,
 }: TreeSceneProps) {
   return (
     <div
@@ -30,11 +34,15 @@ export function TreeScene({
     >
       <div
         className={`absolute inset-0 bg-no-repeat ${
-          fillContainer ? "bg-contain bg-center" : "bg-contain bg-bottom"
+          fillContainer
+            ? backgroundMode === "cover"
+              ? "bg-cover bg-center"
+              : "bg-contain bg-center"
+            : "bg-contain bg-bottom"
         }`}
         style={{ backgroundImage: `url('${getTreeImage(treeLevel)}')` }}
       />
-      <PetalOverlay petals={petals} className={fillContainer ? "z-10" : "z-10"} />
+      {showPetals ? <PetalOverlay petals={petals} className="z-10" /> : null}
       {children}
     </div>
   );

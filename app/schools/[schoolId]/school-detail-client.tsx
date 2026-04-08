@@ -83,6 +83,7 @@ export function SchoolDetailClient({
   fromSchoolId,
   shakenCount,
 }: SchoolDetailClientProps) {
+  const isOwnSchool = schoolId === fromSchoolId;
   const fallingPetalIdRef = useRef(0);
   const [petals, setPetals] = useState<PetalPlacement[]>([]);
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
@@ -277,6 +278,10 @@ export function SchoolDetailClient({
   }, [fromSchoolId, shakeMode, shakeSeconds, schoolId, shakeCount]);
 
   function handleShakeStart() {
+    if (isOwnSchool) {
+      return;
+    }
+
     setShakeCount(0);
     setDroppedCount(0);
     setReducedScore(0);
@@ -370,14 +375,14 @@ export function SchoolDetailClient({
     : 0;
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-stone-900 px-4 py-5 text-white">
+    <main className="relative min-h-screen overflow-hidden bg-stone-900 text-white">
       <div
         className="pointer-events-none absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-lg"
         style={{ backgroundImage: `url('${getSchoolBackgroundImage(school.id)}')` }}
       />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(24,10,18,0.34),rgba(24,10,18,0.76))]" />
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl flex-col">
-        <header className="grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border border-white/15 bg-black/22 p-3 backdrop-blur-sm sm:gap-3 sm:p-4">
+      <div className="relative z-10 flex min-h-screen w-full flex-col">
+        <header className={`absolute inset-x-4 top-5 z-30 grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border border-white/15 bg-black/22 p-3 backdrop-blur-sm transition-opacity sm:inset-x-5 sm:gap-3 sm:p-4 ${shakeMode === "countdown" ? "opacity-0" : "opacity-100"}`}>
           <div className="flex flex-col justify-between px-3 py-3">
             <NearbySchoolRow school={previousSchool} gap={gapToPrevious} />
             <div className="py-3 text-center">
@@ -389,6 +394,9 @@ export function SchoolDetailClient({
           <div className="px-3 py-3">
             <div className="flex items-start justify-between gap-2">
               <div>
+                <p className="text-xs font-semibold tracking-[0.2em] text-rose-300">
+                  {school.name} · {getTreeStage(school.bloomRate)}
+                </p>
                 <p className="text-[11px] font-medium text-white/65 sm:text-xs">레벨</p>
                 <p className="mt-1 text-base font-bold sm:text-2xl">
                   {getLevelLabel(school.level)}
@@ -425,13 +433,18 @@ export function SchoolDetailClient({
           </Link>
         </header>
 
-        <section className="flex flex-1 flex-col py-2">
-          <div className="relative flex w-full flex-1 overflow-hidden rounded-[2rem]">
-            <p className="pointer-events-none absolute left-1/2 top-4 z-30 -translate-x-1/2 rounded-full bg-black/30 px-4 py-2 text-xs text-white/75 backdrop-blur-sm">
-              {school.name} · {getTreeStage(school.bloomRate)}
-            </p>
-            <div className="flex h-[calc(100vh-14rem)] min-h-[620px] w-full items-end justify-center">
-              <TreeScene treeLevel={school.level} petals={petals} fillContainer className="min-h-full w-full">
+        <section className="relative flex min-h-screen w-full flex-1 flex-col">
+          <div className="relative flex min-h-screen w-full flex-1 overflow-hidden">
+            <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(0,0,0,0.18),rgba(0,0,0,0.04)_30%,rgba(0,0,0,0.22)_100%)]" />
+            <div className="flex h-screen min-h-screen w-full items-end justify-center">
+              <TreeScene
+                treeLevel={school.level}
+                petals={petals}
+                fillContainer
+                backgroundMode="cover"
+                showPetals={false}
+                className="min-h-full w-full"
+              >
                 {shakeMode === "countdown"
                   ? fallingPetals.map((petal) => (
                       <span
@@ -453,34 +466,35 @@ export function SchoolDetailClient({
                       </span>
                     ))
                   : null}
-                <div className="pointer-events-none absolute inset-x-0 bottom-6 z-30 flex justify-center">
-                  <div className="rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
-                    현재 붙은 벚꽃 {petals.length}개
+              </TreeScene>
+              <div className={`absolute inset-x-0 bottom-0 z-30 px-4 pb-4 transition-opacity sm:px-5 ${shakeMode === "countdown" ? "opacity-0" : "opacity-100"}`}>
+                <div className="mx-auto flex w-full max-w-3xl flex-col gap-3">
+                  <div className={`grid gap-3 ${isOwnSchool ? "" : "sm:grid-cols-2"}`}>
+                    {!isOwnSchool ? (
+                      <button
+                        type="button"
+                        onClick={handleShakeStart}
+                        className="group rounded-[1.8rem] border border-rose-200/40 bg-[linear-gradient(180deg,#fb7185,#f43f5e)] px-4 py-4 text-center text-base font-semibold text-white shadow-[0_18px_40px_rgba(244,63,94,0.28)] transition-transform duration-200 hover:scale-[1.02]"
+                      >
+                        <span className="flex items-center justify-center gap-2">
+                          <span className="text-lg transition-transform duration-200 group-hover:-rotate-12">✦</span>
+                          흔들기 사용하기
+                        </span>
+                      </button>
+                    ) : null}
+                    <Link
+                      href={`/main?schoolId=${fromSchoolId}`}
+                      className="group rounded-[1.8rem] border border-white/20 bg-[linear-gradient(180deg,rgba(255,255,255,0.2),rgba(255,255,255,0.08))] px-4 py-4 text-center text-base font-semibold text-white shadow-[0_16px_40px_rgba(0,0,0,0.16)] backdrop-blur-sm transition-transform duration-200 hover:scale-[1.02]"
+                    >
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="transition-transform duration-200 group-hover:-translate-x-0.5">◀</span>
+                        내 학교로 돌아가기
+                      </span>
+                    </Link>
                   </div>
                 </div>
-              </TreeScene>
+              </div>
             </div>
-          </div>
-        </section>
-
-        <section className="space-y-3 pb-2">
-          <div className="rounded-2xl border border-white/15 bg-black/30 px-4 py-3 text-sm text-white/85 backdrop-blur-sm">
-            다른 학교를 8초 동안 흔들어 벚꽃잎을 떨어뜨려보세요. 현재 확인용 사용 횟수: {shakenCount}회
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={handleShakeStart}
-              className="rounded-3xl bg-rose-400 px-4 py-4 text-center text-base font-semibold text-stone-950 shadow-[0_16px_40px_rgba(0,0,0,0.2)]"
-            >
-              흔들기 사용하기
-            </button>
-            <Link
-              href={`/main?schoolId=${fromSchoolId}`}
-              className="rounded-3xl border border-white/20 bg-white/10 px-4 py-4 text-center text-base font-semibold text-white shadow-[0_16px_40px_rgba(0,0,0,0.16)]"
-            >
-              내 학교로 돌아가기
-            </Link>
           </div>
         </section>
       </div>
@@ -493,21 +507,35 @@ export function SchoolDetailClient({
             className="fixed inset-0 z-40 bg-transparent"
             aria-label="화면 아무 곳이나 눌러 흔들기"
           />
-          <div className="pointer-events-none fixed inset-x-4 top-6 z-50 flex justify-center">
-            <div className="w-full max-w-lg rounded-[2rem] border border-white/15 bg-stone-950/68 p-5 text-center text-white backdrop-blur-md">
-              <p className="text-sm font-semibold tracking-[0.24em] text-rose-300">SHAKE MODE</p>
-              <h2 className="mt-3 text-3xl font-bold">지금 흔들어주세요</h2>
-              <p className="mt-3 text-sm leading-6 text-white/75">
-                화면 어디든 터치하거나 스페이스바를 누르거나, 휴대폰을 흔들면 바로 꽃이 떨어져요.
-              </p>
-              <div className="mt-5 grid grid-cols-2 gap-3 rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
-                <div>
-                  <p className="text-xs text-white/55">남은 시간</p>
-                  <p className="mt-2 text-3xl font-bold">{shakeSeconds}s</p>
+          <div className="pointer-events-none fixed inset-x-4 bottom-8 z-50 flex justify-center sm:bottom-10">
+            <div className="relative w-full max-w-4xl overflow-hidden rounded-[1.8rem] border border-white/70 bg-[linear-gradient(90deg,rgba(255,250,252,0.97),rgba(255,244,248,0.94),rgba(255,249,251,0.97))] px-5 py-4 text-stone-900 shadow-[0_22px_50px_rgba(120,73,96,0.18)] backdrop-blur-md sm:px-6">
+              <div className="pointer-events-none absolute inset-y-0 left-0 w-1.5 bg-[linear-gradient(180deg,#f9a8d4,#fda4af,#fde68a)]" />
+              <div className="pointer-events-none absolute left-8 top-1/2 h-14 w-14 -translate-y-1/2 rounded-full bg-rose-200/35 blur-2xl" />
+              <div className="relative flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-rose-200/70 bg-white/80 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-rose-500">
+                    <span className="h-2 w-2 rounded-full bg-rose-400" />
+                    SHAKE NOTICE
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <h2 className="text-xl font-bold text-rose-600 sm:text-2xl">
+                      벚꽃 떨어뜨리기
+                    </h2>
+                    <p className="text-sm text-stone-600 sm:text-[15px]">
+                      화면을 터치하거나 흔들어서 상대 학교 벚꽃을 떨어뜨려보세요.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-white/55">흔든 횟수</p>
-                  <p className="mt-2 text-3xl font-bold">{shakeCount}</p>
+                <div className="flex shrink-0 items-center gap-4 rounded-[1.3rem] border border-rose-100 bg-white/74 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+                  <div className="text-center">
+                    <p className="text-[11px] font-medium text-stone-500">남은 시간</p>
+                    <p className="mt-1 text-2xl font-bold text-stone-900">{shakeSeconds}s</p>
+                  </div>
+                  <div className="h-10 w-px bg-rose-100" />
+                  <div className="text-center">
+                    <p className="text-[11px] font-medium text-stone-500">흔든 횟수</p>
+                    <p className="mt-1 text-2xl font-bold text-stone-900">{shakeCount}</p>
+                  </div>
                 </div>
               </div>
             </div>
