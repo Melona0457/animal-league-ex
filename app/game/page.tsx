@@ -1,10 +1,11 @@
 import { getSchoolById } from "../_lib/mock-data";
 import { GameClient } from "./game-client";
+import { PrototypeOneGameClient } from "./prototype-one-game-client";
 
 type GamePageProps = {
   searchParams: Promise<{
     schoolId?: string;
-    mode?: "fall" | "tap";
+    mode?: "fall" | "tap" | "prototype1";
   }>;
 };
 
@@ -16,6 +17,10 @@ export default async function GamePage({ searchParams }: GamePageProps) {
 
   if (!school) {
     return null;
+  }
+
+  if (params.mode === "prototype1") {
+    return <PrototypeOneGameClient schoolId={school.id} schoolName={school.name} />;
   }
 
   return (
