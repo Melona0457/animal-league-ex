@@ -40,12 +40,12 @@ function NearbySchoolRow({
 }) {
   if (!school) {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/4 px-3 py-2 text-white/45">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[10px]">
+      <div className="flex items-center gap-2 rounded-xl border border-white/8 bg-white/4 px-2 py-1.5 text-white/45">
+        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[8px]">
           -
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-medium">경쟁 학교 없음</p>
+          <p className="text-[9px] font-medium">경쟁 학교 없음</p>
         </div>
       </div>
     );
@@ -54,10 +54,10 @@ function NearbySchoolRow({
   return (
     <Link
       href={`/schools/${school.id}?fromSchoolId=${currentSchoolId}`}
-      className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/4 px-3 py-2 transition hover:border-white/15 hover:bg-white/8"
+      className="flex items-center justify-between gap-2 rounded-xl border border-white/8 bg-white/4 px-2 py-1.5 transition hover:border-white/15 hover:bg-white/8"
     >
-      <div className="flex min-w-0 items-center gap-3">
-        <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5">
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5">
           <img
             src={getSchoolLogoImage(school.id)}
             alt={`${school.name} 로고`}
@@ -74,14 +74,14 @@ function NearbySchoolRow({
               image.src = `/images/schools/${school.id}/logo.webp`;
             }}
           />
-          <span className="hidden text-[10px] text-white/45">로고</span>
+          <span className="hidden text-[8px] text-white/45">로고</span>
         </div>
         <div className="min-w-0">
-          <p className="text-[11px] text-white/55">#{school.rank}</p>
-          <p className="truncate text-sm font-semibold text-white">{school.name}</p>
+          <p className="text-[8px] text-white/55">#{school.rank}</p>
+          <p className="truncate text-[10px] font-semibold text-white">{school.name}</p>
         </div>
       </div>
-      <p className="shrink-0 text-[11px] text-rose-100/80">{gap.toLocaleString()}표</p>
+      <p className="shrink-0 text-[8px] text-rose-100/80">{gap.toLocaleString()}표</p>
     </Link>
   );
 }
@@ -205,23 +205,23 @@ export function MainClient({ school, score }: MainClientProps) {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-stone-900 px-4 py-5 text-white">
+    <main className="relative h-screen overflow-hidden bg-stone-900 text-white">
       <div
         className="pointer-events-none absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-lg"
         style={{ backgroundImage: `url('${getSchoolBackgroundImage(currentSchool.id)}')` }}
       />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(24,10,18,0.34),rgba(24,10,18,0.76))]" />
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl flex-col">
-        <header className="grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border border-white/15 bg-black/22 p-3 backdrop-blur-sm sm:gap-3 sm:p-4">
-          <div className="flex flex-col justify-between px-3 py-3">
+      <div className="relative z-10 flex h-screen w-full flex-col">
+        <header className="absolute inset-x-2 top-2 z-30 grid grid-cols-[0.6fr_3.2fr_0.6fr] gap-2 rounded-[1.2rem] border border-white/15 bg-black/25 p-2 backdrop-blur-sm transition-opacity sm:inset-x-4 sm:top-3 sm:gap-3 sm:p-3">
+          <div className="flex flex-col justify-between py-1">
             <NearbySchoolRow
               school={previousSchool}
               gap={gapToPrevious}
               currentSchoolId={currentSchool.id}
             />
-            <div className="py-3 text-center">
-              <p className="text-[11px] font-medium text-white/65 sm:text-xs">현재 순위</p>
-              <p className="mt-1 text-xl font-bold sm:text-3xl">#{currentSchool.rank}</p>
+            <div className="py-1 text-center">
+              <p className="text-[9px] font-medium text-white/65">현재 순위</p>
+              <p className="mt-0.5 text-base font-bold sm:text-lg">#{currentSchool.rank}</p>
             </div>
             <NearbySchoolRow
               school={nextSchool}
@@ -229,11 +229,14 @@ export function MainClient({ school, score }: MainClientProps) {
               currentSchoolId={currentSchool.id}
             />
           </div>
-          <div className="px-3 py-3">
-            <div className="flex items-start justify-between gap-2">
+          <div className="px-6 py-1">
+            <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-medium text-white/65 sm:text-xs">레벨</p>
-                <p className="mt-1 text-base font-bold sm:text-2xl">
+                <p className="text-[11px] font-semibold tracking-[0.2em] text-rose-300 sm:text-xs">
+                  {currentSchool.name} · {getTreeStage(currentSchool.bloomRate)}
+                </p>
+                <p className="text-[9px] font-medium text-white/65">레벨</p>
+                <p className="mt-0.5 text-base font-bold sm:text-lg">
                   {getLevelLabel(currentSchool.level)}
                 </p>
               </div>
@@ -243,11 +246,11 @@ export function MainClient({ school, score }: MainClientProps) {
                 </span>
               ) : null}
             </div>
-            <div className="mt-3">
-              <p className="mb-2 text-[11px] text-white/65 sm:text-xs">
+            <div className="mt-2">
+              <p className="mb-1.5 text-[9px] text-white/65 sm:text-[10px]">
                 총 벚꽃 수 {totalPetals.toLocaleString()}
               </p>
-              <div className="relative h-7 overflow-hidden rounded-full bg-white/12 sm:h-8">
+              <div className="relative h-8 overflow-hidden rounded-full bg-white/12 sm:h-9">
                 <div
                   className="h-full rounded-full bg-[linear-gradient(90deg,#fda4af_0%,#fb7185_50%,#fecdd3_100%)] transition-[width] duration-700"
                   style={{ width: `${progressPercent}%` }}
@@ -256,7 +259,7 @@ export function MainClient({ school, score }: MainClientProps) {
                   {progressPercent.toFixed(0)}%
                 </div>
               </div>
-              <div className="mt-2 flex items-center justify-between text-[10px] text-white/65 sm:text-xs">
+              <div className="mt-1.5 flex items-center justify-between text-[8px] text-white/65 sm:text-[9px]">
                 <span>{getLevelLabel(currentSchool.level)}</span>
                 <span>
                   {currentSchool.level >= 7
@@ -269,14 +272,17 @@ export function MainClient({ school, score }: MainClientProps) {
           <button
             type="button"
             onClick={() => setIsMenuOpen(true)}
-            className="flex items-center justify-end px-3 py-3 text-left"
+            className="flex items-center justify-end py-1 text-left"
           >
-            <p className="text-3xl font-bold leading-none sm:text-4xl">≡</p>
+            <div>
+              <p className="text-[9px] font-medium text-white/65">메뉴</p>
+              <p className="mt-0.5 text-base font-bold sm:text-lg">≡</p>
+            </div>
           </button>
         </header>
 
         {visibleAttackLogs.length > 0 ? (
-          <section className="mt-3 grid gap-2">
+          <section className="absolute inset-x-2 top-20 z-20 grid gap-2 sm:inset-x-4 sm:top-24">
             {visibleAttackLogs.map((log, index) => (
               <div
                 key={log.id}
@@ -340,18 +346,17 @@ export function MainClient({ school, score }: MainClientProps) {
           </section>
         ) : null}
 
-        <section className="flex flex-1 flex-col py-2">
-          <div className="relative flex w-full flex-1 overflow-hidden rounded-[2rem]">
-            <p className="pointer-events-none absolute left-1/2 top-4 z-30 -translate-x-1/2 rounded-full bg-black/30 px-4 py-2 text-xs text-white/75 backdrop-blur-sm">
-              {currentSchool.name} · {getTreeStage(currentSchool.bloomRate)}
-            </p>
-            <div className="flex h-[calc(100vh-14rem)] min-h-[620px] w-full items-end justify-center">
+        <section className="relative flex h-screen w-full flex-1 flex-col">
+          <div className="relative flex h-screen w-full flex-1 overflow-hidden">
+            <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(0,0,0,0.18),rgba(0,0,0,0.04)_30%,rgba(0,0,0,0.22)_100%)]" />
+            <div className="flex h-screen w-full items-end justify-center">
               <TreeScene
                 treeLevel={currentSchool.level}
                 petals={petals}
                 fillContainer
+                backgroundMode="cover"
                 showPetals={false}
-                className="min-h-full w-full"
+                className="h-full w-full"
               >
                 <div className="pointer-events-none absolute inset-x-0 bottom-6 z-30 flex justify-center">
                   <div className="rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
@@ -359,23 +364,32 @@ export function MainClient({ school, score }: MainClientProps) {
                   </div>
                 </div>
               </TreeScene>
+              <div className="absolute inset-x-0 bottom-0 z-30 px-3 pb-3 transition-opacity sm:px-4 sm:pb-4">
+                <div className="mx-auto flex w-full max-w-4xl flex-col gap-2 sm:gap-3">
+                  <div className="grid gap-2 sm:gap-3 sm:grid-cols-2">
+                    <Link
+                      href={`/game/select?schoolId=${currentSchool.id}`}
+                      className="group rounded-[1.4rem] border border-rose-200/40 bg-[linear-gradient(180deg,#fb7185,#f43f5e)] px-3 py-2.5 text-center text-sm font-semibold text-white shadow-[0_16px_36px_rgba(244,63,94,0.28)] transition-transform duration-200 hover:scale-[1.02] sm:px-4 sm:py-3 sm:text-base"
+                    >
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="text-lg transition-transform duration-200 group-hover:-rotate-12">✦</span>
+                        벚꽃 붙이기
+                      </span>
+                    </Link>
+                    <Link
+                      href={`/ranking?schoolId=${currentSchool.id}`}
+                      className="group rounded-[1.4rem] border border-white/20 bg-[linear-gradient(180deg,rgba(255,255,255,0.2),rgba(255,255,255,0.08))] px-3 py-2.5 text-center text-sm font-semibold text-white shadow-[0_14px_36px_rgba(0,0,0,0.16)] backdrop-blur-sm transition-transform duration-200 hover:scale-[1.02] sm:px-4 sm:py-3 sm:text-base"
+                    >
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="transition-transform duration-200 group-hover:-translate-x-0.5">◀</span>
+                        방해하러 가기
+                      </span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </section>
-
-        <section className="grid gap-3 pb-2 sm:grid-cols-2">
-          <Link
-            href={`/game/select?schoolId=${currentSchool.id}`}
-            className="rounded-3xl bg-rose-400 px-4 py-4 text-center text-base font-semibold text-stone-950 shadow-[0_16px_40px_rgba(0,0,0,0.2)]"
-          >
-            벚꽃 붙이기
-          </Link>
-          <Link
-            href={`/ranking?schoolId=${currentSchool.id}`}
-            className="rounded-3xl border border-white/20 bg-white/10 px-4 py-4 text-center text-base font-semibold text-white shadow-[0_16px_40px_rgba(0,0,0,0.16)]"
-          >
-            방해하러 가기
-          </Link>
         </section>
       </div>
 
