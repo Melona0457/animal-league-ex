@@ -19,16 +19,77 @@
 
 html {
   background: var(--background);
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
   background: transparent;
   color: var(--foreground);
   font-family: var(--font-sans);
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.app-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+}
+
+.app-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+}
+
+@media (orientation: portrait) and (max-width: 768px) {
+  .app-viewport {
+    aspect-ratio: 9/16;
+  }
+}
+
+@media (max-aspect-ratio: 16/9) and (orientation: landscape) {
+  .app-viewport {
+    width: 100vw;
+    height: calc(100vw * 9 / 16);
+  }
+}
+
+@media (min-aspect-ratio: 16/9) and (orientation: landscape) {
+  .app-viewport {
+    width: calc(100vh * 16 / 9);
+    height: 100vh;
+  }
+}
+
+@media (orientation: portrait) and (max-width: 768px) {
+  @media (max-aspect-ratio: 9/16) {
+    .app-viewport {
+      width: 100vw;
+      height: calc(100vw * 16 / 9);
+    }
+  }
+  
+  @media (min-aspect-ratio: 9/16) {
+    .app-viewport {
+      width: calc(100vh * 9 / 16);
+      height: 100vh;
+    }
+  }
 }
 
 .app-global-background {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 0;
   background-image: url("/images/backgrounds/main-background.png");
@@ -41,7 +102,7 @@ body {
 }
 
 .app-global-background-overlay {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 0;
   background: linear-gradient(180deg, rgba(36, 15, 26, 0.08), rgba(36, 15, 26, 0.18));
@@ -67,15 +128,15 @@ img {
 
 .home-entry-scene {
   position: relative;
-  min-height: 100vh;
   width: 100%;
+  height: 100%;
   overflow: hidden;
 }
 
 .home-entry-shell {
   position: relative;
-  min-height: 100vh;
   width: 100%;
+  height: 100%;
 }
 
 .home-entry-overlay {
