@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { type PointerEvent as ReactPointerEvent, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
-import { applyGameScore } from "../_lib/school-state";
+import type { SchoolRecord } from "../_lib/mock-data";
+import { applyGameScore, getStoredSchools } from "../_lib/school-state";
 
 type PrototypeOneGameClientProps = {
   schoolId: string;
@@ -73,6 +73,31 @@ function intersects(
   return Math.abs(ax - bx) <= (aw + bw) / 2 && Math.abs(ay - by) <= (ah + bh) / 2;
 }
 
+function hasBatchim(word: string) {
+  const trimmed = word.trim();
+
+  if (!trimmed) {
+    return false;
+  }
+
+  const lastChar = trimmed[trimmed.length - 1];
+  const code = lastChar.charCodeAt(0);
+
+  if (code < 0xac00 || code > 0xd7a3) {
+    return false;
+  }
+
+  return (code - 0xac00) % 28 !== 0;
+}
+
+function topicParticle(word: string) {
+  return hasBatchim(word) ? "은" : "는";
+}
+
+function subjectParticle(word: string) {
+  return hasBatchim(word) ? "이" : "가";
+}
+
 export function PrototypeOneGameClient({
   schoolId,
   schoolName,
@@ -89,6 +114,8 @@ export function PrototypeOneGameClient({
   const [shareBonus, setShareBonus] = useState(0);
   const [hasAppliedShareBonus, setHasAppliedShareBonus] = useState(false);
   const [shareNotice, setShareNotice] = useState("");
+  const [shareNoticeTone, setShareNoticeTone] = useState<"success" | "warning">("success");
+  const [schools, setSchools] = useState<SchoolRecord[]>([]);
 
   const keysRef = useRef({
     left: false,
@@ -115,18 +142,38 @@ export function PrototypeOneGameClient({
   }, [score]);
 
   useEffect(() => {
+    let isActive = true;
+
+    void (async () => {
+      const storedSchools = await getStoredSchools();
+
+      if (isActive) {
+        setSchools(storedSchools);
+      }
+    })();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       const key = event.key.toLowerCase();
+
       if (key === "a" || key === "arrowleft") {
         event.preventDefault();
         keysRef.current.left = true;
       }
+
       if (key === "d" || key === "arrowright") {
         event.preventDefault();
         keysRef.current.right = true;
       }
+
       if (event.code === "Space") {
         event.preventDefault();
+
         if (
           !event.repeat &&
           !isFinishedRef.current &&
@@ -142,9 +189,11 @@ export function PrototypeOneGameClient({
 
     function handleKeyUp(event: KeyboardEvent) {
       const key = event.key.toLowerCase();
+
       if (key === "a" || key === "arrowleft") {
         keysRef.current.left = false;
       }
+
       if (key === "d" || key === "arrowright") {
         keysRef.current.right = false;
       }
@@ -152,6 +201,7 @@ export function PrototypeOneGameClient({
 
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
+
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
@@ -170,6 +220,7 @@ export function PrototypeOneGameClient({
           setIsFinished(true);
           return 0;
         }
+
         return current - 1;
       });
     }, 1000);
@@ -198,6 +249,7 @@ export function PrototypeOneGameClient({
         rotation: Math.random() * 360,
         spin: -120 + Math.random() * 240,
       };
+
       petalsRef.current = [...petalsRef.current.slice(-80), petal];
     }
 
@@ -232,6 +284,7 @@ export function PrototypeOneGameClient({
         velocityX: (toPlayerX / length) * beeSpeed,
         velocityY: (toPlayerY / length) * beeSpeed,
       };
+
       beesRef.current = [...beesRef.current.slice(-26), bee];
     }
 
@@ -249,6 +302,7 @@ export function PrototypeOneGameClient({
       const currentPlayer = playerRef.current;
       let nextVelocityY = currentPlayer.velocityY - GRAVITY * delta;
       let nextJumpOffset = currentPlayer.jumpOffset + nextVelocityY * delta;
+
       if (nextJumpOffset < 0) {
         nextJumpOffset = 0;
         nextVelocityY = 0;
@@ -359,6 +413,7 @@ export function PrototypeOneGameClient({
       setPlayer(nextPlayer);
       setPetals(nextPetals);
       setBees(nextBees);
+
       if (deltaScore !== 0) {
         setScore(nextScore);
       }
@@ -377,11 +432,13 @@ export function PrototypeOneGameClient({
 
   function handleApplyScore() {
     const finalScore = score + shareBonus;
+
     startSavingTransition(async () => {
       await applyGameScore(schoolId, finalScore);
       router.push(`/main?schoolId=${schoolId}&score=${finalScore}`);
     });
   }
+
 
   function handleRestart() {
     setTimeLeft(GAME_DURATION);
@@ -397,7 +454,16 @@ export function PrototypeOneGameClient({
     setShareBonus(0);
     setHasAppliedShareBonus(false);
     setShareNotice("");
+    setShareNoticeTone("success");
     setRoundKey((current) => current + 1);
+  }
+
+  function handleCloseGame() {
+    router.push(`/game/select?schoolId=${schoolId}`);
+  }
+
+  function handleHudPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    event.stopPropagation();
   }
 
   async function handleShareResult() {
@@ -410,7 +476,7 @@ export function PrototypeOneGameClient({
       return;
     }
 
-    const shareText = `${schoolName} 프로토타입1에서 ${score}점 획득! 같이 들어와서 벚꽃 받아내기 해줘.`;
+    const shareText = `${schoolName} 방금 Prototype1에서 ${score}점 획득. 같이 들어와서 우리 학교 벚꽃 붙여줘.`;
 
     try {
       if (navigator.share) {
@@ -424,156 +490,181 @@ export function PrototypeOneGameClient({
           const bonus = score;
           setShareBonus(bonus);
           setHasAppliedShareBonus(true);
-          setShareNotice(`결과를 공유했고 공유 보너스 +${bonus}점을 얻었어요.`);
+          setShareNoticeTone("success");
+          setShareNotice("결과를 공유해서 점수를 2배로 얻었어요!");
           return;
         }
-        setShareNotice("결과 공유창을 열었어요.");
+
         return;
       }
 
       await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-      if (!hasAppliedShareBonus && score > 0) {
-        const bonus = score;
-        setShareBonus(bonus);
-        setHasAppliedShareBonus(true);
-        setShareNotice(`공유 문구와 링크를 복사했고 공유 보너스 +${bonus}점을 얻었어요.`);
-        return;
-      }
-      setShareNotice("공유 문구와 링크를 복사했어요.");
+      setShareNoticeTone("warning");
+      setShareNotice("친구에게 공유해야 점수가 두 배가 돼요!");
     } catch {
+      setShareNoticeTone("warning");
       setShareNotice("공유를 완료하지 못했어요. 다시 시도해주세요.");
     }
   }
 
   const finalAppliedScore = score + shareBonus;
+  const currentSchool = schools.find((item) => item.id === schoolId) ?? null;
+  const currentSchoolIndex = schools.findIndex((item) => item.id === schoolId);
+  const previousSchool = currentSchoolIndex > 0 ? schools[currentSchoolIndex - 1] : null;
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#0f172a] text-white">
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5">
-        <header className="grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border border-white/20 bg-black/28 p-3 backdrop-blur sm:gap-3 sm:p-4">
-          <div className="px-3 py-3">
-            <p className="text-[11px] font-medium text-white/65 sm:text-xs">남은 시간</p>
-            <p className="mt-1 text-xl font-bold sm:text-3xl">{timeLeft}s</p>
-            <p className="mt-2 text-[11px] text-white/55 sm:text-xs">Prototype1</p>
-          </div>
-          <div className="px-3 py-3">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="text-[11px] font-medium text-white/65 sm:text-xs">현재 점수</p>
-                <p className="mt-1 text-xl font-bold sm:text-3xl">{score}</p>
+    <main className="relative min-h-screen overflow-hidden text-stone-900">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[84rem] flex-col px-4 py-5">
+        <section className="relative flex flex-1 flex-col items-stretch justify-center py-4 sm:py-6">
+          <div className="relative mt-4 min-h-[80vh] w-full overflow-hidden rounded-[2rem] border border-white/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.24))] shadow-[0_24px_80px_rgba(120,73,96,0.12)] sm:mt-6 sm:min-h-[86vh]">
+            <div className="absolute inset-x-0 top-0 z-20 flex h-16 items-center border-b border-sky-400/80 bg-[linear-gradient(180deg,#9ed8ff,#69bfff)] px-4 sm:h-[68px] sm:px-5">
+              <div className="flex w-full items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-full border border-white/80 bg-white/82 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-sky-700 shadow-[0_6px_18px_rgba(91,141,176,0.16)]">
+                    PROTOTYPE1
+                  </div>
+                  <div className="hidden translate-y-1 items-center gap-1.5 sm:flex">
+                    <span className="h-1.5 w-1.5 rounded-full bg-white/95" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-sky-500/95" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-pink-400/95" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    aria-label="minimize"
+                    className="flex h-8 w-8 items-center justify-center rounded-md border border-white/90 bg-white text-stone-500 shadow-[0_4px_12px_rgba(91,141,176,0.14)]"
+                  >
+                    <span className="block h-[2px] w-3 rounded-full bg-stone-400" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="maximize"
+                    className="flex h-8 w-8 items-center justify-center rounded-md border border-white/90 bg-white text-stone-500 shadow-[0_4px_12px_rgba(91,141,176,0.14)]"
+                  >
+                    <span className="relative block h-3.5 w-3.5">
+                      <span className="absolute right-0 top-0 h-3 w-3 rounded-[2px] border border-stone-400 bg-white" />
+                      <span className="absolute bottom-0 left-0 h-3 w-3 rounded-[2px] border border-stone-400 bg-white" />
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="close"
+                    onClick={handleCloseGame}
+                    className="flex h-8 w-8 items-center justify-center rounded-md border border-rose-200/90 bg-rose-300 text-white shadow-[0_4px_12px_rgba(244,114,182,0.18)] transition-colors duration-150 hover:bg-rose-400 active:bg-rose-500"
+                  >
+                    <span className="text-sm font-bold leading-none">×</span>
+                  </button>
+                </div>
               </div>
-              <span className="rounded-full bg-white/10 px-2 py-1 text-[11px] font-semibold text-rose-100">
-                2D
-              </span>
-            </div>
-            <p className="mt-3 text-[11px] leading-5 text-white/60 sm:text-xs">
-              A/D 또는 방향키로 이동하고, 스페이스바로 점프하세요. 벚꽃은 +10점, 벌은
-              -2점입니다.
-            </p>
-          </div>
-          <Link
-            href={`/game/select?schoolId=${schoolId}`}
-            className="flex items-center justify-end px-3 py-3 text-left"
-          >
-            <div>
-              <p className="text-[11px] font-medium text-white/65 sm:text-xs">다시 선택</p>
-              <p className="mt-1 text-lg font-bold sm:text-2xl">모드</p>
-            </div>
-          </Link>
-        </header>
-
-        <section className="relative flex flex-1 flex-col py-4">
-          <div className="relative h-full min-h-[66vh] overflow-hidden rounded-[2.2rem] border border-white/25 bg-[#0b1220] shadow-[0_24px_80px_rgba(8,9,16,0.48)]">
-            <div className="absolute inset-0 [image-rendering:pixelated]">
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,#57a6f3_0%,#83c7ff_49%,#4d9f49_49%,#3f8a3d_100%)]" />
-              <div className="absolute inset-0 opacity-20 [background-size:14px_14px] [background-image:linear-gradient(to_right,rgba(255,255,255,0.28)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.26)_1px,transparent_1px)]" />
             </div>
 
-            <div className="pointer-events-none absolute left-1/2 top-[0%] h-[84%] w-[94%] -translate-x-1/2">
-              <Image
-                src={PROTOTYPE_ONE_TREE_IMAGE}
-                alt=""
-                fill
-                unoptimized
-                sizes="(max-width: 768px) 98vw, 78vw"
-                draggable={false}
-                className="object-contain [image-rendering:pixelated]"
-              />
-            </div>
+            <div className="absolute inset-x-4 bottom-4 top-20 overflow-hidden rounded-[1.7rem] border border-white/60 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.92),rgba(255,255,255,0.26))] select-none touch-none sm:inset-x-5 sm:bottom-5 sm:top-[88px]">
+              <div className="absolute inset-0 [image-rendering:pixelated]">
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,#6fb7ff_0%,#9bd3ff_46%,#68b861_46%,#549f4f_100%)]" />
+                <div className="absolute inset-0 opacity-20 [background-size:14px_14px] [background-image:linear-gradient(to_right,rgba(255,255,255,0.28)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.26)_1px,transparent_1px)]" />
+              </div>
 
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[22%] border-t-[6px] border-[#295529] bg-[repeating-linear-gradient(90deg,#4fa24b_0px,#4fa24b_20px,#4aa046_20px,#4aa046_40px)]" />
-
-            {petals.map((petal) => (
               <div
-                key={petal.id}
-                className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-1/2"
-                style={{
-                  left: `${petal.x * 100}%`,
-                  bottom: `${petal.y * 100}%`,
-                  width: `${PETAL_SIZE * 100}%`,
-                  height: `${PETAL_SIZE * 100}%`,
-                  transform: `translate(-50%, 50%) rotate(${petal.rotation}deg)`,
-                }}
+                onPointerDown={handleHudPointerDown}
+                className="absolute inset-x-0 top-0 z-20 flex select-none items-center justify-between px-5 py-4 sm:px-6"
               >
+                <div className="text-stone-900">
+                  <p className="text-2xl font-black sm:text-3xl">
+                    {timeLeft}
+                    <span className="ml-1.5 text-base font-bold text-rose-500 sm:text-lg">초</span>
+                  </p>
+                </div>
+                <div className="text-right text-stone-900">
+                  <p className="text-2xl font-black sm:text-3xl">
+                    {score}
+                    <span className="ml-1.5 text-base font-bold text-rose-500 sm:text-lg">점</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0.85),rgba(255,255,255,0))]" />
+
+              <div className="pointer-events-none absolute left-1/2 top-[0%] h-[84%] w-[94%] -translate-x-1/2">
                 <Image
-                  src={PROTOTYPE_ONE_PETAL_IMAGE}
+                  src={PROTOTYPE_ONE_TREE_IMAGE}
                   alt=""
                   fill
                   unoptimized
-                  sizes="(max-width: 768px) 28px, 40px"
+                  sizes="(max-width: 768px) 98vw, 78vw"
                   draggable={false}
                   className="object-contain [image-rendering:pixelated]"
                 />
               </div>
-            ))}
 
-            {bees.map((bee) => (
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[22%] border-t-[6px] border-[#295529] bg-[repeating-linear-gradient(90deg,#4fa24b_0px,#4fa24b_20px,#4aa046_20px,#4aa046_40px)]" />
+
+              {petals.map((petal) => (
+                <div
+                  key={petal.id}
+                  className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-1/2"
+                  style={{
+                    left: `${petal.x * 100}%`,
+                    bottom: `${petal.y * 100}%`,
+                    width: `${PETAL_SIZE * 100}%`,
+                    height: `${PETAL_SIZE * 100}%`,
+                    transform: `translate(-50%, 50%) rotate(${petal.rotation}deg)`,
+                  }}
+                >
+                  <Image
+                    src={PROTOTYPE_ONE_PETAL_IMAGE}
+                    alt=""
+                    fill
+                    unoptimized
+                    sizes="(max-width: 768px) 28px, 40px"
+                    draggable={false}
+                    className="object-contain [image-rendering:pixelated]"
+                  />
+                </div>
+              ))}
+
+              {bees.map((bee) => (
+                <div
+                  key={bee.id}
+                  className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-1/2"
+                  style={{
+                    left: `${bee.x * 100}%`,
+                    bottom: `${bee.y * 100}%`,
+                    width: `${BEE_WIDTH * 100}%`,
+                    height: `${BEE_HEIGHT * 100}%`,
+                  }}
+                >
+                  <Image
+                    src={PROTOTYPE_ONE_BEE_IMAGE}
+                    alt=""
+                    fill
+                    unoptimized
+                    sizes="(max-width: 768px) 52px, 72px"
+                    draggable={false}
+                    className="object-contain [image-rendering:pixelated]"
+                  />
+                </div>
+              ))}
+
               <div
-                key={bee.id}
-                className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-1/2"
+                className="pointer-events-none absolute z-30 -translate-x-1/2"
                 style={{
-                  left: `${bee.x * 100}%`,
-                  bottom: `${bee.y * 100}%`,
-                  width: `${BEE_WIDTH * 100}%`,
-                  height: `${BEE_HEIGHT * 100}%`,
+                  left: `${player.x * 100}%`,
+                  bottom: `${(PLAYER_GROUND_Y + player.jumpOffset) * 100}%`,
+                  width: `${PLAYER_WIDTH * 100}%`,
+                  height: `${PLAYER_HEIGHT * 100}%`,
                 }}
               >
-                <Image
-                  src={PROTOTYPE_ONE_BEE_IMAGE}
-                  alt=""
-                  fill
-                  unoptimized
-                  sizes="(max-width: 768px) 52px, 72px"
-                  draggable={false}
-                  className="object-contain [image-rendering:pixelated]"
-                />
+                <div className="relative h-full w-full border-[4px] border-[#6f3f1e] bg-[#f4b355]">
+                  <span className="absolute left-[8%] top-[-18%] h-[28%] w-[24%] border-[3px] border-[#6f3f1e] bg-[#f4b355]" />
+                  <span className="absolute right-[8%] top-[-18%] h-[28%] w-[24%] border-[3px] border-[#6f3f1e] bg-[#f4b355]" />
+                  <span className="absolute left-[20%] top-[38%] h-[16%] w-[12%] bg-black" />
+                  <span className="absolute right-[20%] top-[38%] h-[16%] w-[12%] bg-black" />
+                  <span className="absolute left-[39%] top-[54%] h-[10%] w-[22%] bg-[#5a2f13]" />
+                </div>
               </div>
-            ))}
 
-            <div
-              className="pointer-events-none absolute z-30 -translate-x-1/2"
-              style={{
-                left: `${player.x * 100}%`,
-                bottom: `${(PLAYER_GROUND_Y + player.jumpOffset) * 100}%`,
-                width: `${PLAYER_WIDTH * 100}%`,
-                height: `${PLAYER_HEIGHT * 100}%`,
-              }}
-            >
-              <div className="relative h-full w-full border-[4px] border-[#6f3f1e] bg-[#f4b355]">
-                <span className="absolute left-[8%] top-[-18%] h-[28%] w-[24%] border-[3px] border-[#6f3f1e] bg-[#f4b355]" />
-                <span className="absolute right-[8%] top-[-18%] h-[28%] w-[24%] border-[3px] border-[#6f3f1e] bg-[#f4b355]" />
-                <span className="absolute left-[20%] top-[38%] h-[16%] w-[12%] bg-black" />
-                <span className="absolute right-[20%] top-[38%] h-[16%] w-[12%] bg-black" />
-                <span className="absolute left-[39%] top-[54%] h-[10%] w-[22%] bg-[#5a2f13]" />
-              </div>
-            </div>
-
-            <div className="absolute inset-x-0 top-0 z-30 flex items-center justify-between bg-[linear-gradient(180deg,rgba(10,14,20,0.72),rgba(10,14,20,0))] px-5 py-4">
-              <div>
-                <p className="text-xs font-semibold tracking-[0.2em] text-rose-300">MINI GAME</p>
-                <h1 className="mt-1 text-2xl font-bold">{schoolName} 프로토타입1</h1>
-              </div>
-              <p className="text-sm text-white/75">벚꽃 +10 · 벌 -2</p>
+              <div className="absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,rgba(214,162,177,0),rgba(151,99,125,0.22))]" />
             </div>
           </div>
         </section>
@@ -582,46 +673,62 @@ export function PrototypeOneGameClient({
       {isFinished ? (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/46 px-4">
           <div className="w-full max-w-md rounded-[2rem] border border-white/20 bg-white/92 p-6 text-center text-stone-900 shadow-2xl">
-            <p className="text-sm font-semibold tracking-[0.24em] text-rose-500">RESULT</p>
-            <h2 className="mt-3 text-3xl font-bold">프로토타입1 종료</h2>
-            <p className="mt-4 text-base leading-7 text-stone-600">
-              이번 판 점수는 {score}점이에요. 벚꽃을 먹으면 +10점, 벌에 닿으면 -2점이에요.
-            </p>
-            <p className="mt-2 text-sm text-stone-500">
-              최종 반영 점수 {finalAppliedScore}점
-              {shareBonus > 0 ? ` · 공유 보너스 +${shareBonus}` : ""}
-            </p>
-            {shareNotice ? (
-              <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                {shareNotice}
+            <div className="relative">
+              <h2 className="text-3xl font-bold">Prototype1 종료</h2>
+              <div className="mt-5 rounded-[1.6rem] border border-stone-200 bg-stone-50 px-5 py-6">
+                <p className="text-sm font-semibold tracking-[0.24em] text-rose-500">
+                  게임 결과
+                </p>
+                <p className="mt-3 text-5xl font-black tracking-[-0.05em] text-stone-900 sm:text-6xl">
+                  {finalAppliedScore}
+                  <span className="ml-2 text-2xl font-bold text-rose-500 sm:ml-3 sm:text-3xl">
+                    점
+                  </span>
+                </p>
               </div>
-            ) : null}
-            <div className="mt-6 flex flex-col gap-3">
-              <button
-                type="button"
-                onClick={handleShareResult}
-                disabled={hasAppliedShareBonus && score > 0}
-                className="rounded-2xl border border-stone-200 bg-white px-4 py-4 text-sm font-semibold text-stone-700"
-              >
-                {hasAppliedShareBonus && score > 0
-                  ? "공유 보너스 반영 완료"
-                  : "친구에게 결과 공유하기"}
-              </button>
-              <button
-                type="button"
-                onClick={handleApplyScore}
-                disabled={isSaving}
-                className="rounded-2xl bg-stone-900 px-4 py-4 text-center text-sm font-semibold text-white"
-              >
-                {isSaving ? "점수 반영 중..." : "점수 반영하고 메인으로"}
-              </button>
-              <button
-                type="button"
-                onClick={handleRestart}
-                className="rounded-2xl border border-stone-200 px-4 py-4 text-sm font-semibold text-stone-700"
-              >
-                한 판 더 하기
-              </button>
+              {currentSchool ? (
+                <p className="mt-5 text-sm text-stone-500">
+                  현재 {schoolName}{topicParticle(schoolName)} {currentSchool.rank}위예요.
+                  {previousSchool
+                    ? ` 바로 위에 ${previousSchool.name}${subjectParticle(previousSchool.name)} 있어요.`
+                    : ""}
+                </p>
+              ) : null}
+              {shareNotice ? (
+                <div
+                  className={`mt-4 rounded-2xl px-4 py-3 text-sm ${
+                    shareNoticeTone === "success"
+                      ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "border border-rose-200 bg-rose-50 text-rose-700"
+                  }`}
+                >
+                  {shareNotice}
+                </div>
+              ) : null}
+              <div className="mt-6 flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={handleShareResult}
+                  className="rounded-2xl border border-stone-200 bg-white px-4 py-4 text-sm font-semibold text-stone-700 transition-transform duration-200 hover:scale-[1.02]"
+                >
+                  친구에게 결과 공유하기
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRestart}
+                  className="rounded-2xl border border-stone-200 px-4 py-4 text-sm font-semibold text-stone-700 transition-transform duration-200 hover:scale-[1.02]"
+                >
+                  한 판 더 하기
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyScore}
+                  disabled={isSaving}
+                  className="rounded-2xl bg-stone-900 px-4 py-4 text-center text-sm font-semibold text-white transition-transform duration-200 hover:scale-[1.02]"
+                >
+                  메인으로
+                </button>
+              </div>
             </div>
           </div>
         </div>

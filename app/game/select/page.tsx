@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GameModeVideo } from "../../_components/game-mode-video";
 import { getSchoolById } from "../../_lib/mock-data";
 
 type GameSelectPageProps = {
@@ -41,9 +42,9 @@ const GAME_MODES = [
     title: "Prototype1",
     description:
       "\ub3c4\ud2b8 \uac10\uc131 2D \ud14c\uc2a4\ud2b8 \ubaa8\ub4dc\ub85c, A/D(\ub610\ub294 \u2190/\u2192)\ub85c \uc774\ub3d9\ud558\uace0 Space\ub85c \uc810\ud504\ud558\uba70 \ubc9a\uaf43\uc740 +10\uc810, \ubc8c\uc740 -2\uc810\uc774\uc5d0\uc694.",
-    accent: "from-sky-300 via-cyan-200 to-lime-200",
-    frame: "from-sky-900/90 via-emerald-950/80 to-sky-900/90",
-    glow: "shadow-[0_24px_60px_rgba(56,120,146,0.22)]",
+    accent: "from-rose-200 via-pink-100 to-amber-100",
+    frame: "from-stone-900/90 via-rose-950/75 to-stone-900/90",
+    glow: "shadow-[0_24px_60px_rgba(132,76,103,0.2)]",
     preview: "video",
     video: "/videos/game-modes/prototype1.mp4",
   },
@@ -126,16 +127,7 @@ export default async function GameSelectPage({
                 >
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18),transparent_36%,rgba(0,0,0,0.24)_100%)]" />
                   {mode.preview === "video" ? (
-                    <video
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      preload="auto"
-                      className="relative aspect-[16/10] w-full rounded-[1.1rem] object-cover"
-                    >
-                      <source src={mode.video} type="video/mp4" />
-                    </video>
+                    <GameModeVideo src={mode.video} title={mode.title} />
                   ) : (
                     <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[1.1rem] border border-white/25 bg-[linear-gradient(180deg,#59a8f6_0%,#8dd0ff_52%,#58a14f_52%,#4a8e42_100%)] [image-rendering:pixelated]">
                       <div className="absolute inset-0 opacity-20 [background-size:12px_12px] [background-image:linear-gradient(to_right,rgba(255,255,255,0.28)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.26)_1px,transparent_1px)]" />
