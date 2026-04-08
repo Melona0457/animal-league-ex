@@ -63,11 +63,7 @@ export default async function GameSelectPage({
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,244,248,0.26),rgba(255,247,250,0.14)_28%,rgba(255,255,255,0)_58%)] px-4 py-5 text-stone-900">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,245,248,0.12),rgba(255,255,255,0.02)_36%,rgba(255,241,246,0.1)_100%)]" />
-<<<<<<< HEAD
       <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-4 pt-9 pb-8 sm:pt-11 sm:pb-10">
-=======
-      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-4 pt-9 sm:pt-11">
->>>>>>> origin/main
         <header className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/55 p-5 shadow-[0_18px_50px_rgba(120,73,96,0.08)] backdrop-blur-md sm:p-7">
           <div className="absolute inset-x-0 top-0 h-1.5 bg-[linear-gradient(90deg,rgba(251,113,133,0.9),rgba(255,255,255,0.92),rgba(253,186,116,0.9),rgba(255,255,255,0.92),rgba(244,114,182,0.9))]" />
           <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-rose-200/45 blur-3xl" />
