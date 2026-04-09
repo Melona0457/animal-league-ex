@@ -30,12 +30,12 @@ export function SelectSchoolClient() {
             SCHOOL SELECT
           </p>
           <h1 className="mt-4 text-4xl font-bold tracking-[-0.05em] text-white md:text-5xl">
-            어느 학교 벚꽃으로
+            우리 학교 벚꽃나무를
             <br />
-            들어갈지 먼저 골라주세요
+            먼저 선택해주세요
           </h1>
           <p className="mt-5 max-w-2xl text-sm leading-7 text-white/72 md:text-base">
-            로그인 없이 바로 들어가요. 
+            우리 학교 벚꽃을 살리러 가볼까요? 
             <br />
             학교만 고르면 바로 메인 화면으로 이동하고, 선택한 학교는 이 브라우저에 기억해둘게요.
           </p>
