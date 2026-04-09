@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BackgroundImageWarmup } from "../_components/background-image-warmup";
 import { BackgroundVideoWarmup } from "../_components/background-video-warmup";
 import { TreeScene } from "../_components/tree-scene";
 import {
@@ -20,18 +21,13 @@ import {
 import { getPetalsBySchoolId, type PetalPlacement } from "../_lib/petal-state";
 import { setSelectedSchoolId } from "../_lib/selected-school";
 import { getStoredSchoolById, getStoredSchools } from "../_lib/school-state";
+import { CORE_BACKGROUND_IMAGES, PROTOTYPE_ONE_IMAGES } from "../_lib/image-assets";
 import { GAME_MODE_VIDEOS, MAIN_TREE_VIDEOS } from "../_lib/video-assets";
 
 type MainClientProps = {
   school: SchoolRecord;
   score: number;
 };
-
-const MAIN_PAGE_WARMUP_VIDEOS = [
-  "/videos/game-modes/classic-fall.mp4",
-  "/videos/game-modes/tap-bloom.mp4",
-  "/videos/game-modes/prototype1.mp4",
-] as const;
 
 function getAttackAlertStorageKey(schoolId: string) {
   return `blossom-save:attack-alert-dismissed:${schoolId}`;
@@ -228,7 +224,12 @@ export function MainClient({ school, score }: MainClientProps) {
           { sources: [treeVideoSrc], preload: "auto", delayMs: 0 },
           { sources: secondaryTreeVideos, preload: "metadata", delayMs: 250 },
           { sources: GAME_MODE_VIDEOS, preload: "metadata", delayMs: 900 },
-          { sources: MAIN_PAGE_WARMUP_VIDEOS, preload: "metadata", delayMs: 1200 },
+        ]}
+      />
+      <BackgroundImageWarmup
+        sources={[
+          ...CORE_BACKGROUND_IMAGES,
+          ...PROTOTYPE_ONE_IMAGES,
         ]}
       />
       <div
