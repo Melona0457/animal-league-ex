@@ -1,24 +1,39 @@
+import { BackgroundImageWarmup } from "./_components/background-image-warmup";
+import { BackgroundVideoWarmup } from "./_components/background-video-warmup";
+import { LandingIntroVideo } from "./_components/landing-intro-video";
 import { getLandingBackgroundImage } from "./_lib/mock-data";
 import { HomeEntryClient } from "./home-entry-client";
 
+const LANDING_WARMUP_VIDEOS = [
+  "/videos/game-modes/classic-fall.mp4",
+  "/videos/game-modes/tap-bloom.mp4",
+  "/videos/game-modes/prototype1.mp4",
+] as const;
+
 export default function Home() {
+  const landingBackgroundImage = getLandingBackgroundImage();
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-stone-900 text-white">
       <HomeEntryClient>
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="home-entry-bg home-entry-bg-zoom absolute inset-0 h-full w-full object-cover"
-          poster={getLandingBackgroundImage()}
-        >
-          <source src="/videos/intro.mp4" type="video/mp4" />
-        </video>
+        <BackgroundVideoWarmup sources={LANDING_WARMUP_VIDEOS} preload="metadata" />
+        <BackgroundImageWarmup
+          sources={[
+            landingBackgroundImage,
+            "/images/backgrounds/main-background.png",
+            "/images/game/prototype1/background/sky.png",
+            "/images/game/prototype1/background/upper-green.png",
+            "/images/game/prototype1/background/lower-green.png",
+          ]}
+        />
+        <LandingIntroVideo
+          src="/videos/intro.mp4"
+          fallbackImage={landingBackgroundImage}
+        />
         <div
           className="home-entry-bg-overlay home-entry-bg-zoom absolute inset-0"
           style={{
-            backgroundImage: `linear-gradient(180deg, rgba(33, 17, 25, 0.38), rgba(33, 17, 25, 0.74)), url('${getLandingBackgroundImage()}')`,
+            backgroundImage: `linear-gradient(180deg, rgba(33, 17, 25, 0.38), rgba(33, 17, 25, 0.74)), url('${landingBackgroundImage}')`,
             backgroundPosition: "center",
             backgroundSize: "cover",
           }}
