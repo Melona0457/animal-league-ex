@@ -9,6 +9,7 @@ import {
   SCHOOL_OPTIONS,
   signUpAccount,
 } from "../_lib/mock-auth";
+import { setSelectedSchoolId } from "../_lib/selected-school";
 
 export function SignupForm() {
   const router = useRouter();
@@ -59,7 +60,8 @@ export function SignupForm() {
       return;
     }
 
-    router.push(`/main?schoolId=${result.schoolId}`);
+    setSelectedSchoolId(result.schoolId);
+    router.push("/main");
   }
 
   return (

@@ -356,7 +356,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
       }
 
       await applyGameScore(schoolId, finalScore);
-      router.push(`/main?schoolId=${schoolId}&score=${finalScore}`);
+      router.push(`/main?score=${finalScore}`);
     });
   }
 
@@ -374,7 +374,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
   }
 
   function handleCloseGame() {
-    router.push(`/game/select?schoolId=${schoolId}`);
+    router.push("/game/select");
   }
 
   function handleHudPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
@@ -395,7 +395,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
     const shareUrl =
       typeof window === "undefined"
         ? ""
-        : `${window.location.origin}/main?schoolId=${schoolId}`;
+        : `${window.location.origin}/main`;
 
     if (!shareUrl) {
       return;

@@ -339,7 +339,7 @@ export function SchoolDetailClient({
     const shareUrl =
       typeof window === "undefined"
         ? ""
-        : `${window.location.origin}/schools/${schoolId}?fromSchoolId=${fromSchoolId}`;
+        : `${window.location.origin}/schools/${schoolId}`;
 
     if (!shareUrl) {
       return;
@@ -445,7 +445,7 @@ export function SchoolDetailClient({
                   </span>
                 </span>
                 <Link
-                  href={`/ranking?schoolId=${fromSchoolId}`}
+                  href="/ranking"
                   aria-label="랭킹 페이지로 이동"
                   className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-rose-200/80 bg-rose-300/92 shadow-[0_8px_20px_rgba(244,114,182,0.2)] transition-transform duration-150 hover:scale-[1.03]"
                 >
@@ -526,7 +526,7 @@ export function SchoolDetailClient({
                     </button>
                   ) : null}
                   <Link
-                    href={`/main?schoolId=${fromSchoolId}`}
+                    href="/main"
                     className="rounded-[1.35rem] border border-sky-200/70 bg-white/78 px-4 py-3 text-center text-base font-bold text-sky-800 shadow-[0_16px_40px_rgba(0,0,0,0.14)] backdrop-blur-sm"
                   >
                     내 학교로 돌아가기

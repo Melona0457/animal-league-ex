@@ -190,12 +190,33 @@ function getLionGroundOffset(pose: LionPose) {
   }
 }
 
+function isLikelyTouchDevice() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+  const touchPoints = window.navigator.maxTouchPoints > 0;
+  return coarsePointer || touchPoints;
+}
+
+function isMoveLeftInput(event: KeyboardEvent) {
+  const key = event.key.toLowerCase();
+  return key === "a" || key === "arrowleft" || key === "ㅁ" || event.code === "KeyA";
+}
+
+function isMoveRightInput(event: KeyboardEvent) {
+  const key = event.key.toLowerCase();
+  return key === "d" || key === "arrowright" || key === "ㅇ" || event.code === "KeyD";
+}
+
 export function PrototypeOneGameClient({
   schoolId,
   schoolName,
 }: PrototypeOneGameClientProps) {
   const router = useRouter();
   const [isSaving, startSavingTransition] = useTransition();
+  const [showTouchControls, setShowTouchControls] = useState(false);
   const [survivalSeconds, setSurvivalSeconds] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [score, setScore] = useState(0);
@@ -250,16 +271,74 @@ export function PrototypeOneGameClient({
     };
   }, []);
 
+  function tryJump() {
+    if (isFinishedRef.current || playerRef.current.jumpCount >= 2) {
+      return;
+    }
+
+    const currentPlayer = playerRef.current;
+    const nextJumpCount = currentPlayer.jumpCount + 1;
+    const jumpVelocity =
+      currentPlayer.jumpCount === 0
+        ? PLAYER_JUMP_VELOCITY
+        : PLAYER_DOUBLE_JUMP_VELOCITY;
+
+    const updatedPlayer: PlayerState = {
+      ...currentPlayer,
+      velocityY: jumpVelocity,
+      jumpCount: nextJumpCount,
+      isRunning: false,
+    };
+
+    playerRef.current = updatedPlayer;
+    setPlayer(updatedPlayer);
+  }
+
+  function handleMoveControl(direction: "left" | "right", isPressed: boolean) {
+    if (direction === "left") {
+      keysRef.current.left = isPressed;
+      return;
+    }
+
+    keysRef.current.right = isPressed;
+  }
+
+  useEffect(() => {
+    const media = window.matchMedia("(pointer: coarse)");
+    const syncTouchDevice = () => {
+      setShowTouchControls(isLikelyTouchDevice());
+    };
+    const syncTimer = window.setTimeout(syncTouchDevice, 0);
+
+    if (media.addEventListener) {
+      media.addEventListener("change", syncTouchDevice);
+    } else {
+      media.addListener(syncTouchDevice);
+    }
+
+    window.addEventListener("resize", syncTouchDevice);
+
+    return () => {
+      window.clearTimeout(syncTimer);
+
+      if (media.removeEventListener) {
+        media.removeEventListener("change", syncTouchDevice);
+      } else {
+        media.removeListener(syncTouchDevice);
+      }
+
+      window.removeEventListener("resize", syncTouchDevice);
+    };
+  }, []);
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      const key = event.key.toLowerCase();
-
-      if (key === "a" || key === "arrowleft") {
+      if (isMoveLeftInput(event)) {
         event.preventDefault();
         keysRef.current.left = true;
       }
 
-      if (key === "d" || key === "arrowright") {
+      if (isMoveRightInput(event)) {
         event.preventDefault();
         keysRef.current.right = true;
       }
@@ -267,35 +346,18 @@ export function PrototypeOneGameClient({
       if (event.code === "Space") {
         event.preventDefault();
 
-        if (!event.repeat && !isFinishedRef.current && playerRef.current.jumpCount < 2) {
-          const currentPlayer = playerRef.current;
-          const nextJumpCount = currentPlayer.jumpCount + 1;
-          const jumpVelocity =
-            currentPlayer.jumpCount === 0
-              ? PLAYER_JUMP_VELOCITY
-              : PLAYER_DOUBLE_JUMP_VELOCITY;
-
-          const updatedPlayer: PlayerState = {
-            ...currentPlayer,
-            velocityY: jumpVelocity,
-            jumpCount: nextJumpCount,
-            isRunning: false,
-          };
-
-          playerRef.current = updatedPlayer;
-          setPlayer(updatedPlayer);
+        if (!event.repeat) {
+          tryJump();
         }
       }
     }
 
     function handleKeyUp(event: KeyboardEvent) {
-      const key = event.key.toLowerCase();
-
-      if (key === "a" || key === "arrowleft") {
+      if (isMoveLeftInput(event)) {
         keysRef.current.left = false;
       }
 
-      if (key === "d" || key === "arrowright") {
+      if (isMoveRightInput(event)) {
         keysRef.current.right = false;
       }
     }
@@ -547,7 +609,7 @@ export function PrototypeOneGameClient({
 
     startSavingTransition(async () => {
       await applyGameScore(schoolId, finalScore);
-      router.push(`/main?schoolId=${schoolId}&score=${finalScore}`);
+      router.push(`/main?score=${finalScore}`);
     });
   }
 
@@ -560,6 +622,10 @@ export function PrototypeOneGameClient({
     setPetals([]);
     setBees([]);
     scoreRef.current = 0;
+    keysRef.current = {
+      left: false,
+      right: false,
+    };
     playerRef.current = INITIAL_PLAYER;
     petalsRef.current = [];
     beesRef.current = [];
@@ -571,7 +637,7 @@ export function PrototypeOneGameClient({
   }
 
   function handleCloseGame() {
-    router.push(`/game/select?schoolId=${schoolId}`);
+    router.push("/game/select");
   }
 
   function handleHudPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
@@ -582,7 +648,7 @@ export function PrototypeOneGameClient({
     const shareUrl =
       typeof window === "undefined"
         ? ""
-        : `${window.location.origin}/main?schoolId=${schoolId}`;
+        : `${window.location.origin}/main`;
 
     if (!shareUrl) {
       return;
@@ -761,13 +827,13 @@ export function PrototypeOneGameClient({
 
               <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0.85),rgba(255,255,255,0))]" />
 
-              <div className="pointer-events-none absolute left-1/2 top-[0%] h-[84%] w-[94%] -translate-x-1/2">
+              <div className="pointer-events-none absolute left-1/2 top-[6%] h-[92%] w-[108%] -translate-x-1/2">
                 <Image
                   src={PROTOTYPE_ONE_TREE_IMAGE}
                   alt=""
                   fill
                   unoptimized
-                  sizes="(max-width: 768px) 98vw, 78vw"
+                  sizes="(max-width: 768px) 122vw, 92vw"
                   draggable={false}
                   className="object-contain [image-rendering:pixelated]"
                 />
@@ -847,6 +913,71 @@ export function PrototypeOneGameClient({
                   />
                 </div>
               </div>
+
+              {showTouchControls && !isFinished ? (
+                <div className="absolute inset-x-0 bottom-4 z-40 flex items-end justify-between px-4 sm:px-6">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      aria-label="왼쪽 이동"
+                      className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/65 bg-black/38 text-2xl font-black text-white backdrop-blur-sm active:scale-95"
+                      onPointerDown={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        handleMoveControl("left", true);
+                      }}
+                      onPointerUp={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        handleMoveControl("left", false);
+                      }}
+                      onPointerCancel={() => {
+                        handleMoveControl("left", false);
+                      }}
+                      onPointerLeave={() => {
+                        handleMoveControl("left", false);
+                      }}
+                    >
+                      ◀
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="오른쪽 이동"
+                      className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/65 bg-black/38 text-2xl font-black text-white backdrop-blur-sm active:scale-95"
+                      onPointerDown={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        handleMoveControl("right", true);
+                      }}
+                      onPointerUp={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        handleMoveControl("right", false);
+                      }}
+                      onPointerCancel={() => {
+                        handleMoveControl("right", false);
+                      }}
+                      onPointerLeave={() => {
+                        handleMoveControl("right", false);
+                      }}
+                    >
+                      ▶
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="점프"
+                    className="pointer-events-auto flex h-16 min-w-20 items-center justify-center rounded-2xl border border-rose-100/75 bg-rose-500/85 px-5 text-base font-black text-white shadow-[0_8px_24px_rgba(244,114,182,0.3)] backdrop-blur-sm active:scale-95"
+                    onPointerDown={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      tryJump();
+                    }}
+                  >
+                    점프
+                  </button>
+                </div>
+              ) : null}
 
               <div className="absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,rgba(214,162,177,0),rgba(151,99,125,0.22))]" />
             </div>
