@@ -9,7 +9,6 @@ import {
   getLevelLabel,
   getSchoolBackgroundImage,
   getSchoolLogoImage,
-  getTreeStage,
   type SchoolRecord,
 } from "../../_lib/mock-data";
 import {
@@ -35,45 +34,43 @@ function NearbySchoolRow({
 }) {
   if (!school) {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/4 px-3 py-2 text-white/45">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[10px]">
+      <div className="flex items-center gap-3 rounded-2xl border border-stone-200/80 bg-white/60 px-3 py-2 text-stone-500">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200/80 bg-white/70 text-[10px]">
           -
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-medium">경쟁 학교 없음</p>
+          <p className="text-xs font-semibold">경쟁 학교 없음</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/4 px-3 py-2">
-      <div className="flex min-w-0 items-center gap-3">
-        <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5">
-          <img
-            src={getSchoolLogoImage(school.id)}
-            alt={`${school.name} 로고`}
-            className="h-full w-full object-contain"
-            onError={(event) => {
-              const image = event.currentTarget;
+    <div className="flex min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border border-stone-200/80 bg-white/60 px-3 py-3 text-center">
+      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200/80 bg-white/80">
+        <img
+          src={getSchoolLogoImage(school.id)}
+          alt={`${school.name} 로고`}
+          className="h-full w-full object-contain"
+          onError={(event) => {
+            const image = event.currentTarget;
 
-              if (image.dataset.fallbackApplied === "true") {
-                image.style.display = "none";
-                return;
-              }
+            if (image.dataset.fallbackApplied === "true") {
+              image.style.display = "none";
+              return;
+            }
 
-              image.dataset.fallbackApplied = "true";
-              image.src = `/images/schools/${school.id}/logo.webp`;
-            }}
-          />
-          <span className="hidden text-[10px] text-white/45">로고</span>
-        </div>
-        <div className="min-w-0">
-          <p className="text-[11px] text-white/55">#{school.rank}</p>
-          <p className="truncate text-sm font-semibold text-white">{school.name}</p>
-        </div>
+            image.dataset.fallbackApplied = "true";
+            image.src = `/images/schools/${school.id}/logo.webp`;
+          }}
+        />
+        <span className="hidden text-[10px] text-stone-400">로고</span>
       </div>
-      <p className="shrink-0 text-[11px] text-rose-100/80">{gap.toLocaleString()}표</p>
+      <div className="min-w-0">
+        <p className="text-[11px] font-medium text-stone-500">#{school.rank}</p>
+        <p className="mt-1 truncate text-base font-semibold text-stone-800">{school.name}</p>
+      </div>
+      <p className="text-sm font-bold text-rose-500">{gap.toLocaleString()}개</p>
     </div>
   );
 }
@@ -414,39 +411,155 @@ export function SchoolDetailClient({
     : 0;
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-stone-900 text-white">
+    <main className="relative min-h-screen overflow-hidden bg-sky-200 px-4 py-8 text-white sm:py-10">
       <div
-        className="pointer-events-none absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-lg"
+        className="pointer-events-none absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-md brightness-110 saturate-110"
         style={{ backgroundImage: `url('${getSchoolBackgroundImage(school.id)}')` }}
       />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(24,10,18,0.34),rgba(24,10,18,0.76))]" />
-      <div className="relative z-10 flex min-h-screen w-full flex-col">
-        <header className={`absolute inset-x-4 top-5 z-30 grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border border-white/15 bg-black/22 p-3 backdrop-blur-sm transition-opacity sm:inset-x-5 sm:gap-3 sm:p-4 ${shakeMode === "countdown" ? "opacity-0" : "opacity-100"}`}>
-          <div className="flex flex-col justify-between px-3 py-3">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,247,251,0.16),rgba(120,183,241,0.16)_22%,rgba(120,183,241,0.08)_62%,rgba(255,236,244,0.14)_100%)]" />
+      <div className="pointer-events-none absolute -left-24 top-16 h-56 w-56 rounded-full bg-pink-300/40 blur-3xl" />
+      <div className="pointer-events-none absolute right-0 top-0 h-72 w-72 rounded-full bg-sky-100/55 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-12 left-10 h-64 w-64 rounded-full bg-rose-200/30 blur-3xl" />
+      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-[84rem] flex-col sm:min-h-[calc(100vh-5rem)]">
+        <section className="flex flex-1 flex-col py-2 sm:py-3">
+          <div className="relative flex w-full flex-1 flex-col overflow-hidden rounded-[2.25rem] border border-white/35 bg-white/12 shadow-[0_26px_80px_rgba(65,91,145,0.22)] backdrop-blur-xl">
+            <div className="flex items-center justify-between border-b border-white/25 bg-[linear-gradient(90deg,rgba(255,239,246,0.88),rgba(249,191,217,0.74),rgba(244,181,208,0.82))] px-4 py-3 text-stone-950 sm:px-7">
+              <div className="flex items-center gap-4">
+                <div className="rounded-full bg-white/85 px-4 py-2 text-[11px] font-black tracking-[0.3em] text-rose-600 shadow-sm sm:text-xs">
+                  BLOSSOM HOME
+                </div>
+                <div className="hidden items-center gap-2 sm:flex">
+                  <span className="h-2.5 w-2.5 rounded-full bg-white/95" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-rose-300" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-pink-500/80" />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/92 shadow-[0_8px_20px_rgba(209,122,156,0.14)]">
+                  <span className="block h-[3px] w-5 rounded-full bg-stone-400" />
+                </span>
+                <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/92 shadow-[0_8px_20px_rgba(209,122,156,0.14)]">
+                  <span className="relative block h-5 w-5">
+                    <span className="absolute right-0 top-0 h-4 w-4 rounded-[4px] border-2 border-stone-400 bg-white" />
+                    <span className="absolute bottom-0 left-0 h-4 w-4 rounded-[4px] border-2 border-stone-400 bg-white" />
+                  </span>
+                </span>
+                <Link
+                  href={`/ranking?schoolId=${fromSchoolId}`}
+                  aria-label="랭킹 페이지로 이동"
+                  className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-rose-200/80 bg-rose-300/92 shadow-[0_8px_20px_rgba(244,114,182,0.2)] transition-transform duration-150 hover:scale-[1.03]"
+                >
+                  <span className="text-[1.6rem] font-bold leading-none text-white">×</span>
+                </Link>
+              </div>
+            </div>
+            <div className="relative flex flex-1 p-2 sm:p-3">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.45),transparent_30%),radial-gradient(circle_at_top_right,rgba(255,210,228,0.24),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.16),rgba(149,196,244,0.18))]" />
+              <div className="relative flex h-[calc(100vh-12.5rem)] min-h-[720px] w-full items-end justify-center overflow-hidden rounded-[2rem] border border-white/45 bg-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(255,255,255,0.42),rgba(255,255,255,0.08),transparent)]" />
+                <TreeScene
+                  treeLevel={school.level}
+                  petals={petals}
+                  fillContainer
+                  backgroundMode="cover"
+                  showPetals={false}
+                  className="min-h-full w-full"
+                >
+                  {shakeMode === "countdown"
+                    ? fallingPetals.map((petal) => (
+                        <span
+                          key={petal.id}
+                          className="pointer-events-none absolute z-20 text-2xl shake-falling-petal"
+                          style={
+                            {
+                              left: `${petal.xPercent}%`,
+                              top: `${petal.yPercent}%`,
+                              animationDuration: `${petal.duration}ms`,
+                              "--shake-petal-drift": `${petal.drift}px`,
+                              "--shake-petal-drop": "460px",
+                              "--shake-petal-rotate-start": `${petal.rotationStart}deg`,
+                              "--shake-petal-rotate-end": `${petal.rotationEnd}deg`,
+                            } as CSSProperties
+                          }
+                        >
+                          🌸
+                        </span>
+                      ))
+                    : null}
+                </TreeScene>
+                <div className="pointer-events-none absolute left-6 top-6 z-30 flex items-center gap-4 rounded-[1.6rem] border border-white/35 bg-white/18 px-4 py-3 text-stone-950 shadow-[0_12px_30px_rgba(0,0,0,0.12)] backdrop-blur-md sm:left-8 sm:top-8 sm:px-5">
+                  <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/55 bg-white/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] sm:h-20 sm:w-20">
+                    <img
+                      src={getSchoolLogoImage(school.id)}
+                      alt={`${school.name} 로고`}
+                      className="h-full w-full object-contain"
+                      onError={(event) => {
+                        const image = event.currentTarget;
+
+                        if (image.dataset.fallbackApplied === "true") {
+                          image.style.display = "none";
+                          return;
+                        }
+
+                        image.dataset.fallbackApplied = "true";
+                        image.src = `/images/schools/${school.id}/logo.webp`;
+                      }}
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-xl font-black text-stone-900 sm:text-2xl">
+                      {school.name}
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-rose-600 sm:text-base">
+                      모든 벚꽃잎: {school.totalPetals.toLocaleString()}개
+                    </p>
+                  </div>
+                </div>
+                <div className={`absolute bottom-6 left-6 z-30 grid w-[min(17rem,calc(100%-3rem))] gap-3 transition-opacity sm:bottom-8 sm:left-8 sm:w-72 ${shakeMode === "countdown" ? "opacity-0" : "opacity-100"}`}>
+                  {!isOwnSchool ? (
+                    <button
+                      type="button"
+                      onClick={handleShakeStart}
+                      className="rounded-[1.35rem] bg-rose-400 px-4 py-3 text-center text-base font-semibold text-stone-950 shadow-[0_16px_40px_rgba(0,0,0,0.18)]"
+                    >
+                      흔들기 사용하기
+                    </button>
+                  ) : null}
+                  <Link
+                    href={`/main?schoolId=${fromSchoolId}`}
+                    className="rounded-[1.35rem] border border-sky-200/70 bg-white/78 px-4 py-3 text-center text-base font-bold text-sky-800 shadow-[0_16px_40px_rgba(0,0,0,0.14)] backdrop-blur-sm"
+                  >
+                    내 학교로 돌아가기
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <header className={`mt-5 grid grid-cols-1 gap-2 rounded-[1.5rem] border border-white/30 bg-white/28 p-2.5 text-stone-950 backdrop-blur-sm transition-opacity sm:mt-6 sm:grid-cols-[1.15fr_1.35fr] sm:gap-2 sm:p-3 ${shakeMode === "countdown" ? "opacity-0" : "opacity-100"}`}>
+          <div className="grid grid-cols-1 gap-2 rounded-[1.25rem] bg-white/40 px-3 py-2 sm:grid-cols-3 sm:items-stretch">
             <NearbySchoolRow school={previousSchool} gap={gapToPrevious} />
-            <div className="py-3 text-center">
-              <p className="text-[11px] font-medium text-white/65 sm:text-xs">현재 순위</p>
+            <div className="flex flex-col items-center justify-center rounded-2xl bg-white/45 px-3 py-2 text-center">
+              <p className="text-[11px] font-semibold text-stone-600 sm:text-xs">현재 순위</p>
               <p className="mt-1 text-xl font-bold sm:text-3xl">#{school.rank}</p>
             </div>
             <NearbySchoolRow school={nextSchool} gap={gapToNext} />
           </div>
-          <div className="px-3 py-3">
+          <div className="rounded-[1.25rem] bg-white/40 px-3 py-2">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="text-xs font-semibold tracking-[0.2em] text-rose-300">
-                  {school.name} · {getTreeStage(school.bloomRate)}
-                </p>
-                <p className="text-[11px] font-medium text-white/65 sm:text-xs">레벨</p>
+                <p className="text-[11px] font-semibold text-stone-600 sm:text-xs">레벨</p>
                 <p className="mt-1 text-base font-bold sm:text-2xl">
                   {getLevelLabel(school.level)}
                 </p>
               </div>
             </div>
-            <div className="mt-3">
-              <p className="mb-2 text-[11px] text-white/65 sm:text-xs">
+            <div className="mt-2">
+              <p className="mb-2 text-[11px] font-medium text-stone-600 sm:text-xs">
                 총 벚꽃 수 {school.totalPetals.toLocaleString()}
               </p>
-              <div className="relative h-7 overflow-hidden rounded-full bg-white/12 sm:h-8">
+              <div className="relative h-6 overflow-hidden rounded-full bg-white/45 sm:h-7">
                 <div
                   className="h-full rounded-full bg-[linear-gradient(90deg,#fda4af_0%,#fb7185_50%,#fecdd3_100%)] transition-[width] duration-700"
                   style={{ width: `${school.progressPercent}%` }}
@@ -455,88 +568,13 @@ export function SchoolDetailClient({
                   {school.progressPercent.toFixed(0)}%
                 </div>
               </div>
-              <div className="mt-2 flex items-center justify-between text-[10px] text-white/65 sm:text-xs">
+              <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-stone-600 sm:text-xs">
                 <span>{getLevelLabel(school.level)}</span>
                 <span>{school.level >= 7 ? "만개" : `LV.${school.level + 1}`}</span>
               </div>
             </div>
           </div>
-          <Link
-            href={`/ranking?schoolId=${fromSchoolId}`}
-            className="flex items-center justify-end px-3 py-3 text-left"
-          >
-            <div>
-              <p className="text-[11px] font-medium text-white/65 sm:text-xs">돌아가기</p>
-              <p className="mt-1 text-lg font-bold sm:text-2xl">목록</p>
-            </div>
-          </Link>
         </header>
-
-        <section className="relative flex min-h-screen w-full flex-1 flex-col">
-          <div className="relative flex min-h-screen w-full flex-1 overflow-hidden">
-            <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(0,0,0,0.18),rgba(0,0,0,0.04)_30%,rgba(0,0,0,0.22)_100%)]" />
-            <div className="flex h-screen min-h-screen w-full items-end justify-center">
-              <TreeScene
-                treeLevel={school.level}
-                petals={petals}
-                fillContainer
-                backgroundMode="cover"
-                showPetals={false}
-                className="min-h-full w-full"
-              >
-                {shakeMode === "countdown"
-                  ? fallingPetals.map((petal) => (
-                      <span
-                        key={petal.id}
-                        className="pointer-events-none absolute z-20 text-2xl shake-falling-petal"
-                        style={
-                          {
-                            left: `${petal.xPercent}%`,
-                            top: `${petal.yPercent}%`,
-                            animationDuration: `${petal.duration}ms`,
-                            "--shake-petal-drift": `${petal.drift}px`,
-                            "--shake-petal-drop": "460px",
-                            "--shake-petal-rotate-start": `${petal.rotationStart}deg`,
-                            "--shake-petal-rotate-end": `${petal.rotationEnd}deg`,
-                          } as CSSProperties
-                        }
-                      >
-                        💮
-                      </span>
-                    ))
-                  : null}
-              </TreeScene>
-              <div className={`absolute inset-x-0 bottom-0 z-30 px-4 pb-4 transition-opacity sm:px-5 ${shakeMode === "countdown" ? "pointer-events-none opacity-0" : "opacity-100"}`}>
-                <div className="mx-auto flex w-full max-w-3xl flex-col gap-3">
-                  <div className={`grid gap-3 ${isOwnSchool ? "" : "sm:grid-cols-2"}`}>
-                    {!isOwnSchool ? (
-                      <button
-                        type="button"
-                        onClick={handleShakeStart}
-                        disabled={shakeMode === "countdown"}
-                        className="group rounded-[1.8rem] border border-rose-200/40 bg-[linear-gradient(180deg,#fb7185,#f43f5e)] px-4 py-4 text-center text-base font-semibold text-white shadow-[0_18px_40px_rgba(244,63,94,0.28)] transition-transform duration-200 hover:scale-[1.02]"
-                      >
-                        <span className="flex items-center justify-center gap-2">
-                          <span className="text-lg transition-transform duration-200 group-hover:-rotate-12">✦</span>
-                          흔들기 사용하기
-                        </span>
-                      </button>
-                    ) : null}
-                    <Link
-                      href={`/main?schoolId=${fromSchoolId}`}
-                      className="group rounded-[1.8rem] border border-white/20 bg-[linear-gradient(180deg,rgba(255,255,255,0.2),rgba(255,255,255,0.08))] px-4 py-4 text-center text-base font-semibold text-white shadow-[0_16px_40px_rgba(0,0,0,0.16)] backdrop-blur-sm transition-transform duration-200 hover:scale-[1.02]"
-                    >
-                      <span className="flex items-center justify-center gap-2">
-                        <span className="transition-transform duration-200 group-hover:-translate-x-0.5">◀</span>
-                        내 학교로 돌아가기
-                      </span>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
       </div>
 
       {shakeMode === "countdown" && !isResolvingShakeResult ? (
