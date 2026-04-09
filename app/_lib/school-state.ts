@@ -1,6 +1,7 @@
 "use client";
 
 import { getDefaultSchoolRecords, type SchoolRecord } from "./mock-data";
+import { levelFromTotal, progressFromTotal } from "./school-progress";
 import { supabase } from "./supabase";
 
 type SchoolRow = {
@@ -24,49 +25,6 @@ function rankSchools(schools: SchoolRecord[]) {
       ...school,
       rank: index + 1,
     }));
-}
-
-function getLevelRange(totalPetals: number) {
-  if (totalPetals <= 300) {
-    return { level: 1, start: 0, end: 300 };
-  }
-  if (totalPetals <= 600) {
-    return { level: 2, start: 300, end: 600 };
-  }
-  if (totalPetals <= 1000) {
-    return { level: 3, start: 600, end: 1000 };
-  }
-  if (totalPetals <= 2000) {
-    return { level: 4, start: 1000, end: 2000 };
-  }
-  if (totalPetals <= 4000) {
-    return { level: 5, start: 2000, end: 4000 };
-  }
-  if (totalPetals < 12000) {
-    return { level: 6, start: 4000, end: 12000 };
-  }
-
-  return { level: 7, start: 12000, end: 12000 };
-}
-
-function progressFromTotal(totalPetals: number) {
-  const range = getLevelRange(totalPetals);
-
-  if (range.level >= 7) {
-    return 100;
-  }
-
-  const span = range.end - range.start;
-
-  if (span <= 0) {
-    return 100;
-  }
-
-  return Math.max(0, Math.min(100, Math.floor(((totalPetals - range.start) / span) * 100)));
-}
-
-function levelFromTotal(totalPetals: number) {
-  return getLevelRange(totalPetals).level;
 }
 
 function mapRows(rows: SchoolRow[]) {
@@ -104,53 +62,43 @@ export async function getStoredSchoolById(schoolId: string) {
 }
 
 export async function applyGameScore(schoolId: string, score: number) {
-  const { data, error } = await supabase
-    .from("schools")
-    .select("*")
-    .eq("id", schoolId)
-    .single();
+  try {
+    const response = await fetch("/api/schools/apply-score", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        schoolId,
+        score,
+      }),
+    });
 
-  if (error || !data) {
+    if (!response.ok) {
+      return;
+    }
+  } catch {
     return;
   }
-
-  const totalPetals = Math.max(0, (data as SchoolRow).total_petals + score);
-  const progressPercent = progressFromTotal(totalPetals);
-  const level = levelFromTotal(totalPetals);
-
-  await supabase
-    .from("schools")
-    .update({
-      total_petals: totalPetals,
-      bloom_rate: progressPercent,
-      progress_percent: progressPercent,
-      level,
-    })
-    .eq("id", schoolId);
 }
 
 export async function applyShake(schoolId: string, amount = 30) {
-  const { data, error } = await supabase
-    .from("schools")
-    .select("*")
-    .eq("id", schoolId)
-    .single();
+  try {
+    const response = await fetch("/api/schools/apply-shake", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        schoolId,
+        amount,
+      }),
+    });
 
-  if (error || !data) {
+    if (!response.ok) {
+      return;
+    }
+  } catch {
     return;
   }
-
-  const totalPetals = Math.max(0, (data as SchoolRow).total_petals - amount);
-  const progressPercent = progressFromTotal(totalPetals);
-  const level = levelFromTotal(totalPetals);
-
-  await supabase
-    .from("schools")
-    .update({
-      total_petals: totalPetals,
-      bloom_rate: progressPercent,
-      progress_percent: progressPercent,
-      level,
-    })
-    .eq("id", schoolId);
 }

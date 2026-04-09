@@ -47,17 +47,6 @@ function mapRows(rows: PetalRow[]) {
   }));
 }
 
-function pickRandomPetals<T>(items: T[], count: number) {
-  const shuffled = [...items];
-
-  for (let index = shuffled.length - 1; index > 0; index -= 1) {
-    const randomIndex = Math.floor(Math.random() * (index + 1));
-    [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
-  }
-
-  return shuffled.slice(0, count);
-}
-
 export async function getPetalsBySchoolId(schoolId: string) {
   const { data, error } = await supabase
     .from("petal_placements")
@@ -83,19 +72,24 @@ export async function addPetalPlacements(
     return [];
   }
 
-  const rows = petals.map((petal, index) => ({
-    id: `petal-${schoolId}-${Date.now()}-${index}`,
-    school_id: schoolId,
-    x_percent: petal.xPercent,
-    y_percent: petal.yPercent,
-    rotation: petal.rotation,
-    scale: petal.scale,
-  }));
+  try {
+    const response = await fetch("/api/petal-placements/add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        schoolId,
+        petals,
+      }),
+    });
 
-  const { error } = await supabase.from("petal_placements").insert(rows);
-
-  if (error) {
-    console.error("[petal-state] failed to insert petals", { schoolId, error });
+    if (!response.ok) {
+      console.error("[petal-state] failed to insert petals", { schoolId });
+      return [] as PetalPlacement[];
+    }
+  } catch {
+    console.error("[petal-state] failed to insert petals", { schoolId });
     return [] as PetalPlacement[];
   }
 
@@ -103,47 +97,48 @@ export async function addPetalPlacements(
 }
 
 export async function shakePetals(schoolId: string, shakeCount: number): Promise<ShakePetalResult> {
-  const petals = await getPetalsBySchoolId(schoolId);
-  const removable = pickRandomPetals(petals, Math.min(shakeCount, petals.length));
-
-  if (removable.length === 0) {
-    return {
-      removedCount: 0,
-      petals,
-      reason: "no_petals",
-      message: "이 학교에 저장된 벚꽃잎이 아직 없어서 떨어뜨릴 수 없어요.",
-    };
-  }
-
-  const { error } = await supabase
-    .from("petal_placements")
-    .delete()
-    .in(
-      "id",
-      removable.map((petal) => petal.id),
-    );
-
-  if (error) {
-    console.error("[petal-state] failed to delete petals", {
-      schoolId,
-      shakeCount,
-      removableIds: removable.map((petal) => petal.id),
-      error,
+  try {
+    const response = await fetch("/api/petal-placements/shake", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        schoolId,
+        shakeCount,
+      }),
     });
 
+    if (!response.ok) {
+      return {
+        removedCount: 0,
+        petals: await getPetalsBySchoolId(schoolId),
+        reason: "delete_failed",
+        message: "벚꽃잎을 삭제하지 못했어요. petal_placements 정책을 확인해주세요.",
+      };
+    }
+
+    const payload = (await response.json()) as {
+      ok?: boolean;
+      result?: ShakePetalResult;
+    };
+
+    if (!payload.ok || !payload.result) {
+      return {
+        removedCount: 0,
+        petals: await getPetalsBySchoolId(schoolId),
+        reason: "delete_failed",
+        message: "벚꽃잎을 삭제하지 못했어요. petal_placements 정책을 확인해주세요.",
+      };
+    }
+
+    return payload.result;
+  } catch {
     return {
       removedCount: 0,
-      petals,
+      petals: await getPetalsBySchoolId(schoolId),
       reason: "delete_failed",
       message: "벚꽃잎을 삭제하지 못했어요. petal_placements 정책을 확인해주세요.",
     };
   }
-
-  const nextPetals = await getPetalsBySchoolId(schoolId);
-
-  return {
-    removedCount: removable.length,
-    petals: nextPetals,
-    reason: "removed",
-  };
 }
