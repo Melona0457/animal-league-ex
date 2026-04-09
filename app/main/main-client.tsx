@@ -15,7 +15,6 @@ import {
   getLevelLabel,
   getSchoolBackgroundImage,
   getSchoolLogoImage,
-  getTreeStage,
   type SchoolRecord,
 } from "../_lib/mock-data";
 import { getPetalsBySchoolId, type PetalPlacement } from "../_lib/petal-state";
