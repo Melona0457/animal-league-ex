@@ -35,7 +35,9 @@ export function SelectSchoolClient() {
             들어갈지 먼저 골라주세요
           </h1>
           <p className="mt-5 max-w-2xl text-sm leading-7 text-white/72 md:text-base">
-            로그인 없이 바로 들어가요. 학교만 고르면 바로 메인 화면으로 이동하고, 선택한 학교는 이 브라우저에 기억해둘게요.
+            로그인 없이 바로 들어가요. 
+            <br />
+            학교만 고르면 바로 메인 화면으로 이동하고, 선택한 학교는 이 브라우저에 기억해둘게요.
           </p>
         </section>
 
