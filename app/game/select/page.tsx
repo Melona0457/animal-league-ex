@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { GameModeVideo } from "../../_components/game-mode-video";
 import { getSchoolById } from "../../_lib/mock-data";
+import { resolveSchoolIdFromRequest } from "../../_lib/selected-school-server";
+import { redirect } from "next/navigation";
 
 type GameSelectPageProps = {
   searchParams: Promise<{
@@ -54,9 +56,14 @@ export default async function GameSelectPage({
   searchParams,
 }: GameSelectPageProps) {
   const params = await searchParams;
+  const resolvedSchoolId = await resolveSchoolIdFromRequest(params.schoolId);
+
+  if (!resolvedSchoolId) {
+    redirect("/select-school");
+  }
+
   const school =
-    getSchoolById(params.schoolId ?? "school-044") ??
-    getSchoolById("school-044");
+    getSchoolById(resolvedSchoolId) ?? getSchoolById("school-044");
 
   if (!school) {
     return null;
@@ -147,7 +154,7 @@ export default async function GameSelectPage({
 
                 <div className="mt-auto pt-2">
                   <Link
-                    href={`/game?schoolId=${school.id}&mode=${mode.id}`}
+                    href={`/game?mode=${mode.id}`}
                     className="block rounded-[1.2rem] bg-stone-950 px-4 py-4 text-center text-sm font-semibold text-white transition-colors duration-200 hover:bg-stone-800"
                   >
                     {COPY.startMode}
@@ -159,7 +166,7 @@ export default async function GameSelectPage({
         </section>
 
         <Link
-          href={`/main?schoolId=${school.id}`}
+          href="/main"
           className="mt-1 block rounded-[1.6rem] border border-white/80 bg-white/78 px-4 py-4 text-center text-sm font-semibold text-stone-700 shadow-[0_12px_28px_rgba(120,73,96,0.08)] backdrop-blur-sm transition-colors duration-200 hover:bg-white/88"
         >
           {COPY.backToMainShort}

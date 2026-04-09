@@ -39,11 +39,9 @@ function getAttackAlertStorageKey(schoolId: string) {
 function NearbySchoolRow({
   school,
   gap,
-  currentSchoolId,
 }: {
   school: SchoolRecord | null;
   gap: number;
-  currentSchoolId: string;
 }) {
   if (!school) {
     return (
@@ -60,7 +58,7 @@ function NearbySchoolRow({
 
   return (
     <Link
-      href={`/schools/${school.id}?fromSchoolId=${currentSchoolId}`}
+      href={`/schools/${school.id}`}
       className="flex min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border border-stone-200/80 bg-white/60 px-3 py-3 text-center transition hover:border-stone-300 hover:bg-white/75"
     >
       <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200/80 bg-white/80">
@@ -191,7 +189,7 @@ export function MainClient({ school, score }: MainClientProps) {
     const shareUrl =
       typeof window === "undefined"
         ? ""
-        : `${window.location.origin}/main?schoolId=${currentSchool.id}`;
+        : `${window.location.origin}/main`;
     const shareTitle = `${currentSchool.name} 벚꽃살리기`;
     const shareText = `${currentSchool.name} 벚꽃 지키러 같이 들어와줘. 지금 우리 학교 순위 올리는 중이야.`;
 
@@ -321,13 +319,13 @@ export function MainClient({ school, score }: MainClientProps) {
                 </button>
                 <div className="absolute bottom-6 left-6 z-30 grid w-[min(17rem,calc(100%-3rem))] gap-3 sm:bottom-8 sm:left-8 sm:w-72">
                   <Link
-                    href={`/game/select?schoolId=${currentSchool.id}`}
+                    href="/game/select"
                     className="rounded-[1.35rem] bg-rose-400 px-4 py-3 text-center text-base font-semibold text-stone-950 shadow-[0_16px_40px_rgba(0,0,0,0.18)]"
                   >
                     벚꽃 붙이기
                   </Link>
                   <Link
-                    href={`/ranking?schoolId=${currentSchool.id}`}
+                    href="/ranking"
                     className="rounded-[1.35rem] border border-sky-200/70 bg-white/78 px-4 py-3 text-center text-base font-bold text-sky-800 shadow-[0_16px_40px_rgba(0,0,0,0.14)] backdrop-blur-sm"
                   >
                     다른 학교 방해하러 가기
@@ -343,7 +341,6 @@ export function MainClient({ school, score }: MainClientProps) {
             <NearbySchoolRow
               school={previousSchool}
               gap={gapToPrevious}
-              currentSchoolId={currentSchool.id}
             />
             <div className="flex flex-col items-center justify-center rounded-2xl bg-white/45 px-3 py-2 text-center">
               <p className="text-[11px] font-semibold text-stone-600 sm:text-xs">현재 순위</p>
@@ -352,7 +349,6 @@ export function MainClient({ school, score }: MainClientProps) {
             <NearbySchoolRow
               school={nextSchool}
               gap={gapToNext}
-              currentSchoolId={currentSchool.id}
             />
           </div>
           <div className="rounded-[1.25rem] bg-white/40 px-3 py-2">
@@ -412,13 +408,13 @@ export function MainClient({ school, score }: MainClientProps) {
               </button>
             </div>
             <Link
-              href={`/main?schoolId=${currentSchool.id}`}
+              href="/main"
               className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4"
             >
               우리학교 벚꽃 현황
             </Link>
             <Link
-              href={`/ranking?schoolId=${currentSchool.id}`}
+              href="/ranking"
               className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4"
             >
               모아보기
@@ -516,7 +512,7 @@ export function MainClient({ school, score }: MainClientProps) {
                             {formatAttackTime(log.createdAt)}
                           </p>
                           <Link
-                            href={`/schools/${log.attackerSchoolId}?fromSchoolId=${currentSchool.id}`}
+                            href={`/schools/${log.attackerSchoolId}`}
                             className="text-xs font-semibold text-sky-700"
                             onClick={() => setIsAttackLogOpen(false)}
                           >

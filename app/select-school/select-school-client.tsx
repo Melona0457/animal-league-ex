@@ -19,7 +19,7 @@ export function SelectSchoolClient() {
 
   function handleEnter() {
     setSelectedSchoolId(selectedSchoolId);
-    router.push(`/main?schoolId=${selectedSchoolId}`);
+    router.push("/main");
   }
 
   return (

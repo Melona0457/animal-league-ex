@@ -1,6 +1,8 @@
 import { getSchoolById } from "../_lib/mock-data";
+import { resolveSchoolIdFromRequest } from "../_lib/selected-school-server";
 import { GameClient } from "./game-client";
 import { PrototypeOneGameClient } from "./prototype-one-game-client";
+import { redirect } from "next/navigation";
 
 type GamePageProps = {
   searchParams: Promise<{
@@ -11,9 +13,14 @@ type GamePageProps = {
 
 export default async function GamePage({ searchParams }: GamePageProps) {
   const params = await searchParams;
+  const resolvedSchoolId = await resolveSchoolIdFromRequest(params.schoolId);
+
+  if (!resolvedSchoolId) {
+    redirect("/select-school");
+  }
+
   const school =
-    getSchoolById(params.schoolId ?? "school-044") ??
-    getSchoolById("school-044");
+    getSchoolById(resolvedSchoolId) ?? getSchoolById("school-044");
 
   if (!school) {
     return null;
