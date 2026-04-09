@@ -24,7 +24,7 @@ export function PetalOverlay({ petals, className = "" }: PetalOverlayProps) {
           }
         >
           <span className="flex h-full w-full items-center justify-center text-lg text-rose-100/90">
-            💮
+            🌸
           </span>
         </div>
       ))}

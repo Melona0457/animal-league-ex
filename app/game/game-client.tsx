@@ -685,7 +685,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
                         } as CSSProperties
                       }
                     >
-                      💮
+                      🌸
                     </span>
                   </span>
                 ))}

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   type CSSProperties,
-  type PointerEvent as ReactPointerEvent,
   useCallback,
   useEffect,
   useRef,
@@ -252,36 +251,6 @@ export function SchoolDetailClient({
   }, [shakeMode, registerShakeInput]);
 
   useEffect(() => {
-    if (shakeMode !== "countdown" || typeof document === "undefined") {
-      return;
-    }
-
-    const { body, documentElement } = document;
-    const previousBodyOverflow = body.style.overflow;
-    const previousBodyTouchAction = body.style.touchAction;
-    const previousBodyOverscrollBehavior = body.style.overscrollBehavior;
-    const previousHtmlOverflow = documentElement.style.overflow;
-    const previousHtmlTouchAction = documentElement.style.touchAction;
-    const previousHtmlOverscrollBehavior = documentElement.style.overscrollBehavior;
-
-    body.style.overflow = "hidden";
-    body.style.touchAction = "none";
-    body.style.overscrollBehavior = "none";
-    documentElement.style.overflow = "hidden";
-    documentElement.style.touchAction = "none";
-    documentElement.style.overscrollBehavior = "none";
-
-    return () => {
-      body.style.overflow = previousBodyOverflow;
-      body.style.touchAction = previousBodyTouchAction;
-      body.style.overscrollBehavior = previousBodyOverscrollBehavior;
-      documentElement.style.overflow = previousHtmlOverflow;
-      documentElement.style.touchAction = previousHtmlTouchAction;
-      documentElement.style.overscrollBehavior = previousHtmlOverscrollBehavior;
-    };
-  }, [shakeMode]);
-
-  useEffect(() => {
     if (shakeMode !== "countdown") {
       return;
     }
@@ -383,8 +352,7 @@ export function SchoolDetailClient({
     router.push(`/ranking?schoolId=${fromSchoolId}`);
   }
 
-  function handleShakeOverlayPointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
-    event.preventDefault();
+  function handleShakeOverlayPointerDown() {
     registerShakeInput(2 + Math.floor(Math.random() * 2));
   }
 
@@ -541,7 +509,7 @@ export function SchoolDetailClient({
                             } as CSSProperties
                           }
                         >
-                          💮
+                          🌸
                         </span>
                       ))
                     : null}
@@ -670,7 +638,7 @@ export function SchoolDetailClient({
           <button
             type="button"
             onPointerDown={handleShakeOverlayPointerDown}
-            className="fixed inset-x-0 bottom-0 top-24 z-40 bg-transparent select-none touch-none outline-none sm:top-28"
+            className="fixed inset-x-0 bottom-0 top-24 z-40 bg-transparent select-none touch-pan-y outline-none sm:top-28"
             style={{
               WebkitTapHighlightColor: "transparent",
               WebkitUserSelect: "none",
