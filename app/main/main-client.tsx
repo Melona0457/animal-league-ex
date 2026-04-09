@@ -216,7 +216,7 @@ export function MainClient({ school, score }: MainClientProps) {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-sky-200 px-4 py-8 text-white sm:py-10">
+    <main className="relative min-h-svh overflow-x-hidden bg-sky-200 px-4 py-5 text-white sm:py-10">
       <BackgroundVideoWarmup sources={MAIN_PAGE_WARMUP_VIDEOS} />
       <div
         className="pointer-events-none absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-md brightness-110 saturate-110"
@@ -226,7 +226,7 @@ export function MainClient({ school, score }: MainClientProps) {
       <div className="pointer-events-none absolute -left-24 top-16 h-56 w-56 rounded-full bg-pink-300/40 blur-3xl" />
       <div className="pointer-events-none absolute right-0 top-0 h-72 w-72 rounded-full bg-sky-100/55 blur-3xl" />
       <div className="pointer-events-none absolute bottom-12 left-10 h-64 w-64 rounded-full bg-rose-200/30 blur-3xl" />
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-[84rem] flex-col sm:min-h-[calc(100vh-5rem)]">
+      <div className="relative z-10 mx-auto flex w-full max-w-[84rem] flex-col sm:min-h-[calc(100vh-5rem)]">
         <section className="flex flex-1 flex-col py-2 sm:py-3">
           <div className="relative flex w-full flex-1 flex-col overflow-hidden rounded-[2.25rem] border border-white/35 bg-white/12 shadow-[0_26px_80px_rgba(65,91,145,0.22)] backdrop-blur-xl">
             <div className="flex items-center justify-between border-b border-white/25 bg-[linear-gradient(90deg,rgba(255,239,246,0.88),rgba(249,191,217,0.74),rgba(244,181,208,0.82))] px-4 py-3 text-stone-950 sm:px-7">
@@ -261,7 +261,7 @@ export function MainClient({ school, score }: MainClientProps) {
             </div>
             <div className="relative flex flex-1 p-2 sm:p-3">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.45),transparent_30%),radial-gradient(circle_at_top_right,rgba(255,210,228,0.24),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.16),rgba(149,196,244,0.18))]" />
-              <div className="relative flex h-[calc(100vh-12.5rem)] min-h-[720px] w-full items-end justify-center overflow-hidden rounded-[2rem] border border-white/45 bg-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+              <div className="relative flex h-[48svh] min-h-[360px] max-h-[520px] w-full items-end justify-center overflow-hidden rounded-[2rem] border border-white/45 bg-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] sm:h-[calc(100vh-12.5rem)] sm:min-h-[720px] sm:max-h-none">
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(255,255,255,0.42),rgba(255,255,255,0.08),transparent)]" />
                 <TreeScene
                   treeLevel={currentSchool.level}
@@ -336,7 +336,7 @@ export function MainClient({ school, score }: MainClientProps) {
           </div>
         </section>
 
-        <header className="mt-5 grid grid-cols-1 gap-2 rounded-[1.5rem] border border-white/30 bg-white/28 p-2.5 text-stone-950 backdrop-blur-sm sm:mt-6 sm:grid-cols-[1.15fr_1.35fr] sm:gap-2 sm:p-3">
+        <header className="mt-4 grid grid-cols-1 gap-2 rounded-[1.5rem] border border-white/30 bg-white/28 p-2.5 text-stone-950 backdrop-blur-sm sm:mt-6 sm:grid-cols-[1.15fr_1.35fr] sm:gap-2 sm:p-3">
           <div className="grid grid-cols-1 gap-2 rounded-[1.25rem] bg-white/40 px-3 py-2 sm:grid-cols-3 sm:items-stretch">
             <NearbySchoolRow
               school={previousSchool}
