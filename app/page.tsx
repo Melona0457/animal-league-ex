@@ -1,6 +1,6 @@
 import { BackgroundImageWarmup } from "./_components/background-image-warmup";
 import { BackgroundVideoWarmup } from "./_components/background-video-warmup";
-import { LandingIntroVideo } from "./_components/landing-intro-video";
+import { LandingIntroVideoNoSsr } from "./_components/landing-intro-video-no-ssr";
 import { CORE_BACKGROUND_IMAGES, PROTOTYPE_ONE_IMAGES } from "./_lib/image-assets";
 import { getLandingBackgroundImage } from "./_lib/mock-data";
 import { GAME_MODE_VIDEOS, MAIN_TREE_VIDEOS } from "./_lib/video-assets";
@@ -26,7 +26,7 @@ export default function Home() {
             ...PROTOTYPE_ONE_IMAGES,
           ]}
         />
-        <LandingIntroVideo
+        <LandingIntroVideoNoSsr
           src="/videos/intro.mp4"
           fallbackImage={landingBackgroundImage}
         />

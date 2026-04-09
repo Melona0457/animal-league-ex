@@ -62,6 +62,8 @@ const BEE_COLLISION_BEE_HEIGHT_FACTOR = 0.72;
 const BASE_BEE_SPAWN_INTERVAL = 1.5;
 const DIFFICULTY_SCALE_INTERVAL = 10;
 const DIFFICULTY_MULTIPLIER_STEP = 1.5;
+const GAME_RENDER_FPS = 50;
+const HUD_UPDATE_FPS = 15;
 const PROTOTYPE_ONE_PETAL_IMAGE = "/images/game/prototype1/petal.png";
 const PROTOTYPE_ONE_BEE_IMAGE = "/images/game/prototype1/bee.png";
 const PROTOTYPE_ONE_TREE_IMAGE = "/images/game/prototype1/tree.png";
@@ -241,6 +243,8 @@ export function PrototypeOneGameClient({
   const beesRef = useRef<FlyingBee[]>([]);
   const rafRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
+  const lastRenderCommitRef = useRef(0);
+  const lastHudCommitRef = useRef(0);
   const petalSpawnElapsedRef = useRef(0);
   const beeSpawnElapsedRef = useRef(0);
   const nextPetalIdRef = useRef(1);
@@ -384,6 +388,8 @@ export function PrototypeOneGameClient({
     const roundStart = performance.now();
     roundStartTimeRef.current = roundStart;
     lastFrameRef.current = roundStart;
+    lastRenderCommitRef.current = roundStart;
+    lastHudCommitRef.current = roundStart;
 
     function spawnPetal() {
       const petal: FallingPetal = {
@@ -441,7 +447,12 @@ export function PrototypeOneGameClient({
       const delta = Math.min(0.033, (now - lastFrameRef.current) / 1000);
       lastFrameRef.current = now;
       const elapsedSeconds = (now - roundStartTimeRef.current) / 1000;
-      setSurvivalSeconds(elapsedSeconds);
+
+      if (now - lastHudCommitRef.current >= 1000 / HUD_UPDATE_FPS) {
+        lastHudCommitRef.current = now;
+        setSurvivalSeconds(elapsedSeconds);
+      }
+
       const difficultyTier = Math.floor(elapsedSeconds / DIFFICULTY_SCALE_INTERVAL);
       const difficultyMultiplier = DIFFICULTY_MULTIPLIER_STEP ** difficultyTier;
 
@@ -563,12 +574,16 @@ export function PrototypeOneGameClient({
       }
 
       const nextScore = Math.max(0, scoreRef.current + deltaScore);
+      const shouldCommitRender = now - lastRenderCommitRef.current >= 1000 / GAME_RENDER_FPS;
 
       if (hitByBee) {
         playerRef.current = nextPlayer;
         petalsRef.current = nextPetals;
         beesRef.current = nextBees;
         scoreRef.current = nextScore;
+        lastRenderCommitRef.current = now;
+        lastHudCommitRef.current = now;
+        setSurvivalSeconds(elapsedSeconds);
         setPlayer(nextPlayer);
         setPetals(nextPetals);
         setBees(nextBees);
@@ -584,9 +599,12 @@ export function PrototypeOneGameClient({
       beesRef.current = nextBees;
       scoreRef.current = nextScore;
 
-      setPlayer(nextPlayer);
-      setPetals(nextPetals);
-      setBees(nextBees);
+      if (shouldCommitRender || deltaScore !== 0) {
+        lastRenderCommitRef.current = now;
+        setPlayer(nextPlayer);
+        setPetals(nextPetals);
+        setBees(nextBees);
+      }
 
       if (deltaScore !== 0) {
         setScore(nextScore);
@@ -851,14 +869,15 @@ export function PrototypeOneGameClient({
                     transform: `translate(-50%, 50%) rotate(${petal.rotation}deg)`,
                   }}
                 >
-                  <Image
+                  <img
                     src={PROTOTYPE_ONE_PETAL_IMAGE}
                     alt=""
-                    fill
-                    unoptimized
-                    sizes="(max-width: 768px) 28px, 40px"
+                    width={40}
+                    height={40}
+                    loading="eager"
+                    decoding="async"
                     draggable={false}
-                    className="object-contain [image-rendering:pixelated]"
+                    className="h-full w-full object-contain [image-rendering:pixelated]"
                   />
                 </div>
               ))}
@@ -874,14 +893,15 @@ export function PrototypeOneGameClient({
                     height: `${BEE_HEIGHT * 100}%`,
                   }}
                 >
-                  <Image
+                  <img
                     src={PROTOTYPE_ONE_BEE_IMAGE}
                     alt=""
-                    fill
-                    unoptimized
-                    sizes="(max-width: 768px) 52px, 72px"
+                    width={72}
+                    height={52}
+                    loading="eager"
+                    decoding="async"
                     draggable={false}
-                    className="object-contain [image-rendering:pixelated]"
+                    className="h-full w-full object-contain [image-rendering:pixelated]"
                   />
                 </div>
               ))}
@@ -902,14 +922,15 @@ export function PrototypeOneGameClient({
                     transformOrigin: "center bottom",
                   }}
                 >
-                  <Image
+                  <img
                     src={lionVisual.path}
                     alt=""
-                    fill
-                    unoptimized
-                    sizes="(max-width: 768px) 84px, 112px"
+                    width={112}
+                    height={112}
+                    loading="eager"
+                    decoding="async"
                     draggable={false}
-                    className="object-contain [image-rendering:pixelated]"
+                    className="h-full w-full object-contain [image-rendering:pixelated]"
                   />
                 </div>
               </div>
