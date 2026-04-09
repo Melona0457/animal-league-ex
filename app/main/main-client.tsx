@@ -255,7 +255,7 @@ export function MainClient({ school, score }: MainClientProps) {
                 <Link
                   href="/select-school"
                   aria-label="학교 다시 선택하기"
-                  className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-rose-200/80 bg-rose-300/92 shadow-[0_8px_20px_rgba(244,114,182,0.2)] transition-transform duration-150 hover:scale-[1.03]"
+                  className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-rose-200/80 bg-rose-300/92 shadow-[0_8px_20px_rgba(244,114,182,0.2)] transition-[transform,background-color] duration-150 hover:scale-[1.03] hover:bg-rose-400 active:bg-rose-500"
                 >
                   <span className="text-[1.6rem] font-bold leading-none text-white">×</span>
                 </Link>
