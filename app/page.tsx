@@ -1,6 +1,7 @@
 import { BackgroundImageWarmup } from "./_components/background-image-warmup";
 import { BackgroundVideoWarmup } from "./_components/background-video-warmup";
 import { LandingIntroVideo } from "./_components/landing-intro-video";
+import { CORE_BACKGROUND_IMAGES, PROTOTYPE_ONE_IMAGES } from "./_lib/image-assets";
 import { getLandingBackgroundImage } from "./_lib/mock-data";
 import { GAME_MODE_VIDEOS, MAIN_TREE_VIDEOS } from "./_lib/video-assets";
 import { HomeEntryClient } from "./home-entry-client";
@@ -21,10 +22,8 @@ export default function Home() {
         <BackgroundImageWarmup
           sources={[
             landingBackgroundImage,
-            "/images/backgrounds/main-background.png",
-            "/images/game/prototype1/background/sky.png",
-            "/images/game/prototype1/background/upper-green.png",
-            "/images/game/prototype1/background/lower-green.png",
+            ...CORE_BACKGROUND_IMAGES,
+            ...PROTOTYPE_ONE_IMAGES,
           ]}
         />
         <LandingIntroVideo
