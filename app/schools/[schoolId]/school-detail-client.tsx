@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
@@ -90,6 +90,7 @@ export function SchoolDetailClient({
   const [shakeMode, setShakeMode] = useState<"idle" | "countdown" | "result">("idle");
   const [shakeSeconds, setShakeSeconds] = useState(8);
   const [shakeCount, setShakeCount] = useState(0);
+  const [isResolvingShakeResult, setIsResolvingShakeResult] = useState(false);
   const [droppedCount, setDroppedCount] = useState(0);
   const [reducedScore, setReducedScore] = useState(0);
   const [shakeResult, setShakeResult] = useState<ShakePetalResult | null>(null);
@@ -108,6 +109,9 @@ export function SchoolDetailClient({
     }>
   >([]);
   const lastMotionRef = useRef(0);
+  const shakeCountRef = useRef(0);
+  const shakeResultLockRef = useRef(false);
+  const shakeSessionRef = useRef(0);
 
   const spawnShakePetals = useCallback((count = 1) => {
     const nextPetals = Array.from({ length: count }, () => ({
@@ -129,14 +133,22 @@ export function SchoolDetailClient({
     });
   }, []);
 
-  const registerShakeInput = useCallback((petalBurst = 2) => {
-    if (shakeMode !== "countdown") {
-      return;
-    }
+  const registerShakeInput = useCallback(
+    (petalBurst = 2) => {
+      if (shakeMode !== "countdown" || shakeSeconds <= 0 || shakeResultLockRef.current) {
+        return;
+      }
 
-    setShakeCount((current) => current + 1);
-    spawnShakePetals(petalBurst);
-  }, [shakeMode, spawnShakePetals]);
+      setShakeCount((current) => {
+        const nextCount = current + 1;
+
+        shakeCountRef.current = nextCount;
+        return nextCount;
+      });
+      spawnShakePetals(petalBurst);
+    },
+    [shakeMode, shakeSeconds, spawnShakePetals],
+  );
 
   useEffect(() => {
     let isActive = true;
@@ -157,7 +169,7 @@ export function SchoolDetailClient({
       }
     }
 
-    loadSchool();
+    void loadSchool();
 
     return () => {
       isActive = false;
@@ -212,6 +224,8 @@ export function SchoolDetailClient({
     const timer = window.setInterval(() => {
       setShakeSeconds((current) => {
         if (current <= 1) {
+          shakeResultLockRef.current = true;
+          setIsResolvingShakeResult(true);
           window.clearInterval(timer);
           return 0;
         }
@@ -238,6 +252,10 @@ export function SchoolDetailClient({
         return;
       }
 
+      if (event.repeat) {
+        return;
+      }
+
       event.preventDefault();
       registerShakeInput(2);
     }
@@ -250,13 +268,16 @@ export function SchoolDetailClient({
   }, [shakeMode, registerShakeInput]);
 
   useEffect(() => {
-    if (shakeMode !== "countdown" || shakeSeconds > 0) {
+    if (shakeMode !== "countdown" || shakeSeconds > 0 || !shakeResultLockRef.current) {
       return;
     }
 
+    const activeSession = shakeSessionRef.current;
+    const finalShakeCount = shakeCountRef.current;
+
     void (async () => {
-      const result = await shakePetals(schoolId, shakeCount);
-      const scorePenalty = Math.max(1, shakeCount);
+      const result = await shakePetals(schoolId, finalShakeCount);
+      const scorePenalty = Math.max(1, finalShakeCount);
       await applyShake(schoolId, scorePenalty);
       await createAttackLog({
         attackerSchoolId: fromSchoolId,
@@ -264,22 +285,40 @@ export function SchoolDetailClient({
         reducedPetals: scorePenalty,
       });
       const nextSchool = await getStoredSchoolById(schoolId);
+
+      if (shakeSessionRef.current !== activeSession) {
+        return;
+      }
+
       setPetals(result.petals);
       setSchool(nextSchool);
       setDroppedCount(result.removedCount);
       setReducedScore(scorePenalty);
       setShakeResult(result);
       setFallingPetals([]);
+      setIsResolvingShakeResult(false);
       setShakeMode("result");
     })();
-  }, [fromSchoolId, shakeMode, shakeSeconds, schoolId, shakeCount]);
+  }, [fromSchoolId, shakeMode, shakeSeconds, schoolId]);
 
   function handleShakeStart() {
-    if (isOwnSchool) {
+    if (isOwnSchool || shakeMode === "countdown") {
       return;
     }
 
+    if (typeof document !== "undefined") {
+      const activeElement = document.activeElement;
+
+      if (activeElement instanceof HTMLElement) {
+        activeElement.blur();
+      }
+    }
+
+    shakeSessionRef.current += 1;
+    shakeResultLockRef.current = false;
+    shakeCountRef.current = 0;
     setShakeCount(0);
+    setIsResolvingShakeResult(false);
     setDroppedCount(0);
     setReducedScore(0);
     setShakeResult(null);
@@ -538,11 +577,11 @@ export function SchoolDetailClient({
         </header>
       </div>
 
-      {shakeMode === "countdown" ? (
+      {shakeMode === "countdown" && !isResolvingShakeResult ? (
         <>
           <button
             type="button"
-            onPointerDown={() => registerShakeInput(2 + Math.floor(Math.random() * 2))}
+            onClick={() => registerShakeInput(2 + Math.floor(Math.random() * 2))}
             className="fixed inset-0 z-40 bg-transparent"
             aria-label="화면 아무 곳이나 눌러 흔들기"
           />
@@ -584,45 +623,39 @@ export function SchoolDetailClient({
 
       {shakeMode === "result" ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4">
-          <div className="w-full max-w-md rounded-[2rem] border border-white/15 bg-stone-950/92 p-6 text-center text-white backdrop-blur-sm">
-            <p className="text-sm font-semibold tracking-[0.24em] text-rose-300">RESULT</p>
-            <h2 className="mt-3 text-3xl font-bold">시간이 다 되었어요</h2>
-            <p className="mt-4 text-sm leading-6 text-white/70">
+          <div className="w-full max-w-md rounded-[2rem] border border-stone-200 bg-white p-6 text-center text-stone-900 shadow-2xl">
+            <p className="text-sm font-semibold tracking-[0.24em] text-rose-500">RESULT</p>
+            <h2 className="mt-3 text-3xl font-bold">나무 흔들기 종료</h2>
+            <p className="mt-4 text-sm leading-6 text-stone-600">
               {shakeResult?.reason === "removed" ? (
                 <>
                   이번 방해로{" "}
-                  <span className="font-semibold text-white">{reducedScore}</span>점만큼 벚꽃 수가
+                  <span className="font-semibold text-stone-900">{reducedScore}</span>점만큼 벚꽃 수가
                   줄었고, 저장된 꽃잎{" "}
-                  <span className="font-semibold text-white">{droppedCount}개</span>가 떨어졌어요.
+                  <span className="font-semibold text-stone-900">{droppedCount}개</span>가 떨어졌어요.
                 </>
               ) : shakeResult?.reason === "no_petals" ? (
                 <>
                   이번 방해로{" "}
-                  <span className="font-semibold text-white">{reducedScore}</span>점만큼 벚꽃 수가
+                  <span className="font-semibold text-stone-900">{reducedScore}</span>점만큼 벚꽃 수가
                   줄었어요. 아직 이 학교에 저장된 꽃잎이 없어서 화면에서 떨어진 꽃잎은 0개예요.
                 </>
               ) : shakeResult?.reason === "delete_failed" ? (
                 <>
                   이번 방해로{" "}
-                  <span className="font-semibold text-white">{reducedScore}</span>점만큼 벚꽃 수가
+                  <span className="font-semibold text-stone-900">{reducedScore}</span>점만큼 벚꽃 수가
                   줄었지만, 저장된 꽃잎 삭제는 실패했어요.
                 </>
               ) : (
                 shakeResult?.message ?? "이번 방해 결과를 불러오지 못했어요."
               )}
             </p>
-            <p className="mt-3 text-xs leading-5 text-white/55">
+            <p className="mt-3 text-xs leading-5 text-stone-500">
               총 감소 점수 {reducedScore + shareBonusDamage}
               {shareBonusDamage > 0 ? ` · 공유 보너스 +${shareBonusDamage}` : ""}
             </p>
-            {shakeResult?.reason === "no_petals" ? (
-              <p className="mt-3 text-xs leading-5 text-white/50">
-                참고: 나무 이미지에 원래 그려진 꽃은 제외되고, 게임으로 실제 저장된 꽃잎만
-                흔들기 연출로 떨어집니다.
-              </p>
-            ) : null}
             {shareNotice ? (
-              <div className="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
+              <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
                 {shareNotice}
               </div>
             ) : null}
@@ -631,7 +664,7 @@ export function SchoolDetailClient({
                 type="button"
                 onClick={handleShareAttackResult}
                 disabled={hasAppliedShareBonus && reducedScore > 0}
-                className="rounded-2xl border border-white/15 px-4 py-4 text-sm font-semibold text-white"
+                className="rounded-2xl border border-stone-200 bg-white px-4 py-4 text-sm font-semibold text-stone-700 transition-transform duration-200 hover:scale-[1.02]"
               >
                 {hasAppliedShareBonus && reducedScore > 0
                   ? "공유 보너스 반영 완료"
@@ -639,17 +672,18 @@ export function SchoolDetailClient({
               </button>
               <button
                 type="button"
-                onClick={() => setShakeMode("idle")}
-                className="rounded-2xl bg-white px-4 py-4 text-sm font-semibold text-stone-950"
+                onClick={handleShakeStart}
+                className="rounded-2xl border border-stone-200 px-4 py-4 text-sm font-semibold text-stone-700 transition-transform duration-200 hover:scale-[1.02]"
               >
-                확인
+                다시 하기
               </button>
-              <Link
-                href={`/ranking?schoolId=${fromSchoolId}`}
-                className="rounded-2xl border border-white/15 px-4 py-4 text-sm font-semibold text-white"
+              <button
+                type="button"
+                onClick={() => setShakeMode("idle")}
+                className="rounded-2xl bg-stone-900 px-4 py-4 text-center text-sm font-semibold text-white transition-transform duration-200 hover:scale-[1.02]"
               >
-                모아보기로 돌아가기
-              </Link>
+                그만두기
+              </button>
             </div>
           </div>
         </div>

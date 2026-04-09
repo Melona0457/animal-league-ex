@@ -117,6 +117,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
   const [fallScore, setFallScore] = useState(0);
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
   const [shareNotice, setShareNotice] = useState("");
+  const [shareNoticeTone, setShareNoticeTone] = useState<"success" | "warning">("success");
   const [shareBonus, setShareBonus] = useState(0);
   const [hasAppliedShareBonus, setHasAppliedShareBonus] = useState(false);
 
@@ -369,6 +370,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
     setShareBonus(0);
     setHasAppliedShareBonus(false);
     setShareNotice("");
+    setShareNoticeTone("success");
   }
 
   function handleCloseGame() {
@@ -418,6 +420,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
           const bonus = currentScore;
           setShareBonus(bonus);
           setHasAppliedShareBonus(true);
+          setShareNoticeTone("success");
           setShareNotice("결과를 공유해서 점수를 2배로 얻었어요!");
           return;
         }
@@ -426,8 +429,10 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
       }
 
       await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-      setShareNotice("공유용 링크를 복사했어요. 다른 사람에게 공유하면 점수가 2배로 반영돼요.");
+      setShareNoticeTone("warning");
+      setShareNotice("친구에게 공유해야 점수가 두 배가 돼요!");
     } catch {
+      setShareNoticeTone("warning");
       setShareNotice("공유를 완료하지 못했어요. 다시 시도해주세요.");
     }
   }
@@ -712,7 +717,13 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
                       </p>
                     ) : null}
                     {shareNotice ? (
-                      <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                      <div
+                        className={`mt-4 rounded-2xl px-4 py-3 text-sm ${
+                          shareNoticeTone === "success"
+                            ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                            : "border border-rose-200 bg-rose-50 text-rose-700"
+                        }`}
+                      >
                         {shareNotice}
                       </div>
                     ) : null}
