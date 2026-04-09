@@ -74,7 +74,7 @@ export default function Home() {
           </div>
 
           <div className="w-full text-center text-xs text-white/70 sm:text-sm">
-            친구랑 같이 들어와서 우리 학교 벚꽃 수명 연장하기
+            친구와 함께 우리 학교 벚꽃 수명 연장하기
           </div>
         </div>
       </HomeEntryClient>
