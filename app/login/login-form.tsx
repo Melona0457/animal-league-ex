@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { signInAccount } from "../_lib/mock-auth";
+import { setSelectedSchoolId } from "../_lib/selected-school";
 
 type LoginFormProps = {
   signupNotice?: string;
@@ -29,7 +30,8 @@ export function LoginForm({ signupNotice = "" }: LoginFormProps) {
     }
 
     setError("");
-    router.push(`/main?schoolId=${result.schoolId}`);
+    setSelectedSchoolId(result.schoolId);
+    router.push("/main");
   }
 
   return (

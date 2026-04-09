@@ -64,8 +64,8 @@ export default function Home() {
                 벚꽃살리기
               </h1>
               <p className="mt-5 max-w-sm text-sm leading-6 text-white/78 sm:max-w-xl sm:text-lg sm:leading-8">
-                우리 학교 벚꽃은 살리고, 남의 학교는 흔들고, 랭킹은 끝까지
-                확인하게 되는 봄 시즌 대항전.
+              우리 학교 벚꽃은 살리고, 남의 학교는 흔들고.<br />
+              랭킹은 끝까지 확인하게 되는 봄 시즌 대항전.
               </p>
               <div className="mt-10 rounded-full border border-white/20 bg-white/10 px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(0,0,0,0.18)] backdrop-blur transition group-hover:scale-[1.02] sm:text-base">
                 화면 아무 곳이나 눌러 입장하기
@@ -74,7 +74,7 @@ export default function Home() {
           </div>
 
           <div className="w-full text-center text-xs text-white/70 sm:text-sm">
-            친구랑 같이 들어와서 우리 학교 벚꽃 수명 연장하기
+            친구와 함께 우리 학교 벚꽃 수명 연장하기
           </div>
         </div>
       </HomeEntryClient>

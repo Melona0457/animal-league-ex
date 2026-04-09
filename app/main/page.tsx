@@ -1,5 +1,7 @@
 import { getSchoolById } from "../_lib/mock-data";
+import { resolveSchoolIdFromRequest } from "../_lib/selected-school-server";
 import { MainClient } from "./main-client";
+import { redirect } from "next/navigation";
 
 type MainPageProps = {
   searchParams: Promise<{
@@ -11,9 +13,14 @@ type MainPageProps = {
 
 export default async function MainPage({ searchParams }: MainPageProps) {
   const params = await searchParams;
+  const resolvedSchoolId = await resolveSchoolIdFromRequest(params.schoolId);
+
+  if (!resolvedSchoolId) {
+    redirect("/select-school");
+  }
+
   const school =
-    getSchoolById(params.schoolId ?? "school-044") ??
-    getSchoolById("school-044");
+    getSchoolById(resolvedSchoolId) ?? getSchoolById("school-044");
   const score = Number(params.score ?? "0");
 
   if (!school) {

@@ -149,8 +149,8 @@ function matchesSchoolQuery(name: string, query: string) {
 
 function getSchoolNavigationHref(schoolId: string, currentSchoolId: string) {
   return schoolId === currentSchoolId
-    ? `/main?schoolId=${currentSchoolId}`
-    : `/schools/${schoolId}?fromSchoolId=${currentSchoolId}`;
+    ? "/main"
+    : `/schools/${schoolId}`;
 }
 
 function getRankSnapshotStorageKey() {
@@ -253,7 +253,7 @@ export function RankingClient({
               </p>
             </div>
             <Link
-              href={`/main?schoolId=${currentSchoolId}`}
+              href="/main"
               className="shrink-0 rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-sm font-medium text-stone-700 shadow-sm transition hover:bg-white"
             >
               메인으로
@@ -480,7 +480,7 @@ export function RankingClient({
             </p>
             <div className="flex shrink-0 gap-2">
               <Link
-                href={`/ranking?schoolId=${currentSchoolId}`}
+                href="/ranking"
                 className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
                   sort === "rank"
                     ? "bg-stone-900 text-white shadow-lg shadow-stone-900/15"
@@ -490,7 +490,7 @@ export function RankingClient({
                 랭킹순
               </Link>
               <Link
-                href={`/ranking?sort=name&schoolId=${currentSchoolId}`}
+                href="/ranking?sort=name"
                 className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
                   sort === "name"
                     ? "bg-stone-900 text-white shadow-lg shadow-stone-900/15"

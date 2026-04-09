@@ -84,7 +84,7 @@ export function CommunityClient({
               </p>
             </div>
             <Link
-              href={`/main?schoolId=${schoolId}`}
+              href="/main"
               className="rounded-xl border border-stone-200 px-3 py-2 text-sm"
             >
               메인으로
