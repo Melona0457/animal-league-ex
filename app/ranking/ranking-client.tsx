@@ -68,14 +68,14 @@ function getPodiumTreeImage(rank: number) {
 
 function getPodiumTreeOffset(rank: number) {
   if (rank === 1) return "-mb-2";
-  if (rank === 2) return "-mb-8";
-  return "-mb-9";
+  if (rank === 2) return "-mb-2 sm:-mb-8";
+  return "-mb-2 sm:-mb-9";
 }
 
 function getPodiumNameOffset(rank: number) {
   if (rank === 1) return "-mb-3";
-  if (rank === 2) return "-mb-7";
-  return "-mb-8";
+  if (rank === 2) return "-mb-3 sm:-mb-7";
+  return "-mb-3 sm:-mb-8";
 }
 
 function getMobilePodiumHeightClass(rank: number) {
@@ -511,13 +511,13 @@ export function RankingClient({
                     href={getSchoolNavigationHref(school.id, currentSchoolId)}
                     className="flex items-center justify-between gap-3 px-5 py-4 transition hover:bg-rose-50/70"
                   >
-                    <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                    <div className="flex min-w-0 items-center gap-1.5 sm:gap-3">
                       <div className="w-9 shrink-0 text-center">
                         <p className={`text-sm font-semibold ${getRankTextClass(school.rank)}`}>
                           {school.rank}위
                         </p>
                       </div>
-                      <div className="w-11 shrink-0 text-center">
+                      <div className="w-8 shrink-0 text-center sm:w-11">
                         {rankDelta ? (
                           <p className={`text-xs font-bold ${rankDelta.className}`}>
                             {rankDelta.label}

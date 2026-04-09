@@ -111,6 +111,13 @@ export default async function GameSelectPage({
           </div>
         </header>
 
+        <Link
+          href="/main"
+          className="mx-auto block w-full max-w-6xl rounded-[1.4rem] border border-white/80 bg-white/78 px-4 py-3 text-center text-sm font-semibold text-stone-700 shadow-[0_12px_28px_rgba(120,73,96,0.08)] backdrop-blur-sm transition-colors duration-200 hover:bg-white/88"
+        >
+          {COPY.backToMainShort}
+        </Link>
+
         <section className="grid gap-4 xl:grid-cols-2">
           {GAME_MODES.map((mode) => (
             <article
@@ -164,13 +171,6 @@ export default async function GameSelectPage({
             </article>
           ))}
         </section>
-
-        <Link
-          href="/main"
-          className="mt-1 block rounded-[1.6rem] border border-white/80 bg-white/78 px-4 py-4 text-center text-sm font-semibold text-stone-700 shadow-[0_12px_28px_rgba(120,73,96,0.08)] backdrop-blur-sm transition-colors duration-200 hover:bg-white/88"
-        >
-          {COPY.backToMainShort}
-        </Link>
 
       </div>
     </main>
