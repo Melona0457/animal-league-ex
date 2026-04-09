@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 
 type LandingIntroVideoProps = {
@@ -21,12 +22,13 @@ export function LandingIntroVideo({ src, fallbackImage }: LandingIntroVideoProps
             "radial-gradient(circle at 24% 18%, rgba(255, 208, 226, 0.32), rgba(255, 208, 226, 0) 32%), linear-gradient(180deg, #7fb6e9 0%, #9fd2f7 42%, #d8e8f8 100%)",
         }}
       />
-      <img
+      <Image
         src={fallbackImage}
         alt=""
-        loading="eager"
-        fetchPriority="high"
-        decoding="sync"
+        fill
+        priority
+        unoptimized
+        sizes="100vw"
         className={`home-entry-bg home-entry-bg-zoom absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
           isReady && !hasError ? "opacity-0" : isFallbackLoaded ? "opacity-100" : "opacity-0"
         }`}

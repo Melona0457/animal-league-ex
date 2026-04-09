@@ -869,13 +869,13 @@ export function PrototypeOneGameClient({
                     transform: `translate(-50%, 50%) rotate(${petal.rotation}deg)`,
                   }}
                 >
-                  <img
+                  <Image
                     src={PROTOTYPE_ONE_PETAL_IMAGE}
                     alt=""
                     width={40}
                     height={40}
-                    loading="eager"
-                    decoding="async"
+                    unoptimized
+                    sizes="40px"
                     draggable={false}
                     className="h-full w-full object-contain [image-rendering:pixelated]"
                   />
@@ -893,13 +893,13 @@ export function PrototypeOneGameClient({
                     height: `${BEE_HEIGHT * 100}%`,
                   }}
                 >
-                  <img
+                  <Image
                     src={PROTOTYPE_ONE_BEE_IMAGE}
                     alt=""
                     width={72}
                     height={52}
-                    loading="eager"
-                    decoding="async"
+                    unoptimized
+                    sizes="72px"
                     draggable={false}
                     className="h-full w-full object-contain [image-rendering:pixelated]"
                   />
@@ -922,13 +922,13 @@ export function PrototypeOneGameClient({
                     transformOrigin: "center bottom",
                   }}
                 >
-                  <img
+                  <Image
                     src={lionVisual.path}
                     alt=""
                     width={112}
                     height={112}
-                    loading="eager"
-                    decoding="async"
+                    unoptimized
+                    sizes="112px"
                     draggable={false}
                     className="h-full w-full object-contain [image-rendering:pixelated]"
                   />

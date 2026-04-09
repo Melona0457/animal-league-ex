@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -44,9 +45,12 @@ function SchoolLogo({
   return (
     <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-stone-200 bg-stone-50">
       {variant !== "missing" ? (
-        <img
+        <Image
           src={logoSrc}
           alt={`${schoolName} logo`}
+          fill
+          unoptimized
+          sizes="56px"
           className="h-full w-full object-contain"
           onError={handleError}
         />
@@ -320,9 +324,13 @@ export function RankingClient({
                         {school.name}
                       </p>
                     </div>
-                    <img
+                    <Image
                       src={getPodiumTreeImage(school.rank)}
                       alt={`${school.rank}위 벚꽃나무`}
+                      width={320}
+                      height={320}
+                      unoptimized
+                      sizes="(max-width: 640px) 132px, 192px"
                       className={`relative z-10 w-auto object-contain ${
                         school.rank === 1
                           ? "h-32 sm:h-48"
