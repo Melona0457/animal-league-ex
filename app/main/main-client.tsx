@@ -322,7 +322,7 @@ export function MainClient({ school, score }: MainClientProps) {
                     href={`/ranking?schoolId=${currentSchool.id}`}
                     className="rounded-[1.35rem] border border-sky-200/70 bg-white/78 px-4 py-3 text-center text-base font-bold text-sky-800 shadow-[0_16px_40px_rgba(0,0,0,0.14)] backdrop-blur-sm"
                   >
-                    다른 학교 구경하기
+                    다른 학교 방해하러 가기
                   </Link>
                 </div>
               </div>
