@@ -47,12 +47,12 @@ function NearbySchoolRow({
 }) {
   if (!school) {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/4 px-3 py-2 text-white/45">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[10px]">
+      <div className="flex items-center gap-3 rounded-2xl border border-stone-200/80 bg-white/60 px-3 py-2 text-stone-500">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200/80 bg-white/70 text-[10px]">
           -
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-medium">경쟁 학교 없음</p>
+          <p className="text-xs font-semibold">경쟁 학교 없음</p>
         </div>
       </div>
     );
@@ -61,34 +61,32 @@ function NearbySchoolRow({
   return (
     <Link
       href={`/schools/${school.id}?fromSchoolId=${currentSchoolId}`}
-      className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/4 px-3 py-2 transition hover:border-white/15 hover:bg-white/8"
+      className="flex min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border border-stone-200/80 bg-white/60 px-3 py-3 text-center transition hover:border-stone-300 hover:bg-white/75"
     >
-      <div className="flex min-w-0 items-center gap-3">
-        <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5">
-          <img
-            src={getSchoolLogoImage(school.id)}
-            alt={`${school.name} 로고`}
-            className="h-full w-full object-contain"
-            onError={(event) => {
-              const image = event.currentTarget;
+      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200/80 bg-white/80">
+        <img
+          src={getSchoolLogoImage(school.id)}
+          alt={`${school.name} 로고`}
+          className="h-full w-full object-contain"
+          onError={(event) => {
+            const image = event.currentTarget;
 
-              if (image.dataset.fallbackApplied === "true") {
-                image.style.display = "none";
-                return;
-              }
+            if (image.dataset.fallbackApplied === "true") {
+              image.style.display = "none";
+              return;
+            }
 
-              image.dataset.fallbackApplied = "true";
-              image.src = `/images/schools/${school.id}/logo.webp`;
-            }}
-          />
-          <span className="hidden text-[10px] text-white/45">로고</span>
-        </div>
-        <div className="min-w-0">
-          <p className="text-[11px] text-white/55">#{school.rank}</p>
-          <p className="truncate text-sm font-semibold text-white">{school.name}</p>
-        </div>
+            image.dataset.fallbackApplied = "true";
+            image.src = `/images/schools/${school.id}/logo.webp`;
+          }}
+        />
+        <span className="hidden text-[10px] text-stone-400">로고</span>
       </div>
-      <p className="shrink-0 text-[11px] text-rose-100/80">{gap.toLocaleString()}표</p>
+      <div className="min-w-0">
+        <p className="text-[11px] font-medium text-stone-500">#{school.rank}</p>
+        <p className="mt-1 truncate text-base font-semibold text-stone-800">{school.name}</p>
+      </div>
+      <p className="text-sm font-bold text-rose-500">{gap.toLocaleString()}개</p>
     </Link>
   );
 }
@@ -96,6 +94,7 @@ function NearbySchoolRow({
 export function MainClient({ school, score }: MainClientProps) {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAttackLogOpen, setIsAttackLogOpen] = useState(false);
   const [currentSchool, setCurrentSchool] = useState(school);
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
   const [petals, setPetals] = useState<PetalPlacement[]>([]);
@@ -116,7 +115,7 @@ export function MainClient({ school, score }: MainClientProps) {
       const [storedSchool, storedSchools, storedAttackLogs] = await Promise.all([
         getStoredSchoolById(school.id),
         getStoredSchools(),
-        getAttackLogsForSchool(school.id, 3),
+        getAttackLogsForSchool(school.id, 20),
       ]);
       const storedPetals = await getPetalsBySchoolId(school.id);
       const dismissedAt =
@@ -166,7 +165,6 @@ export function MainClient({ school, score }: MainClientProps) {
     latestAttackAt !== null &&
     (dismissedAttackAt === null ||
       new Date(latestAttackAt).getTime() > new Date(dismissedAttackAt).getTime());
-  const visibleAttackLogs = hasUnreadAttackAlert ? attackLogs : [];
 
   function handleSelectAnotherSchool() {
     router.push("/select-school");
@@ -179,6 +177,14 @@ export function MainClient({ school, score }: MainClientProps) {
 
     window.localStorage.setItem(getAttackAlertStorageKey(currentSchool.id), latestAttackAt);
     setDismissedAttackAt(latestAttackAt);
+  }
+
+  function handleOpenAttackLogs() {
+    setIsAttackLogOpen(true);
+
+    if (hasUnreadAttackAlert) {
+      handleDismissAttackAlert();
+    }
   }
 
   async function handleShare() {
@@ -212,93 +218,66 @@ export function MainClient({ school, score }: MainClientProps) {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-stone-900 px-4 py-5 text-white">
+    <main className="relative min-h-screen overflow-hidden bg-sky-200 px-4 py-8 text-white sm:py-10">
       <BackgroundVideoWarmup sources={MAIN_PAGE_WARMUP_VIDEOS} />
       <div
-        className="pointer-events-none absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-lg"
+        className="pointer-events-none absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-md brightness-110 saturate-110"
         style={{ backgroundImage: `url('${getSchoolBackgroundImage(currentSchool.id)}')` }}
       />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(24,10,18,0.34),rgba(24,10,18,0.76))]" />
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-5xl flex-col">
-        <header className="grid grid-cols-[0.9fr_1.4fr_0.7fr] gap-2 rounded-[1.75rem] border border-white/15 bg-black/22 p-3 backdrop-blur-sm sm:gap-3 sm:p-4">
-          <div className="flex flex-col justify-between px-3 py-3">
-            <NearbySchoolRow
-              school={previousSchool}
-              gap={gapToPrevious}
-              currentSchoolId={currentSchool.id}
-            />
-            <div className="py-3 text-center">
-              <p className="text-[11px] font-medium text-white/65 sm:text-xs">현재 순위</p>
-              <p className="mt-1 text-xl font-bold sm:text-3xl">#{currentSchool.rank}</p>
-            </div>
-            <NearbySchoolRow
-              school={nextSchool}
-              gap={gapToNext}
-              currentSchoolId={currentSchool.id}
-            />
-          </div>
-          <div className="px-3 py-3">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="text-[11px] font-medium text-white/65 sm:text-xs">레벨</p>
-                <p className="mt-1 text-base font-bold sm:text-2xl">
-                  {getLevelLabel(currentSchool.level)}
-                </p>
-              </div>
-              {score > 0 ? (
-                <span className="rounded-full bg-emerald-400/20 px-2 py-1 text-[11px] font-semibold text-emerald-100">
-                  +{score}
-                </span>
-              ) : null}
-            </div>
-            <div className="mt-3">
-              <p className="mb-2 text-[11px] text-white/65 sm:text-xs">
-                총 벚꽃 수 {totalPetals.toLocaleString()}
-              </p>
-              <div className="relative h-7 overflow-hidden rounded-full bg-white/12 sm:h-8">
-                <div
-                  className="h-full rounded-full bg-[linear-gradient(90deg,#fda4af_0%,#fb7185_50%,#fecdd3_100%)] transition-[width] duration-700"
-                  style={{ width: `${progressPercent}%` }}
-                />
-                <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[11px] font-semibold leading-none text-stone-950 sm:text-xs">
-                  {progressPercent.toFixed(0)}%
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,247,251,0.16),rgba(120,183,241,0.16)_22%,rgba(120,183,241,0.08)_62%,rgba(255,236,244,0.14)_100%)]" />
+      <div className="pointer-events-none absolute -left-24 top-16 h-56 w-56 rounded-full bg-pink-300/40 blur-3xl" />
+      <div className="pointer-events-none absolute right-0 top-0 h-72 w-72 rounded-full bg-sky-100/55 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-12 left-10 h-64 w-64 rounded-full bg-rose-200/30 blur-3xl" />
+      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-[84rem] flex-col sm:min-h-[calc(100vh-5rem)]">
+        <section className="flex flex-1 flex-col py-2 sm:py-3">
+          <div className="relative flex w-full flex-1 flex-col overflow-hidden rounded-[2.25rem] border border-white/35 bg-white/12 shadow-[0_26px_80px_rgba(65,91,145,0.22)] backdrop-blur-xl">
+            <div className="flex items-center justify-between border-b border-white/25 bg-[linear-gradient(90deg,rgba(255,239,246,0.88),rgba(249,191,217,0.74),rgba(244,181,208,0.82))] px-4 py-3 text-stone-950 sm:px-7">
+              <div className="flex items-center gap-4">
+                <div className="rounded-full bg-white/85 px-4 py-2 text-[11px] font-black tracking-[0.3em] text-rose-600 shadow-sm sm:text-xs">
+                  BLOSSOM HOME
+                </div>
+                <div className="hidden items-center gap-2 sm:flex">
+                  <span className="h-2.5 w-2.5 rounded-full bg-white/95" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-rose-300" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-pink-500/80" />
                 </div>
               </div>
-              <div className="mt-2 flex items-center justify-between text-[10px] text-white/65 sm:text-xs">
-                <span>{getLevelLabel(currentSchool.level)}</span>
-                <span>
-                  {currentSchool.level >= 7
-                    ? "만개"
-                    : `LV.${currentSchool.level + 1}`}
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/92 shadow-[0_8px_20px_rgba(209,122,156,0.14)]">
+                  <span className="block h-[3px] w-5 rounded-full bg-stone-400" />
                 </span>
+                <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/92 shadow-[0_8px_20px_rgba(209,122,156,0.14)]">
+                  <span className="relative block h-5 w-5">
+                    <span className="absolute right-0 top-0 h-4 w-4 rounded-[4px] border-2 border-stone-400 bg-white" />
+                    <span className="absolute bottom-0 left-0 h-4 w-4 rounded-[4px] border-2 border-stone-400 bg-white" />
+                  </span>
+                </span>
+                <Link
+                  href="/select-school"
+                  aria-label="학교 다시 선택하기"
+                  className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-rose-200/80 bg-rose-300/92 shadow-[0_8px_20px_rgba(244,114,182,0.2)] transition-transform duration-150 hover:scale-[1.03]"
+                >
+                  <span className="text-[1.6rem] font-bold leading-none text-white">×</span>
+                </Link>
               </div>
             </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setIsMenuOpen(true)}
-            className="flex items-center justify-end px-3 py-3 text-left"
-          >
-            <p className="text-3xl font-bold leading-none sm:text-4xl">≡</p>
-          </button>
-        </header>
-
-        {visibleAttackLogs.length > 0 ? (
-          <section className="mt-3 grid gap-2">
-            {visibleAttackLogs.map((log, index) => (
-              <div
-                key={log.id}
-                className={`rounded-3xl border px-4 py-3 backdrop-blur-sm ${
-                  index === 0
-                    ? "border-rose-300/30 bg-rose-500/16"
-                    : "border-white/12 bg-black/22"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/12 bg-white/6">
+            <div className="relative flex flex-1 p-2 sm:p-3">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.45),transparent_30%),radial-gradient(circle_at_top_right,rgba(255,210,228,0.24),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.16),rgba(149,196,244,0.18))]" />
+              <div className="relative flex h-[calc(100vh-12.5rem)] min-h-[720px] w-full items-end justify-center overflow-hidden rounded-[2rem] border border-white/45 bg-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(255,255,255,0.42),rgba(255,255,255,0.08),transparent)]" />
+                <TreeScene
+                  treeLevel={currentSchool.level}
+                  petals={petals}
+                  fillContainer
+                  backgroundMode="cover"
+                  showPetals={false}
+                  className="min-h-full w-full"
+                />
+                <div className="pointer-events-none absolute left-6 top-6 z-30 flex items-center gap-4 rounded-[1.6rem] border border-white/35 bg-white/18 px-4 py-3 text-stone-950 shadow-[0_12px_30px_rgba(0,0,0,0.12)] backdrop-blur-md sm:left-8 sm:top-8 sm:px-5">
+                  <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/55 bg-white/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] sm:h-20 sm:w-20">
                     <img
-                      src={getSchoolLogoImage(log.attackerSchoolId)}
-                      alt={`${log.attackerSchoolName} 로고`}
+                      src={getSchoolLogoImage(currentSchool.id)}
+                      alt={`${currentSchool.name} 로고`}
                       className="h-full w-full object-contain"
                       onError={(event) => {
                         const image = event.currentTarget;
@@ -309,82 +288,111 @@ export function MainClient({ school, score }: MainClientProps) {
                         }
 
                         image.dataset.fallbackApplied = "true";
-                        image.src = `/images/schools/${log.attackerSchoolId}/logo.webp`;
+                        image.src = `/images/schools/${currentSchool.id}/logo.webp`;
                       }}
                     />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-100/80">
-                      {index === 0 ? "최근 공격 알림" : "이전 공격 기록"}
+                  <div className="min-w-0">
+                    <p className="truncate text-xl font-black text-stone-900 sm:text-2xl">
+                      {currentSchool.name}
                     </p>
-                    <p className="mt-1 text-sm font-semibold text-white sm:text-base">
-                      {log.attackerSchoolName}에게 공격당해{" "}
-                      {log.reducedPetals.toLocaleString()}점을 빼앗겼어요
-                    </p>
-                    <p className="mt-1 text-xs text-white/65">
-                      {formatAttackTime(log.createdAt)} · 우리 학교 벚꽃 방어 중
+                    <p className="mt-2 text-sm font-semibold text-rose-600 sm:text-base">
+                      모든 벚꽃잎: {totalPetals.toLocaleString()}개
                     </p>
                   </div>
                 </div>
-                <div className="mt-3 flex justify-end">
-                  {index === 0 ? (
-                    <button
-                      type="button"
-                      onClick={handleDismissAttackAlert}
-                      className="mr-2 rounded-2xl border border-white/12 bg-black/18 px-4 py-2 text-sm font-medium text-white/85 transition hover:bg-black/28"
-                    >
-                      확인
-                    </button>
+                <button
+                  type="button"
+                  onClick={handleOpenAttackLogs}
+                  aria-label="공격 로그 보기"
+                  className="absolute bottom-[11.1rem] left-6 z-30 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/88 text-stone-900 shadow-[0_12px_24px_rgba(0,0,0,0.14)] backdrop-blur-sm transition hover:scale-[1.03] sm:bottom-[11.45rem] sm:left-8 sm:h-14 sm:w-14"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-[0.95rem] border border-rose-100/80 bg-[linear-gradient(180deg,rgba(255,248,251,0.98),rgba(241,248,255,0.88))] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] sm:h-9 sm:w-9" aria-hidden="true">
+                    <span className="relative block h-4 w-5 sm:h-[1.05rem] sm:w-[1.35rem]">
+                      <span className="absolute inset-0 rounded-[5px] border-2 border-sky-700/65 bg-transparent" />
+                      <span className="absolute left-[3px] right-[3px] top-[3px] h-[2px] rounded-full bg-sky-700/65" />
+                      <span className="absolute left-[3px] right-[6px] top-[7px] h-[2px] rounded-full bg-sky-700/65" />
+                      <span className="absolute right-[3px] top-[7px] h-1.5 w-1.5 rounded-full bg-rose-400/80" />
+                    </span>
+                  </span>
+                  {hasUnreadAttackAlert ? (
+                    <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-rose-500 sm:right-2 sm:top-2" />
                   ) : null}
+                </button>
+                <div className="absolute bottom-6 left-6 z-30 grid w-[min(17rem,calc(100%-3rem))] gap-3 sm:bottom-8 sm:left-8 sm:w-72">
                   <Link
-                    href={`/schools/${log.attackerSchoolId}?fromSchoolId=${currentSchool.id}`}
-                    className="rounded-2xl border border-white/15 bg-white/8 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/12"
+                    href={`/game/select?schoolId=${currentSchool.id}`}
+                    className="rounded-[1.35rem] bg-rose-400 px-4 py-3 text-center text-base font-semibold text-stone-950 shadow-[0_16px_40px_rgba(0,0,0,0.18)]"
                   >
-                    복수하러 가기
+                    벚꽃 붙이기
+                  </Link>
+                  <Link
+                    href={`/ranking?schoolId=${currentSchool.id}`}
+                    className="rounded-[1.35rem] border border-sky-200/70 bg-white/78 px-4 py-3 text-center text-base font-bold text-sky-800 shadow-[0_16px_40px_rgba(0,0,0,0.14)] backdrop-blur-sm"
+                  >
+                    다른 학교 방해하러 가기
                   </Link>
                 </div>
               </div>
-            ))}
-          </section>
-        ) : null}
-
-        <section className="flex flex-1 flex-col py-2">
-          <div className="relative flex w-full flex-1 overflow-hidden rounded-[2rem]">
-            <p className="pointer-events-none absolute left-1/2 top-4 z-30 -translate-x-1/2 rounded-full bg-black/30 px-4 py-2 text-xs text-white/75 backdrop-blur-sm">
-              {currentSchool.name} · {getTreeStage(currentSchool.bloomRate)}
-            </p>
-            <div className="flex h-[calc(100vh-14rem)] min-h-[620px] w-full items-end justify-center">
-              <TreeScene
-                treeLevel={currentSchool.level}
-                petals={petals}
-                fillContainer
-                showPetals={false}
-                className="min-h-full w-full"
-              >
-                <div className="pointer-events-none absolute inset-x-0 bottom-6 z-30 flex justify-center">
-                  <div className="rounded-full border border-white/15 bg-black/30 px-4 py-2 text-xs text-white/80 backdrop-blur-sm">
-                    현재 붙은 벚꽃 {petals.length}개
-                  </div>
-                </div>
-              </TreeScene>
             </div>
           </div>
         </section>
 
-        <section className="grid gap-3 pb-2 sm:grid-cols-2">
-          <Link
-            href={`/game/select?schoolId=${currentSchool.id}`}
-            className="rounded-3xl bg-rose-400 px-4 py-4 text-center text-base font-semibold text-stone-950 shadow-[0_16px_40px_rgba(0,0,0,0.2)]"
-          >
-            벚꽃 붙이기
-          </Link>
-          <Link
-            href={`/ranking?schoolId=${currentSchool.id}`}
-            className="rounded-3xl border border-white/20 bg-white/10 px-4 py-4 text-center text-base font-semibold text-white shadow-[0_16px_40px_rgba(0,0,0,0.16)]"
-          >
-            방해하러 가기
-          </Link>
-        </section>
+        <header className="mt-5 grid grid-cols-1 gap-2 rounded-[1.5rem] border border-white/30 bg-white/28 p-2.5 text-stone-950 backdrop-blur-sm sm:mt-6 sm:grid-cols-[1.15fr_1.35fr] sm:gap-2 sm:p-3">
+          <div className="grid grid-cols-1 gap-2 rounded-[1.25rem] bg-white/40 px-3 py-2 sm:grid-cols-3 sm:items-stretch">
+            <NearbySchoolRow
+              school={previousSchool}
+              gap={gapToPrevious}
+              currentSchoolId={currentSchool.id}
+            />
+            <div className="flex flex-col items-center justify-center rounded-2xl bg-white/45 px-3 py-2 text-center">
+              <p className="text-[11px] font-semibold text-stone-600 sm:text-xs">현재 순위</p>
+              <p className="mt-1 text-xl font-bold sm:text-3xl">#{currentSchool.rank}</p>
+            </div>
+            <NearbySchoolRow
+              school={nextSchool}
+              gap={gapToNext}
+              currentSchoolId={currentSchool.id}
+            />
+          </div>
+          <div className="rounded-[1.25rem] bg-white/40 px-3 py-2">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="text-[11px] font-semibold text-stone-600 sm:text-xs">레벨</p>
+                <p className="mt-1 text-base font-bold sm:text-2xl">
+                  {getLevelLabel(currentSchool.level)}
+                </p>
+              </div>
+              {score > 0 ? (
+                <span className="rounded-full bg-emerald-400/18 px-2 py-1 text-[11px] font-semibold text-emerald-700">
+                  +{score}
+                </span>
+              ) : null}
+            </div>
+            <div className="mt-2">
+              <p className="mb-2 text-[11px] font-medium text-stone-600 sm:text-xs">
+                총 벚꽃 수 {totalPetals.toLocaleString()}
+              </p>
+              <div className="relative h-6 overflow-hidden rounded-full bg-white/45 sm:h-7">
+                <div
+                  className="h-full rounded-full bg-[linear-gradient(90deg,#fda4af_0%,#fb7185_50%,#fecdd3_100%)] transition-[width] duration-700"
+                  style={{ width: `${progressPercent}%` }}
+                />
+                <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[11px] font-semibold leading-none text-stone-950 sm:text-xs">
+                  {progressPercent.toFixed(0)}%
+                </div>
+              </div>
+              <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-stone-600 sm:text-xs">
+                <span>{getLevelLabel(currentSchool.level)}</span>
+                <span>
+                  {currentSchool.level >= 7
+                    ? "만개"
+                    : `LV.${currentSchool.level + 1}`}
+                </span>
+              </div>
+            </div>
+          </div>
+        </header>
       </div>
 
       {isMenuOpen ? (
@@ -434,6 +442,100 @@ export function MainClient({ school, score }: MainClientProps) {
             >
               학교 다시 선택
             </button>
+          </div>
+        </div>
+      ) : null}
+
+      {isAttackLogOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4"
+          onClick={() => setIsAttackLogOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg rounded-[2rem] border border-white/30 bg-[linear-gradient(180deg,rgba(255,250,252,0.96),rgba(245,250,255,0.92))] p-5 text-stone-900 shadow-[0_24px_80px_rgba(0,0,0,0.2)] backdrop-blur-md sm:p-6"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-black tracking-[0.24em] text-rose-500">ATTACK LOG</p>
+                <h2 className="mt-2 text-2xl font-bold">누가 우리 나무를 흔들었나</h2>
+                <p className="mt-1 text-sm text-stone-500">
+                  최신순으로 최근 공격 기록을 보여드려요.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAttackLogOpen(false)}
+                className="rounded-2xl border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-600"
+              >
+                닫기
+              </button>
+            </div>
+
+            <div className="mt-5 grid max-h-[55vh] gap-3 overflow-y-auto pr-1">
+              {attackLogs.length > 0 ? (
+                attackLogs.map((log, index) => (
+                  <div
+                    key={log.id}
+                    className={`rounded-[1.5rem] border px-4 py-3 ${
+                      index === 0
+                        ? "border-rose-200 bg-rose-50/80"
+                        : "border-stone-200/90 bg-white/80"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-stone-200/80 bg-white">
+                        <img
+                          src={getSchoolLogoImage(log.attackerSchoolId)}
+                          alt={`${log.attackerSchoolName} 로고`}
+                          className="h-full w-full object-contain"
+                          onError={(event) => {
+                            const image = event.currentTarget;
+
+                            if (image.dataset.fallbackApplied === "true") {
+                              image.style.display = "none";
+                              return;
+                            }
+
+                            image.dataset.fallbackApplied = "true";
+                            image.src = `/images/schools/${log.attackerSchoolId}/logo.webp`;
+                          }}
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="truncate text-base font-bold text-stone-900">
+                            {log.attackerSchoolName}
+                          </p>
+                          <p className="shrink-0 text-sm font-bold text-rose-500">
+                            -{log.reducedPetals.toLocaleString()}개
+                          </p>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between gap-3">
+                          <p className="text-xs font-medium text-stone-500">
+                            {formatAttackTime(log.createdAt)}
+                          </p>
+                          <Link
+                            href={`/schools/${log.attackerSchoolId}?fromSchoolId=${currentSchool.id}`}
+                            className="text-xs font-semibold text-sky-700"
+                            onClick={() => setIsAttackLogOpen(false)}
+                          >
+                            복수 하러 가기
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="rounded-[1.5rem] border border-stone-200/90 bg-white/80 px-4 py-6 text-center">
+                  <p className="text-base font-semibold text-stone-700">아직 공격 기록이 없어요.</p>
+                  <p className="mt-1 text-sm text-stone-500">
+                    다른 학교가 우리 학교를 흔들면 여기에 최신순으로 쌓입니다.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       ) : null}
