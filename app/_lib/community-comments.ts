@@ -97,19 +97,32 @@ export async function createCommunityComment(input: {
     return { ok: false as const, message: "댓글 내용을 입력해주세요." };
   }
 
-  const schoolName = getSchoolName(input.schoolId);
+  try {
+    const response = await fetch("/api/comments/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: trimmedContent,
+        nickname: input.nickname,
+        schoolId: input.schoolId,
+        isAnonymous: input.isAnonymous,
+        revealSchool: input.revealSchool,
+      }),
+    });
 
-  const { error } = await supabase.from("comments").insert({
-    id: `comment-${Date.now()}`,
-    content: trimmedContent,
-    nickname: input.nickname.trim() || "벚꽃러",
-    school_id: input.schoolId,
-    school_name: schoolName,
-    is_anonymous: input.isAnonymous,
-    reveal_school: input.revealSchool,
-  });
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as
+        | { message?: string }
+        | null;
 
-  if (error) {
+      return {
+        ok: false as const,
+        message: payload?.message ?? "댓글을 저장하지 못했어요. 잠시 후 다시 시도해주세요.",
+      };
+    }
+  } catch {
     return {
       ok: false as const,
       message: "댓글을 저장하지 못했어요. 잠시 후 다시 시도해주세요.",

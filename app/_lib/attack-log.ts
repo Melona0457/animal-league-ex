@@ -1,7 +1,6 @@
 "use client";
 
 import { supabase } from "./supabase";
-import { getStoredSchoolById } from "./school-state";
 
 type AttackLogRow = {
   id: string;
@@ -63,23 +62,21 @@ export async function createAttackLog({
     return;
   }
 
-  const [attackerSchool, targetSchool] = await Promise.all([
-    getStoredSchoolById(attackerSchoolId),
-    getStoredSchoolById(targetSchoolId),
-  ]);
-
-  if (!attackerSchool || !targetSchool) {
+  try {
+    await fetch("/api/attack-logs/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        attackerSchoolId,
+        targetSchoolId,
+        reducedPetals,
+      }),
+    });
+  } catch {
     return;
   }
-
-  await supabase.from("attack_logs").insert({
-    id: crypto.randomUUID(),
-    attacker_school_id: attackerSchool.id,
-    attacker_school_name: attackerSchool.name,
-    target_school_id: targetSchool.id,
-    target_school_name: targetSchool.name,
-    reduced_petals: reducedPetals,
-  });
 }
 
 export function formatAttackTime(createdAt: string) {
