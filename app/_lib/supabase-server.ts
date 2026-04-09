@@ -1,6 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-let cachedClient: ReturnType<typeof createClient<any>> | null = null;
+let cachedClient: SupabaseClient | null = null;
 
 export function getServerSupabaseClient() {
   if (cachedClient) {
@@ -16,7 +16,7 @@ export function getServerSupabaseClient() {
     throw new Error("Supabase server environment variables are missing.");
   }
 
-  cachedClient = createClient<any>(supabaseUrl, activeKey, {
+  cachedClient = createClient(supabaseUrl, activeKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
