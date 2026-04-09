@@ -1,12 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { SCHOOL_CATALOG } from "../_lib/school-catalog";
 import { getSelectedSchoolId, setSelectedSchoolId } from "../_lib/selected-school";
 
 export function SelectSchoolClient() {
   const router = useRouter();
+  const sortedSchools = useMemo(
+    () => [...SCHOOL_CATALOG].sort((a, b) => a.name.localeCompare(b.name, "ko")),
+    [],
+  );
   const [selectedSchoolId, setSelectedSchoolIdState] = useState(() => {
     const storedSchoolId = getSelectedSchoolId();
 
@@ -49,7 +53,7 @@ export function SelectSchoolClient() {
               onChange={(event) => setSelectedSchoolIdState(event.target.value)}
               className="h-14 w-full rounded-2xl border border-white/15 bg-white/92 px-4 text-base text-stone-900 outline-none transition focus:border-rose-400 focus:ring-4 focus:ring-rose-200"
             >
-              {SCHOOL_CATALOG.map((school) => (
+              {sortedSchools.map((school) => (
                 <option key={school.id} value={school.id}>
                   {school.name}
                 </option>
