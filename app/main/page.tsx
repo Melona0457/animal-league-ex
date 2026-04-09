@@ -1,5 +1,6 @@
 import { getSchoolById } from "../_lib/mock-data";
 import { resolveSchoolIdFromRequest } from "../_lib/selected-school-server";
+import { getStoredSchoolByIdServer } from "../_lib/school-state-server";
 import { MainClient } from "./main-client";
 import { redirect } from "next/navigation";
 
@@ -20,7 +21,9 @@ export default async function MainPage({ searchParams }: MainPageProps) {
   }
 
   const school =
-    getSchoolById(resolvedSchoolId) ?? getSchoolById("school-044");
+    (await getStoredSchoolByIdServer(resolvedSchoolId)) ??
+    getSchoolById(resolvedSchoolId) ??
+    getSchoolById("school-044");
   const score = Number(params.score ?? "0");
 
   if (!school) {
