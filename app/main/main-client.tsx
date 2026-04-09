@@ -317,6 +317,17 @@ export function MainClient({ school, score }: MainClientProps) {
                     <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-rose-500 sm:right-2 sm:top-2" />
                   ) : null}
                 </button>
+                <Link
+                  href="/onboarding"
+                  aria-label="서비스 소개 보기"
+                  className="absolute bottom-[11.1rem] left-[4.9rem] z-30 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/88 text-stone-900 shadow-[0_12px_24px_rgba(0,0,0,0.14)] backdrop-blur-sm transition hover:scale-[1.03] sm:bottom-[11.45rem] sm:left-[6rem] sm:h-14 sm:w-14"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-[0.95rem] border border-amber-100/80 bg-[linear-gradient(180deg,rgba(255,250,240,0.98),rgba(247,248,255,0.9))] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] sm:h-9 sm:w-9">
+                    <span className="relative flex h-5 w-5 items-center justify-center rounded-full border-2 border-sky-700/70 text-[0.95rem] font-black leading-none text-sky-700/70 sm:h-6 sm:w-6 sm:text-[1rem]" aria-hidden="true">
+                      ?
+                    </span>
+                  </span>
+                </Link>
                 <div className="absolute bottom-6 left-6 z-30 grid w-[min(17rem,calc(100%-3rem))] gap-3 sm:bottom-8 sm:left-8 sm:w-72">
                   <Link
                     href="/game/select"
