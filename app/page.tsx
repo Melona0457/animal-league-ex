@@ -2,13 +2,8 @@ import { BackgroundImageWarmup } from "./_components/background-image-warmup";
 import { BackgroundVideoWarmup } from "./_components/background-video-warmup";
 import { LandingIntroVideo } from "./_components/landing-intro-video";
 import { getLandingBackgroundImage } from "./_lib/mock-data";
+import { GAME_MODE_VIDEOS, MAIN_TREE_VIDEOS } from "./_lib/video-assets";
 import { HomeEntryClient } from "./home-entry-client";
-
-const LANDING_WARMUP_VIDEOS = [
-  "/videos/game-modes/classic-fall.mp4",
-  "/videos/game-modes/tap-bloom.mp4",
-  "/videos/game-modes/prototype1.mp4",
-] as const;
 
 export default function Home() {
   const landingBackgroundImage = getLandingBackgroundImage();
@@ -16,7 +11,13 @@ export default function Home() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-stone-900 text-white">
       <HomeEntryClient>
-        <BackgroundVideoWarmup sources={LANDING_WARMUP_VIDEOS} preload="metadata" />
+        <BackgroundVideoWarmup
+          groups={[
+            { sources: MAIN_TREE_VIDEOS, preload: "metadata", delayMs: 250 },
+            { sources: GAME_MODE_VIDEOS, preload: "metadata", delayMs: 900 },
+            { sources: ["/videos/intro.mp4"], preload: "metadata", delayMs: 1200 },
+          ]}
+        />
         <BackgroundImageWarmup
           sources={[
             landingBackgroundImage,

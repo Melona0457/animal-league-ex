@@ -20,6 +20,7 @@ import {
 import { getPetalsBySchoolId, type PetalPlacement } from "../_lib/petal-state";
 import { setSelectedSchoolId } from "../_lib/selected-school";
 import { getStoredSchoolById, getStoredSchools } from "../_lib/school-state";
+import { GAME_MODE_VIDEOS, MAIN_TREE_VIDEOS } from "../_lib/video-assets";
 
 type MainClientProps = {
   school: SchoolRecord;
@@ -93,6 +94,7 @@ export function MainClient({ school, score }: MainClientProps) {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAttackLogOpen, setIsAttackLogOpen] = useState(false);
+  const [brokenTreeVideoSrc, setBrokenTreeVideoSrc] = useState<string | null>(null);
   const [currentSchool, setCurrentSchool] = useState(school);
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
   const [petals, setPetals] = useState<PetalPlacement[]>([]);
@@ -159,6 +161,10 @@ export function MainClient({ school, score }: MainClientProps) {
     ? Math.max(0, currentSchool.totalPetals - nextSchool.totalPetals)
     : 0;
   const latestAttackAt = attackLogs[0]?.createdAt ?? null;
+  const treeVideoLevel = Math.min(Math.max(currentSchool.level, 1), 7);
+  const treeVideoSrc = `/videos/trees/main-level-${treeVideoLevel}.mp4`;
+  const hasTreeVideoError = brokenTreeVideoSrc === treeVideoSrc;
+  const secondaryTreeVideos = MAIN_TREE_VIDEOS.filter((src) => src !== treeVideoSrc);
   const hasUnreadAttackAlert =
     latestAttackAt !== null &&
     (dismissedAttackAt === null ||
@@ -217,7 +223,14 @@ export function MainClient({ school, score }: MainClientProps) {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-sky-200 px-4 py-8 text-white sm:py-10">
-      <BackgroundVideoWarmup sources={MAIN_PAGE_WARMUP_VIDEOS} />
+      <BackgroundVideoWarmup
+        groups={[
+          { sources: [treeVideoSrc], preload: "auto", delayMs: 0 },
+          { sources: secondaryTreeVideos, preload: "metadata", delayMs: 250 },
+          { sources: GAME_MODE_VIDEOS, preload: "metadata", delayMs: 900 },
+          { sources: MAIN_PAGE_WARMUP_VIDEOS, preload: "metadata", delayMs: 1200 },
+        ]}
+      />
       <div
         className="pointer-events-none absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-md brightness-110 saturate-110"
         style={{ backgroundImage: `url('${getSchoolBackgroundImage(currentSchool.id)}')` }}
@@ -263,14 +276,31 @@ export function MainClient({ school, score }: MainClientProps) {
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.45),transparent_30%),radial-gradient(circle_at_top_right,rgba(255,210,228,0.24),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.16),rgba(149,196,244,0.18))]" />
               <div className="relative flex h-[calc(100vh-12.5rem)] min-h-[720px] w-full items-end justify-center overflow-hidden rounded-[2rem] border border-white/45 bg-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(255,255,255,0.42),rgba(255,255,255,0.08),transparent)]" />
-                <TreeScene
-                  treeLevel={currentSchool.level}
-                  petals={petals}
-                  fillContainer
-                  backgroundMode="cover"
-                  showPetals={false}
-                  className="min-h-full w-full"
-                />
+                {hasTreeVideoError ? (
+                  <TreeScene
+                    treeLevel={currentSchool.level}
+                    petals={petals}
+                    fillContainer
+                    backgroundMode="cover"
+                    showPetals={false}
+                    className="min-h-full w-full"
+                  />
+                ) : (
+                  <video
+                    key={treeVideoSrc}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="auto"
+                    disablePictureInPicture
+                    disableRemotePlayback
+                    className="absolute inset-0 h-full w-full object-cover"
+                    onError={() => setBrokenTreeVideoSrc(treeVideoSrc)}
+                  >
+                    <source src={treeVideoSrc} type="video/mp4" />
+                  </video>
+                )}
                 <div className="pointer-events-none absolute left-6 top-6 z-30 flex items-center gap-4 rounded-[1.6rem] border border-white/35 bg-white/18 px-4 py-3 text-stone-950 shadow-[0_12px_30px_rgba(0,0,0,0.12)] backdrop-blur-md sm:left-8 sm:top-8 sm:px-5">
                   <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/55 bg-white/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] sm:h-20 sm:w-20">
                     <img
@@ -317,6 +347,17 @@ export function MainClient({ school, score }: MainClientProps) {
                     <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-rose-500 sm:right-2 sm:top-2" />
                   ) : null}
                 </button>
+                <Link
+                  href="/onboarding"
+                  aria-label="서비스 소개 보기"
+                  className="absolute bottom-[11.1rem] left-[4.9rem] z-30 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/88 text-stone-900 shadow-[0_12px_24px_rgba(0,0,0,0.14)] backdrop-blur-sm transition hover:scale-[1.03] sm:bottom-[11.45rem] sm:left-[6rem] sm:h-14 sm:w-14"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-[0.95rem] border border-amber-100/80 bg-[linear-gradient(180deg,rgba(255,250,240,0.98),rgba(247,248,255,0.9))] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] sm:h-9 sm:w-9">
+                    <span className="relative flex h-5 w-5 items-center justify-center rounded-full border-2 border-sky-700/70 text-[0.95rem] font-black leading-none text-sky-700/70 sm:h-6 sm:w-6 sm:text-[1rem]" aria-hidden="true">
+                      ?
+                    </span>
+                  </span>
+                </Link>
                 <div className="absolute bottom-6 left-6 z-30 grid w-[min(17rem,calc(100%-3rem))] gap-3 sm:bottom-8 sm:left-8 sm:w-72">
                   <Link
                     href="/game/select"
