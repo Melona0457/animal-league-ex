@@ -283,6 +283,11 @@ img {
 .shake-falling-petal {
   animation: shake-falling-petal linear forwards;
   will-change: transform, opacity;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tap-burst-petal {

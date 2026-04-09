@@ -1,7 +1,15 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { TreeScene } from "../../_components/tree-scene";
 import { createAttackLog } from "../../_lib/attack-log";
 import {
@@ -80,6 +88,7 @@ export function SchoolDetailClient({
   fromSchoolId,
   shakenCount,
 }: SchoolDetailClientProps) {
+  const router = useRouter();
   const isOwnSchool = schoolId === fromSchoolId;
   const fallingPetalIdRef = useRef(0);
   const [petals, setPetals] = useState<PetalPlacement[]>([]);
@@ -243,6 +252,36 @@ export function SchoolDetailClient({
   }, [shakeMode, registerShakeInput]);
 
   useEffect(() => {
+    if (shakeMode !== "countdown" || typeof document === "undefined") {
+      return;
+    }
+
+    const { body, documentElement } = document;
+    const previousBodyOverflow = body.style.overflow;
+    const previousBodyTouchAction = body.style.touchAction;
+    const previousBodyOverscrollBehavior = body.style.overscrollBehavior;
+    const previousHtmlOverflow = documentElement.style.overflow;
+    const previousHtmlTouchAction = documentElement.style.touchAction;
+    const previousHtmlOverscrollBehavior = documentElement.style.overscrollBehavior;
+
+    body.style.overflow = "hidden";
+    body.style.touchAction = "none";
+    body.style.overscrollBehavior = "none";
+    documentElement.style.overflow = "hidden";
+    documentElement.style.touchAction = "none";
+    documentElement.style.overscrollBehavior = "none";
+
+    return () => {
+      body.style.overflow = previousBodyOverflow;
+      body.style.touchAction = previousBodyTouchAction;
+      body.style.overscrollBehavior = previousBodyOverscrollBehavior;
+      documentElement.style.overflow = previousHtmlOverflow;
+      documentElement.style.touchAction = previousHtmlTouchAction;
+      documentElement.style.overscrollBehavior = previousHtmlOverscrollBehavior;
+    };
+  }, [shakeMode]);
+
+  useEffect(() => {
     if (shakeMode !== "countdown") {
       return;
     }
@@ -328,6 +367,25 @@ export function SchoolDetailClient({
     setFallingPetals([]);
     setShakeSeconds(8);
     setShakeMode("countdown");
+  }
+
+  function handleCloseSchoolDetail() {
+    if (shakeMode === "countdown" || isResolvingShakeResult) {
+      shakeResultLockRef.current = false;
+      setIsResolvingShakeResult(false);
+      setShakeCount(0);
+      setShakeSeconds(8);
+      setFallingPetals([]);
+      setShakeMode("idle");
+      return;
+    }
+
+    router.push(`/ranking?schoolId=${fromSchoolId}`);
+  }
+
+  function handleShakeOverlayPointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    registerShakeInput(2 + Math.floor(Math.random() * 2));
   }
 
   async function handleShareAttackResult() {
@@ -444,13 +502,14 @@ export function SchoolDetailClient({
                     <span className="absolute bottom-0 left-0 h-4 w-4 rounded-[4px] border-2 border-stone-400 bg-white" />
                   </span>
                 </span>
-                <Link
-                  href="/ranking"
+                <button
+                  type="button"
+                  onClick={handleCloseSchoolDetail}
                   aria-label="랭킹 페이지로 이동"
-                  className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-rose-200/80 bg-rose-300/92 shadow-[0_8px_20px_rgba(244,114,182,0.2)] transition-transform duration-150 hover:scale-[1.03]"
+                  className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-rose-200/80 bg-rose-300/92 shadow-[0_8px_20px_rgba(244,114,182,0.2)] transition-[transform,background-color] duration-150 hover:scale-[1.03] hover:bg-rose-400 active:bg-rose-500"
                 >
                   <span className="text-[1.6rem] font-bold leading-none text-white">×</span>
-                </Link>
+                </button>
               </div>
             </div>
             <div className="relative flex flex-1 p-2 sm:p-3">
@@ -482,12 +541,41 @@ export function SchoolDetailClient({
                             } as CSSProperties
                           }
                         >
-                          🌸
+                          💮
                         </span>
                       ))
                     : null}
                 </TreeScene>
-                <div className="pointer-events-none absolute left-6 top-6 z-30 flex items-center gap-4 rounded-[1.6rem] border border-white/35 bg-white/18 px-4 py-3 text-stone-950 shadow-[0_12px_30px_rgba(0,0,0,0.12)] backdrop-blur-md sm:left-8 sm:top-8 sm:px-5">
+                {shakeMode === "countdown" ? (
+                  <>
+                    <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-4 select-none sm:px-6">
+                      <div className="text-stone-900">
+                        <p className="text-2xl font-black sm:text-3xl">
+                          {shakeSeconds}
+                          <span className="ml-1.5 text-base font-bold text-rose-500 sm:text-lg">
+                            초
+                          </span>
+                        </p>
+                      </div>
+                      <div className="text-right text-stone-900">
+                        <p className="text-2xl font-black sm:text-3xl">
+                          {shakeCount}
+                          <span className="ml-1.5 text-base font-bold text-rose-500 sm:text-lg">
+                            점
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(255,255,255,0))]" />
+                    <div className="pointer-events-none absolute bottom-6 left-6 z-20 max-w-[15rem] rounded-[1.35rem] border border-white/55 bg-white/72 px-4 py-3 text-stone-900 shadow-[0_12px_28px_rgba(0,0,0,0.12)] backdrop-blur-md sm:bottom-8 sm:left-8 sm:max-w-[18rem]">
+                      <p className="text-sm font-bold text-rose-600 sm:text-base">벚꽃 떨어뜨리기</p>
+                      <p className="mt-1 text-xs leading-5 text-stone-600 sm:text-sm sm:leading-6">
+                        화면을 터치하거나 흔들어서 상대 학교 벚꽃을 떨어뜨려보세요.
+                      </p>
+                    </div>
+                  </>
+                ) : null}
+                <div className={`pointer-events-none absolute left-6 top-6 z-30 flex items-center gap-4 rounded-[1.6rem] border border-white/35 bg-white/18 px-4 py-3 text-stone-950 shadow-[0_12px_30px_rgba(0,0,0,0.12)] backdrop-blur-md transition-opacity sm:left-8 sm:top-8 sm:px-5 ${shakeMode === "countdown" ? "opacity-0" : "opacity-100"}`}>
                   <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/55 bg-white/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] sm:h-20 sm:w-20">
                     <img
                       src={getSchoolLogoImage(school.id)}
@@ -581,43 +669,15 @@ export function SchoolDetailClient({
         <>
           <button
             type="button"
-            onClick={() => registerShakeInput(2 + Math.floor(Math.random() * 2))}
-            className="fixed inset-0 z-40 bg-transparent"
+            onPointerDown={handleShakeOverlayPointerDown}
+            className="fixed inset-x-0 bottom-0 top-24 z-40 bg-transparent select-none touch-none outline-none sm:top-28"
+            style={{
+              WebkitTapHighlightColor: "transparent",
+              WebkitUserSelect: "none",
+              userSelect: "none",
+            }}
             aria-label="화면 아무 곳이나 눌러 흔들기"
           />
-          <div className="pointer-events-none fixed inset-x-4 bottom-8 z-50 flex justify-center sm:bottom-10">
-            <div className="relative w-full max-w-4xl overflow-hidden rounded-[1.8rem] border border-white/70 bg-[linear-gradient(90deg,rgba(255,250,252,0.97),rgba(255,244,248,0.94),rgba(255,249,251,0.97))] px-5 py-4 text-stone-900 shadow-[0_22px_50px_rgba(120,73,96,0.18)] backdrop-blur-md sm:px-6">
-              <div className="pointer-events-none absolute inset-y-0 left-0 w-1.5 bg-[linear-gradient(180deg,#f9a8d4,#fda4af,#fde68a)]" />
-              <div className="pointer-events-none absolute left-8 top-1/2 h-14 w-14 -translate-y-1/2 rounded-full bg-rose-200/35 blur-2xl" />
-              <div className="relative flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-rose-200/70 bg-white/80 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-rose-500">
-                    <span className="h-2 w-2 rounded-full bg-rose-400" />
-                    SHAKE NOTICE
-                  </div>
-                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <h2 className="text-xl font-bold text-rose-600 sm:text-2xl">
-                      벚꽃 떨어뜨리기
-                    </h2>
-                    <p className="text-sm text-stone-600 sm:text-[15px]">
-                      화면을 터치하거나 흔들어서 상대 학교 벚꽃을 떨어뜨려보세요.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-4 rounded-[1.3rem] border border-rose-100 bg-white/74 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
-                  <div className="text-center">
-                    <p className="text-[11px] font-medium text-stone-500">남은 시간</p>
-                    <p className="mt-1 text-2xl font-bold text-stone-900">{shakeSeconds}s</p>
-                  </div>
-                  <div className="h-10 w-px bg-rose-100" />
-                  <div className="text-center">
-                    <p className="text-[11px] font-medium text-stone-500">흔든 횟수</p>
-                    <p className="mt-1 text-2xl font-bold text-stone-900">{shakeCount}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </>
       ) : null}
 
