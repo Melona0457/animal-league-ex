@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -32,6 +33,46 @@ function getAttackAlertStorageKey(schoolId: string) {
   return `blossom-save:attack-alert-dismissed:${schoolId}`;
 }
 
+function SchoolLogoImage({
+  schoolId,
+  schoolName,
+  sizes = "80px",
+}: {
+  schoolId: string;
+  schoolName: string;
+  sizes?: string;
+}) {
+  const [variant, setVariant] = useState<"avif" | "webp" | "missing">("avif");
+  const logoSrc =
+    variant === "avif"
+      ? getSchoolLogoImage(schoolId)
+      : `/images/schools/${schoolId}/logo.webp`;
+
+  if (variant === "missing") {
+    return null;
+  }
+
+  return (
+    <Image
+      src={logoSrc}
+      alt={`${schoolName} 로고`}
+      fill
+      unoptimized
+      sizes={sizes}
+      className="h-full w-full object-contain"
+      onError={() => {
+        setVariant((current) => {
+          if (current === "avif") {
+            return "webp";
+          }
+
+          return "missing";
+        });
+      }}
+    />
+  );
+}
+
 function NearbySchoolRow({
   school,
   gap,
@@ -58,22 +99,7 @@ function NearbySchoolRow({
       className="flex min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border border-stone-200/80 bg-white/60 px-3 py-3 text-center transition hover:border-stone-300 hover:bg-white/75"
     >
       <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200/80 bg-white/80">
-        <img
-          src={getSchoolLogoImage(school.id)}
-          alt={`${school.name} 로고`}
-          className="h-full w-full object-contain"
-          onError={(event) => {
-            const image = event.currentTarget;
-
-            if (image.dataset.fallbackApplied === "true") {
-              image.style.display = "none";
-              return;
-            }
-
-            image.dataset.fallbackApplied = "true";
-            image.src = `/images/schools/${school.id}/logo.webp`;
-          }}
-        />
+        <SchoolLogoImage schoolId={school.id} schoolName={school.name} sizes="48px" />
         <span className="hidden text-[10px] text-stone-400">로고</span>
       </div>
       <div className="min-w-0">
@@ -303,21 +329,10 @@ export function MainClient({ school, score }: MainClientProps) {
                 )}
                 <div className="pointer-events-none absolute left-6 top-6 z-30 flex items-center gap-4 rounded-[1.6rem] border border-white/35 bg-white/18 px-4 py-3 text-stone-950 shadow-[0_12px_30px_rgba(0,0,0,0.12)] backdrop-blur-md sm:left-8 sm:top-8 sm:px-5">
                   <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/55 bg-white/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] sm:h-20 sm:w-20">
-                    <img
-                      src={getSchoolLogoImage(currentSchool.id)}
-                      alt={`${currentSchool.name} 로고`}
-                      className="h-full w-full object-contain"
-                      onError={(event) => {
-                        const image = event.currentTarget;
-
-                        if (image.dataset.fallbackApplied === "true") {
-                          image.style.display = "none";
-                          return;
-                        }
-
-                        image.dataset.fallbackApplied = "true";
-                        image.src = `/images/schools/${currentSchool.id}/logo.webp`;
-                      }}
+                    <SchoolLogoImage
+                      schoolId={currentSchool.id}
+                      schoolName={currentSchool.name}
+                      sizes="80px"
                     />
                   </div>
                   <div className="min-w-0">
@@ -522,21 +537,10 @@ export function MainClient({ school, score }: MainClientProps) {
                   >
                     <div className="flex items-start gap-3">
                       <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-stone-200/80 bg-white">
-                        <img
-                          src={getSchoolLogoImage(log.attackerSchoolId)}
-                          alt={`${log.attackerSchoolName} 로고`}
-                          className="h-full w-full object-contain"
-                          onError={(event) => {
-                            const image = event.currentTarget;
-
-                            if (image.dataset.fallbackApplied === "true") {
-                              image.style.display = "none";
-                              return;
-                            }
-
-                            image.dataset.fallbackApplied = "true";
-                            image.src = `/images/schools/${log.attackerSchoolId}/logo.webp`;
-                          }}
+                        <SchoolLogoImage
+                          schoolId={log.attackerSchoolId}
+                          schoolName={log.attackerSchoolName}
+                          sizes="48px"
                         />
                       </div>
                       <div className="min-w-0 flex-1">
