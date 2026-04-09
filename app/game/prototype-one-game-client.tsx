@@ -11,10 +11,16 @@ type PrototypeOneGameClientProps = {
   schoolName: string;
 };
 
+type FacingDirection = "left" | "right";
+type LionPose = "idle" | "run" | "jump1" | "jump2";
+
 type PlayerState = {
   x: number;
   jumpOffset: number;
   velocityY: number;
+  jumpCount: number;
+  facing: FacingDirection;
+  isRunning: boolean;
 };
 
 type FallingPetal = {
@@ -34,26 +40,62 @@ type FlyingBee = {
   velocityY: number;
 };
 
-const GAME_DURATION = 15;
 const PLAYER_WIDTH = 0.09;
 const PLAYER_HEIGHT = 0.13;
-const PLAYER_GROUND_Y = 0.04;
+const GROUND_LINE_Y = 0.22;
+const SKY_GROUND_BOUNDARY_Y = 0.52;
+const PLAYER_GROUND_Y = GROUND_LINE_Y;
+const UPPER_GROUND_HEIGHT = SKY_GROUND_BOUNDARY_Y - GROUND_LINE_Y;
+const LOWER_GROUND_HEIGHT = GROUND_LINE_Y;
 const PLAYER_MOVE_SPEED = 0.72;
 const PLAYER_JUMP_VELOCITY = 1.04;
+const PLAYER_DOUBLE_JUMP_VELOCITY = 0.98;
 const GRAVITY = 2.8;
 const PETAL_SIZE = 0.038;
 const PETAL_SPAWN_INTERVAL = 0.22;
 const BEE_WIDTH = 0.072;
 const BEE_HEIGHT = 0.045;
-const BEE_SPAWN_INTERVAL = 1.1;
+const BEE_COLLISION_PLAYER_WIDTH_FACTOR = 0.72;
+const BEE_COLLISION_PLAYER_HEIGHT_FACTOR = 0.74;
+const BEE_COLLISION_BEE_WIDTH_FACTOR = 0.72;
+const BEE_COLLISION_BEE_HEIGHT_FACTOR = 0.72;
+const BASE_BEE_SPAWN_INTERVAL = 1.5;
+const DIFFICULTY_SCALE_INTERVAL = 10;
+const DIFFICULTY_MULTIPLIER_STEP = 1.5;
 const PROTOTYPE_ONE_PETAL_IMAGE = "/images/game/prototype1/petal.png";
 const PROTOTYPE_ONE_BEE_IMAGE = "/images/game/prototype1/bee.png";
 const PROTOTYPE_ONE_TREE_IMAGE = "/images/game/prototype1/tree.png";
+const PROTOTYPE_ONE_BG_SKY_IMAGE = "/images/game/prototype1/background/sky.png";
+const PROTOTYPE_ONE_BG_UPPER_GREEN_IMAGE =
+  "/images/game/prototype1/background/upper-green.png";
+const PROTOTYPE_ONE_BG_LOWER_GREEN_IMAGE =
+  "/images/game/prototype1/background/lower-green.png";
+const PROTOTYPE_ONE_LION_SPRITES = {
+  idle: {
+    left: "/images/game/prototype1/lion/lion-idle-left.png",
+    right: "/images/game/prototype1/lion/lion-idle-right.png",
+  },
+  run: {
+    left: "/images/game/prototype1/lion/lion-run-left.png",
+    right: "/images/game/prototype1/lion/lion-run-right.png",
+  },
+  jump1: {
+    left: "/images/game/prototype1/lion/lion-jump1-left.png",
+    right: "/images/game/prototype1/lion/lion-jump1-right.png",
+  },
+  jump2: {
+    left: "/images/game/prototype1/lion/lion-jump2-left.png",
+    right: "/images/game/prototype1/lion/lion-jump2-right.png",
+  },
+} as const;
 
 const INITIAL_PLAYER: PlayerState = {
   x: 0.5,
   jumpOffset: 0,
   velocityY: 0,
+  jumpCount: 0,
+  facing: "right",
+  isRunning: false,
 };
 
 function clamp(value: number, min: number, max: number) {
@@ -98,13 +140,63 @@ function subjectParticle(word: string) {
   return hasBatchim(word) ? "이" : "가";
 }
 
+function getLionVisual(player: PlayerState): { path: string; pose: LionPose } {
+  if (player.jumpOffset > 0.0001) {
+    if (player.jumpCount >= 2) {
+      return {
+        path: PROTOTYPE_ONE_LION_SPRITES.jump2[player.facing],
+        pose: "jump2",
+      };
+    }
+
+    return {
+      path: PROTOTYPE_ONE_LION_SPRITES.jump1[player.facing],
+      pose: "jump1",
+    };
+  }
+
+  if (player.isRunning) {
+    return {
+      path: PROTOTYPE_ONE_LION_SPRITES.run[player.facing],
+      pose: "run",
+    };
+  }
+
+  return {
+    path: PROTOTYPE_ONE_LION_SPRITES.idle[player.facing],
+    pose: "idle",
+  };
+}
+
+function getLionScale(pose: LionPose) {
+  switch (pose) {
+    case "run":
+      return 1.4;
+    case "jump1":
+      return 1.08;
+    case "jump2":
+      return 1.1;
+    default:
+      return 1;
+  }
+}
+
+function getLionGroundOffset(pose: LionPose) {
+  switch (pose) {
+    case "run":
+      return 0.016;
+    default:
+      return 0;
+  }
+}
+
 export function PrototypeOneGameClient({
   schoolId,
   schoolName,
 }: PrototypeOneGameClientProps) {
   const router = useRouter();
   const [isSaving, startSavingTransition] = useTransition();
-  const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
+  const [survivalSeconds, setSurvivalSeconds] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [score, setScore] = useState(0);
   const [player, setPlayer] = useState<PlayerState>(INITIAL_PLAYER);
@@ -132,6 +224,7 @@ export function PrototypeOneGameClient({
   const beeSpawnElapsedRef = useRef(0);
   const nextPetalIdRef = useRef(1);
   const nextBeeIdRef = useRef(1);
+  const roundStartTimeRef = useRef(0);
 
   useEffect(() => {
     isFinishedRef.current = isFinished;
@@ -174,15 +267,23 @@ export function PrototypeOneGameClient({
       if (event.code === "Space") {
         event.preventDefault();
 
-        if (
-          !event.repeat &&
-          !isFinishedRef.current &&
-          playerRef.current.jumpOffset <= 0.0001
-        ) {
-          playerRef.current = {
-            ...playerRef.current,
-            velocityY: PLAYER_JUMP_VELOCITY,
+        if (!event.repeat && !isFinishedRef.current && playerRef.current.jumpCount < 2) {
+          const currentPlayer = playerRef.current;
+          const nextJumpCount = currentPlayer.jumpCount + 1;
+          const jumpVelocity =
+            currentPlayer.jumpCount === 0
+              ? PLAYER_JUMP_VELOCITY
+              : PLAYER_DOUBLE_JUMP_VELOCITY;
+
+          const updatedPlayer: PlayerState = {
+            ...currentPlayer,
+            velocityY: jumpVelocity,
+            jumpCount: nextJumpCount,
+            isRunning: false,
           };
+
+          playerRef.current = updatedPlayer;
+          setPlayer(updatedPlayer);
         }
       }
     }
@@ -213,32 +314,14 @@ export function PrototypeOneGameClient({
       return;
     }
 
-    const timer = window.setInterval(() => {
-      setTimeLeft((current) => {
-        if (current <= 1) {
-          window.clearInterval(timer);
-          setIsFinished(true);
-          return 0;
-        }
-
-        return current - 1;
-      });
-    }, 1000);
-
-    return () => window.clearInterval(timer);
-  }, [isFinished, roundKey]);
-
-  useEffect(() => {
-    if (isFinished) {
-      return;
-    }
-
     playerRef.current = INITIAL_PLAYER;
     petalsRef.current = [];
     beesRef.current = [];
     petalSpawnElapsedRef.current = 0;
     beeSpawnElapsedRef.current = 0;
-    lastFrameRef.current = performance.now();
+    const roundStart = performance.now();
+    roundStartTimeRef.current = roundStart;
+    lastFrameRef.current = roundStart;
 
     function spawnPetal() {
       const petal: FallingPetal = {
@@ -253,7 +336,7 @@ export function PrototypeOneGameClient({
       petalsRef.current = [...petalsRef.current.slice(-80), petal];
     }
 
-    function spawnBee() {
+    function spawnBee(speedMultiplier: number) {
       const spawnEdgeRoll = Math.random();
       let spawnX = 0;
       let spawnY = 0;
@@ -275,7 +358,7 @@ export function PrototypeOneGameClient({
       const toPlayerX = playerTargetX - spawnX;
       const toPlayerY = playerTargetY - spawnY;
       const length = Math.hypot(toPlayerX, toPlayerY) || 1;
-      const beeSpeed = 0.42 + Math.random() * 0.22;
+      const beeSpeed = (0.42 + Math.random() * 0.22) * speedMultiplier;
 
       const bee: FlyingBee = {
         id: nextBeeIdRef.current++,
@@ -295,6 +378,10 @@ export function PrototypeOneGameClient({
 
       const delta = Math.min(0.033, (now - lastFrameRef.current) / 1000);
       lastFrameRef.current = now;
+      const elapsedSeconds = (now - roundStartTimeRef.current) / 1000;
+      setSurvivalSeconds(elapsedSeconds);
+      const difficultyTier = Math.floor(elapsedSeconds / DIFFICULTY_SCALE_INTERVAL);
+      const difficultyMultiplier = DIFFICULTY_MULTIPLIER_STEP ** difficultyTier;
 
       const moveDirection =
         (keysRef.current.right ? 1 : 0) - (keysRef.current.left ? 1 : 0);
@@ -302,10 +389,12 @@ export function PrototypeOneGameClient({
       const currentPlayer = playerRef.current;
       let nextVelocityY = currentPlayer.velocityY - GRAVITY * delta;
       let nextJumpOffset = currentPlayer.jumpOffset + nextVelocityY * delta;
+      let nextJumpCount = currentPlayer.jumpCount;
 
       if (nextJumpOffset < 0) {
         nextJumpOffset = 0;
         nextVelocityY = 0;
+        nextJumpCount = 0;
       }
 
       const nextX = clamp(
@@ -313,11 +402,17 @@ export function PrototypeOneGameClient({
         PLAYER_WIDTH / 2,
         1 - PLAYER_WIDTH / 2,
       );
+      const nextFacing: FacingDirection =
+        moveDirection < 0 ? "left" : moveDirection > 0 ? "right" : currentPlayer.facing;
+      const isOnGround = nextJumpOffset <= 0.0001;
 
       const nextPlayer: PlayerState = {
         x: nextX,
         jumpOffset: nextJumpOffset,
         velocityY: nextVelocityY,
+        jumpCount: nextJumpCount,
+        facing: nextFacing,
+        isRunning: isOnGround && moveDirection !== 0,
       };
 
       petalSpawnElapsedRef.current += delta;
@@ -327,9 +422,10 @@ export function PrototypeOneGameClient({
       }
 
       beeSpawnElapsedRef.current += delta;
-      while (beeSpawnElapsedRef.current >= BEE_SPAWN_INTERVAL) {
-        beeSpawnElapsedRef.current -= BEE_SPAWN_INTERVAL;
-        spawnBee();
+      const currentBeeSpawnInterval = BASE_BEE_SPAWN_INTERVAL / difficultyMultiplier;
+      while (beeSpawnElapsedRef.current >= currentBeeSpawnInterval) {
+        beeSpawnElapsedRef.current -= currentBeeSpawnInterval;
+        spawnBee(difficultyMultiplier);
       }
 
       let deltaScore = 0;
@@ -370,6 +466,7 @@ export function PrototypeOneGameClient({
       }
 
       const nextBees: FlyingBee[] = [];
+      let hitByBee = false;
       for (let index = 0; index < beesRef.current.length; index += 1) {
         const bee = beesRef.current[index];
         const nextXPosition = bee.x + bee.velocityX * delta;
@@ -388,22 +485,37 @@ export function PrototypeOneGameClient({
           intersects(
             playerCenterX,
             playerCenterY,
-            PLAYER_WIDTH,
-            PLAYER_HEIGHT,
+            PLAYER_WIDTH * BEE_COLLISION_PLAYER_WIDTH_FACTOR,
+            PLAYER_HEIGHT * BEE_COLLISION_PLAYER_HEIGHT_FACTOR,
             updated.x,
             updated.y,
-            BEE_WIDTH,
-            BEE_HEIGHT,
+            BEE_WIDTH * BEE_COLLISION_BEE_WIDTH_FACTOR,
+            BEE_HEIGHT * BEE_COLLISION_BEE_HEIGHT_FACTOR,
           )
         ) {
-          deltaScore -= 2;
-          continue;
+          hitByBee = true;
+          break;
         }
 
         nextBees.push(updated);
       }
 
       const nextScore = Math.max(0, scoreRef.current + deltaScore);
+
+      if (hitByBee) {
+        playerRef.current = nextPlayer;
+        petalsRef.current = nextPetals;
+        beesRef.current = nextBees;
+        scoreRef.current = nextScore;
+        setPlayer(nextPlayer);
+        setPetals(nextPetals);
+        setBees(nextBees);
+        if (deltaScore !== 0) {
+          setScore(nextScore);
+        }
+        setIsFinished(true);
+        return;
+      }
 
       playerRef.current = nextPlayer;
       petalsRef.current = nextPetals;
@@ -441,7 +553,7 @@ export function PrototypeOneGameClient({
 
 
   function handleRestart() {
-    setTimeLeft(GAME_DURATION);
+    setSurvivalSeconds(0);
     setIsFinished(false);
     setScore(0);
     setPlayer(INITIAL_PLAYER);
@@ -511,6 +623,9 @@ export function PrototypeOneGameClient({
   const currentSchool = schools.find((item) => item.id === schoolId) ?? null;
   const currentSchoolIndex = schools.findIndex((item) => item.id === schoolId);
   const previousSchool = currentSchoolIndex > 0 ? schools[currentSchoolIndex - 1] : null;
+  const lionVisual = getLionVisual(player);
+  const lionScale = getLionScale(lionVisual.pose);
+  const lionGroundOffset = getLionGroundOffset(lionVisual.pose);
 
   return (
     <main className="relative min-h-screen overflow-hidden text-stone-900">
@@ -561,8 +676,69 @@ export function PrototypeOneGameClient({
 
             <div className="absolute inset-x-4 bottom-4 top-20 overflow-hidden rounded-[1.7rem] border border-white/60 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.92),rgba(255,255,255,0.26))] select-none touch-none sm:inset-x-5 sm:bottom-5 sm:top-[88px]">
               <div className="absolute inset-0 [image-rendering:pixelated]">
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,#6fb7ff_0%,#9bd3ff_46%,#68b861_46%,#549f4f_100%)]" />
-                <div className="absolute inset-0 opacity-20 [background-size:14px_14px] [background-image:linear-gradient(to_right,rgba(255,255,255,0.28)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.26)_1px,transparent_1px)]" />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,#6fb7ff_0%,#9bd3ff_48%,#68b861_48%,#549f4f_100%)]" />
+              </div>
+
+              <div
+                className="pointer-events-none absolute inset-x-0 top-0"
+                style={{
+                  height: `${(1 - SKY_GROUND_BOUNDARY_Y) * 100}%`,
+                }}
+              >
+                <Image
+                  src={PROTOTYPE_ONE_BG_SKY_IMAGE}
+                  alt=""
+                  fill
+                  unoptimized
+                  sizes="100vw"
+                  draggable={false}
+                  className="object-cover opacity-95 [image-rendering:pixelated]"
+                />
+              </div>
+
+              <div
+                className="pointer-events-none absolute inset-x-0"
+                style={{
+                  bottom: `${GROUND_LINE_Y * 100}%`,
+                  height: `${UPPER_GROUND_HEIGHT * 100}%`,
+                }}
+              >
+                <div className="absolute inset-0 bg-[#66b95a]/90" />
+                <Image
+                  src={PROTOTYPE_ONE_BG_UPPER_GREEN_IMAGE}
+                  alt=""
+                  fill
+                  unoptimized
+                  sizes="100vw"
+                  draggable={false}
+                  className="object-cover opacity-90 [image-rendering:pixelated]"
+                />
+              </div>
+
+              <div
+                className="pointer-events-none absolute inset-x-0 bg-[#295529]"
+                style={{
+                  bottom: `${GROUND_LINE_Y * 100}%`,
+                  height: "6px",
+                }}
+              />
+
+              <div
+                className="pointer-events-none absolute inset-x-0 bottom-0"
+                style={{
+                  height: `${LOWER_GROUND_HEIGHT * 100}%`,
+                }}
+              >
+                <div className="absolute inset-0 bg-[#4fa24b]/90" />
+                <Image
+                  src={PROTOTYPE_ONE_BG_LOWER_GREEN_IMAGE}
+                  alt=""
+                  fill
+                  unoptimized
+                  sizes="100vw"
+                  draggable={false}
+                  className="object-cover opacity-90 [image-rendering:pixelated]"
+                />
               </div>
 
               <div
@@ -571,7 +747,7 @@ export function PrototypeOneGameClient({
               >
                 <div className="text-stone-900">
                   <p className="text-2xl font-black sm:text-3xl">
-                    {timeLeft}
+                    {survivalSeconds.toFixed(1)}
                     <span className="ml-1.5 text-base font-bold text-rose-500 sm:text-lg">초</span>
                   </p>
                 </div>
@@ -596,8 +772,6 @@ export function PrototypeOneGameClient({
                   className="object-contain [image-rendering:pixelated]"
                 />
               </div>
-
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[22%] border-t-[6px] border-[#295529] bg-[repeating-linear-gradient(90deg,#4fa24b_0px,#4fa24b_20px,#4aa046_20px,#4aa046_40px)]" />
 
               {petals.map((petal) => (
                 <div
@@ -650,17 +824,27 @@ export function PrototypeOneGameClient({
                 className="pointer-events-none absolute z-30 -translate-x-1/2"
                 style={{
                   left: `${player.x * 100}%`,
-                  bottom: `${(PLAYER_GROUND_Y + player.jumpOffset) * 100}%`,
+                  bottom: `${(PLAYER_GROUND_Y + player.jumpOffset - lionGroundOffset) * 100}%`,
                   width: `${PLAYER_WIDTH * 100}%`,
                   height: `${PLAYER_HEIGHT * 100}%`,
                 }}
               >
-                <div className="relative h-full w-full border-[4px] border-[#6f3f1e] bg-[#f4b355]">
-                  <span className="absolute left-[8%] top-[-18%] h-[28%] w-[24%] border-[3px] border-[#6f3f1e] bg-[#f4b355]" />
-                  <span className="absolute right-[8%] top-[-18%] h-[28%] w-[24%] border-[3px] border-[#6f3f1e] bg-[#f4b355]" />
-                  <span className="absolute left-[20%] top-[38%] h-[16%] w-[12%] bg-black" />
-                  <span className="absolute right-[20%] top-[38%] h-[16%] w-[12%] bg-black" />
-                  <span className="absolute left-[39%] top-[54%] h-[10%] w-[22%] bg-[#5a2f13]" />
+                <div
+                  className="relative h-full w-full"
+                  style={{
+                    transform: `scale(${lionScale})`,
+                    transformOrigin: "center bottom",
+                  }}
+                >
+                  <Image
+                    src={lionVisual.path}
+                    alt=""
+                    fill
+                    unoptimized
+                    sizes="(max-width: 768px) 84px, 112px"
+                    draggable={false}
+                    className="object-contain [image-rendering:pixelated]"
+                  />
                 </div>
               </div>
 
@@ -674,7 +858,7 @@ export function PrototypeOneGameClient({
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/46 px-4">
           <div className="w-full max-w-md rounded-[2rem] border border-white/20 bg-white/92 p-6 text-center text-stone-900 shadow-2xl">
             <div className="relative">
-              <h2 className="text-3xl font-bold">Prototype1 종료</h2>
+              <h2 className="text-3xl font-bold">Prototype1 게임 오버</h2>
               <div className="mt-5 rounded-[1.6rem] border border-stone-200 bg-stone-50 px-5 py-6">
                 <p className="text-sm font-semibold tracking-[0.24em] text-rose-500">
                   게임 결과
@@ -684,6 +868,9 @@ export function PrototypeOneGameClient({
                   <span className="ml-2 text-2xl font-bold text-rose-500 sm:ml-3 sm:text-3xl">
                     점
                   </span>
+                </p>
+                <p className="mt-3 text-sm font-medium text-stone-500">
+                  생존 시간 {survivalSeconds.toFixed(1)}초
                 </p>
               </div>
               {currentSchool ? (
