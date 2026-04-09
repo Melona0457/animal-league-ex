@@ -2,26 +2,48 @@
 
 import { useEffect } from "react";
 
-type BackgroundVideoWarmupProps = {
+type VideoWarmupGroup = {
   sources: readonly string[];
   preload?: "metadata" | "auto";
+  delayMs?: number;
+};
+
+type BackgroundVideoWarmupProps = {
+  sources?: readonly string[];
+  preload?: "metadata" | "auto";
+  groups?: readonly VideoWarmupGroup[];
 };
 
 export function BackgroundVideoWarmup({
-  sources,
+  sources = [],
   preload = "metadata",
+  groups,
 }: BackgroundVideoWarmupProps) {
   useEffect(() => {
-    const uniqueSources = Array.from(new Set(sources.filter(Boolean)));
     const videos: HTMLVideoElement[] = [];
-    let timeoutId: number | null = null;
+    const timeoutIds: number[] = [];
+    const seenSources = new Set<string>();
 
-    const warmup = () => {
-      uniqueSources.forEach((src) => {
+    const normalizedGroups =
+      groups && groups.length > 0
+        ? groups
+        : [{ sources, preload, delayMs: 700 satisfies number | undefined }];
+
+    const warmupGroup = ({
+      sources: groupSources,
+      preload: groupPreload = preload,
+    }: VideoWarmupGroup) => {
+      groupSources.forEach((src) => {
+        if (!src || seenSources.has(src)) {
+          return;
+        }
+
+        seenSources.add(src);
+
         const video = document.createElement("video");
         const source = document.createElement("source");
 
-        video.preload = preload;
+        video.preload = groupPreload;
         video.muted = true;
         video.playsInline = true;
         video.setAttribute("aria-hidden", "true");
@@ -43,14 +65,17 @@ export function BackgroundVideoWarmup({
       });
     };
 
-    timeoutId = window.setTimeout(() => {
-      warmup();
-    }, 700);
+    normalizedGroups.forEach((group) => {
+      const delayMs = group.delayMs ?? 0;
+      const timeoutId = window.setTimeout(() => {
+        warmupGroup(group);
+      }, delayMs);
+
+      timeoutIds.push(timeoutId);
+    });
 
     return () => {
-      if (timeoutId !== null) {
-        window.clearTimeout(timeoutId);
-      }
+      timeoutIds.forEach((timeoutId) => window.clearTimeout(timeoutId));
 
       videos.forEach((video) => {
         video.pause();
@@ -59,7 +84,7 @@ export function BackgroundVideoWarmup({
         video.remove();
       });
     };
-  }, [preload, sources]);
+  }, [groups, preload, sources]);
 
   return null;
 }

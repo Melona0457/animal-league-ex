@@ -20,17 +20,12 @@ import {
 import { getPetalsBySchoolId, type PetalPlacement } from "../_lib/petal-state";
 import { setSelectedSchoolId } from "../_lib/selected-school";
 import { getStoredSchoolById, getStoredSchools } from "../_lib/school-state";
+import { GAME_MODE_VIDEOS, MAIN_TREE_VIDEOS } from "../_lib/video-assets";
 
 type MainClientProps = {
   school: SchoolRecord;
   score: number;
 };
-
-const MAIN_PAGE_WARMUP_VIDEOS = [
-  "/videos/game-modes/classic-fall.mp4",
-  "/videos/game-modes/tap-bloom.mp4",
-  "/videos/game-modes/prototype1.mp4",
-] as const;
 
 function getAttackAlertStorageKey(schoolId: string) {
   return `blossom-save:attack-alert-dismissed:${schoolId}`;
@@ -93,6 +88,7 @@ export function MainClient({ school, score }: MainClientProps) {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAttackLogOpen, setIsAttackLogOpen] = useState(false);
+  const [brokenTreeVideoSrc, setBrokenTreeVideoSrc] = useState<string | null>(null);
   const [currentSchool, setCurrentSchool] = useState(school);
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
   const [petals, setPetals] = useState<PetalPlacement[]>([]);
@@ -159,6 +155,10 @@ export function MainClient({ school, score }: MainClientProps) {
     ? Math.max(0, currentSchool.totalPetals - nextSchool.totalPetals)
     : 0;
   const latestAttackAt = attackLogs[0]?.createdAt ?? null;
+  const treeVideoLevel = Math.min(Math.max(currentSchool.level, 1), 7);
+  const treeVideoSrc = `/videos/trees/main-level-${treeVideoLevel}.mp4`;
+  const secondaryTreeVideoSources = MAIN_TREE_VIDEOS.filter((src) => src !== treeVideoSrc);
+  const hasTreeVideoError = brokenTreeVideoSrc === treeVideoSrc;
   const hasUnreadAttackAlert =
     latestAttackAt !== null &&
     (dismissedAttackAt === null ||
@@ -217,7 +217,13 @@ export function MainClient({ school, score }: MainClientProps) {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-sky-200 px-4 py-8 text-white sm:py-10">
-      <BackgroundVideoWarmup sources={MAIN_PAGE_WARMUP_VIDEOS} />
+      <BackgroundVideoWarmup
+        groups={[
+          { sources: [treeVideoSrc], preload: "auto", delayMs: 0 },
+          { sources: secondaryTreeVideoSources, preload: "metadata", delayMs: 350 },
+          { sources: GAME_MODE_VIDEOS, preload: "metadata", delayMs: 1200 },
+        ]}
+      />
       <div
         className="pointer-events-none absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-md brightness-110 saturate-110"
         style={{ backgroundImage: `url('${getSchoolBackgroundImage(currentSchool.id)}')` }}
@@ -263,14 +269,31 @@ export function MainClient({ school, score }: MainClientProps) {
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.45),transparent_30%),radial-gradient(circle_at_top_right,rgba(255,210,228,0.24),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.16),rgba(149,196,244,0.18))]" />
               <div className="relative flex h-[calc(100vh-12.5rem)] min-h-[720px] w-full items-end justify-center overflow-hidden rounded-[2rem] border border-white/45 bg-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(255,255,255,0.42),rgba(255,255,255,0.08),transparent)]" />
-                <TreeScene
-                  treeLevel={currentSchool.level}
-                  petals={petals}
-                  fillContainer
-                  backgroundMode="cover"
-                  showPetals={false}
-                  className="min-h-full w-full"
-                />
+                {hasTreeVideoError ? (
+                  <TreeScene
+                    treeLevel={currentSchool.level}
+                    petals={petals}
+                    fillContainer
+                    backgroundMode="cover"
+                    showPetals={false}
+                    className="min-h-full w-full"
+                  />
+                ) : (
+                  <video
+                    key={treeVideoSrc}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="auto"
+                    disablePictureInPicture
+                    disableRemotePlayback
+                    className="absolute inset-0 h-full w-full object-cover"
+                    onError={() => setBrokenTreeVideoSrc(treeVideoSrc)}
+                  >
+                    <source src={treeVideoSrc} type="video/mp4" />
+                  </video>
+                )}
                 <div className="pointer-events-none absolute left-6 top-6 z-30 flex items-center gap-4 rounded-[1.6rem] border border-white/35 bg-white/18 px-4 py-3 text-stone-950 shadow-[0_12px_30px_rgba(0,0,0,0.12)] backdrop-blur-md sm:left-8 sm:top-8 sm:px-5">
                   <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/55 bg-white/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] sm:h-20 sm:w-20">
                     <img
