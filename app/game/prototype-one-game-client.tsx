@@ -1,7 +1,14 @@
 ﻿"use client";
 
 import Image from "next/image";
-import { type PointerEvent as ReactPointerEvent, useEffect, useRef, useState, useTransition } from "react";
+import {
+  type PointerEvent as ReactPointerEvent,
+  type TouchEvent as ReactTouchEvent,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { useRouter } from "next/navigation";
 import type { SchoolRecord } from "../_lib/mock-data";
 import { applyGameScore, getStoredSchools } from "../_lib/school-state";
@@ -309,6 +316,22 @@ export function PrototypeOneGameClient({
 
     keysRef.current.right = isPressed;
   }
+
+  useEffect(() => {
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyOverscrollBehavior = document.body.style.overscrollBehavior;
+
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+
+    return () => {
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.overscrollBehavior = previousBodyOverscrollBehavior;
+    };
+  }, []);
 
   useEffect(() => {
     const media = window.matchMedia("(pointer: coarse)");
@@ -665,6 +688,11 @@ export function PrototypeOneGameClient({
     event.stopPropagation();
   }
 
+  function preventTouchScroll(event: ReactTouchEvent<HTMLElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   async function handleShareResult() {
     const shareUrl =
       typeof window === "undefined"
@@ -939,12 +967,20 @@ export function PrototypeOneGameClient({
               </div>
 
               {showTouchControls && !isFinished ? (
-                <div className="absolute inset-x-0 bottom-4 z-40 flex items-end justify-between px-4 sm:px-6">
+                <div
+                  className="absolute inset-x-0 bottom-4 z-40 flex items-end justify-between px-4 touch-none sm:px-6"
+                  onTouchStart={preventTouchScroll}
+                  onTouchMove={preventTouchScroll}
+                  onTouchEnd={preventTouchScroll}
+                >
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       aria-label="왼쪽 이동"
-                      className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/65 bg-black/38 text-2xl font-black text-white backdrop-blur-sm active:scale-95"
+                      className="pointer-events-auto flex h-14 w-14 touch-none items-center justify-center rounded-2xl border border-white/65 bg-black/38 text-2xl font-black text-white backdrop-blur-sm active:scale-95"
+                      onTouchStart={preventTouchScroll}
+                      onTouchMove={preventTouchScroll}
+                      onTouchEnd={preventTouchScroll}
                       onPointerDown={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
@@ -967,7 +1003,10 @@ export function PrototypeOneGameClient({
                     <button
                       type="button"
                       aria-label="오른쪽 이동"
-                      className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/65 bg-black/38 text-2xl font-black text-white backdrop-blur-sm active:scale-95"
+                      className="pointer-events-auto flex h-14 w-14 touch-none items-center justify-center rounded-2xl border border-white/65 bg-black/38 text-2xl font-black text-white backdrop-blur-sm active:scale-95"
+                      onTouchStart={preventTouchScroll}
+                      onTouchMove={preventTouchScroll}
+                      onTouchEnd={preventTouchScroll}
                       onPointerDown={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
@@ -991,7 +1030,10 @@ export function PrototypeOneGameClient({
                   <button
                     type="button"
                     aria-label="점프"
-                    className="pointer-events-auto flex h-16 min-w-20 items-center justify-center rounded-2xl border border-rose-100/75 bg-rose-500/85 px-5 text-base font-black text-white shadow-[0_8px_24px_rgba(244,114,182,0.3)] backdrop-blur-sm active:scale-95"
+                    className="pointer-events-auto flex h-16 min-w-20 touch-none items-center justify-center rounded-2xl border border-rose-100/75 bg-rose-500/85 px-5 text-base font-black text-white shadow-[0_8px_24px_rgba(244,114,182,0.3)] backdrop-blur-sm active:scale-95"
+                    onTouchStart={preventTouchScroll}
+                    onTouchMove={preventTouchScroll}
+                    onTouchEnd={preventTouchScroll}
                     onPointerDown={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
