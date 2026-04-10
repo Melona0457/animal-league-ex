@@ -43,14 +43,14 @@ function SchoolLogo({
   }
 
   return (
-    <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-stone-200 bg-stone-50">
+    <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 sm:h-14 sm:w-14">
       {variant !== "missing" ? (
         <Image
           src={logoSrc}
           alt={`${schoolName} logo`}
           fill
           unoptimized
-          sizes="56px"
+          sizes="(max-width: 640px) 48px, 56px"
           className="h-full w-full object-contain"
           onError={handleError}
         />
@@ -246,31 +246,35 @@ export function RankingClient({
     <main className="min-h-screen px-6 py-8 text-stone-900">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
         <header className="rounded-[2rem] border border-rose-100 bg-gradient-to-r from-white via-rose-50 to-amber-50 p-6 shadow-[0_18px_50px_rgba(190,92,116,0.12)]">
-          <div className="flex items-start justify-between gap-6">
-            <div className="max-w-2xl">
-              <h1 className="mt-2 flex items-center gap-2 text-3xl font-bold text-[#cf5f84]">
-                <span aria-hidden="true">🏆</span>
+          <div className="flex flex-col gap-3 sm:grid sm:grid-cols-[minmax(0,42rem)_auto] sm:items-start sm:gap-x-6 sm:gap-y-0">
+            <div className="flex items-start justify-between gap-4 sm:contents">
+              <h1 className="mt-2 flex min-w-0 flex-1 items-center gap-1.5 text-lg font-bold leading-tight tracking-tight text-[#cf5f84] sm:col-start-1 sm:col-end-2 sm:row-start-1 sm:mt-2 sm:gap-2 sm:leading-normal sm:tracking-normal sm:flex-none sm:text-3xl">
+                <span className="shrink-0 text-base sm:text-[1.875rem]" aria-hidden="true">
+                  🏆
+                </span>
                 <span>학교 벚꽃 랭킹</span>
               </h1>
-              <p className="mt-3 text-sm leading-6 text-stone-600">
-                지금 가장 빠르게 개화 중인 학교들을 확인하고, 다른 학교 현황도 둘러보세요.
-              </p>
+              <Link
+                href="/main"
+                className="shrink-0 rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-sm font-medium text-stone-700 shadow-sm transition hover:bg-white sm:col-start-2 sm:col-end-3 sm:row-start-1 sm:self-start"
+              >
+                메인으로
+              </Link>
             </div>
-            <Link
-              href="/main"
-              className="shrink-0 rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-sm font-medium text-stone-700 shadow-sm transition hover:bg-white"
-            >
-              메인으로
-            </Link>
+            <p className="w-full max-w-none text-xs leading-relaxed text-pretty text-stone-600 sm:col-start-1 sm:col-end-2 sm:row-start-2 sm:mt-3 sm:max-w-2xl sm:text-sm sm:leading-6">
+              지금 가장 빠르게 개화 중인 학교들을 확인하고,{" "}
+              <br className="sm:hidden" />
+              다른 학교 현황도 둘러보세요.
+            </p>
           </div>
         </header>
 
         <section className="rounded-[2rem] border border-stone-200 bg-white p-5 shadow-[0_18px_40px_rgba(36,15,26,0.06)]">
           <div className="rounded-[1.4rem] border border-rose-100 bg-gradient-to-r from-rose-50 via-white to-rose-50 px-4 py-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-rose-700">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-rose-700 sm:text-sm">
               <span aria-hidden="true">🔥</span>
               <span>실시간 TOP 3 대학</span>
-              <span className="ml-2 text-xs font-medium text-stone-500">
+              <span className="w-full text-[11px] font-medium text-stone-500 sm:ml-2 sm:w-auto sm:text-xs">
                 지금 가장 앞서고 있는 학교들이에요
               </span>
             </div>
@@ -481,12 +485,12 @@ export function RankingClient({
         </section>
 
         <section className="overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_18px_40px_rgba(36,15,26,0.06)]">
-          <div className="flex items-center justify-between gap-4 border-b border-rose-100 bg-rose-50/80 px-5 py-4">
-            <p className="text-sm font-medium text-rose-700">
+          <div className="flex flex-col gap-3 border-b border-rose-100 bg-rose-50/80 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <p className="min-w-0 text-sm font-medium text-rose-700">
               <span aria-hidden="true" className="mr-1">📢</span>
               학교를 클릭하면 해당 학교 나무 화면으로 이동할 수 있어요.
             </p>
-            <div className="flex shrink-0 gap-2">
+            <div className="flex shrink-0 gap-2 self-end sm:self-auto">
               <Link
                 href="/ranking"
                 className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
@@ -517,42 +521,48 @@ export function RankingClient({
                 <li key={school.id}>
                   <Link
                     href={getSchoolNavigationHref(school.id, currentSchoolId)}
-                    className="flex items-center justify-between gap-3 px-5 py-4 transition hover:bg-rose-50/70"
+                    className="flex flex-col gap-2 px-5 py-4 transition hover:bg-rose-50/70 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
                   >
-                    <div className="flex min-w-0 items-center gap-1.5 sm:gap-3">
-                      <div className="w-9 shrink-0 text-center">
-                        <p className={`text-sm font-semibold ${getRankTextClass(school.rank)}`}>
-                          {school.rank}위
-                        </p>
-                      </div>
-                      <div className="w-8 shrink-0 text-center sm:w-11">
-                        {rankDelta ? (
-                          <p className={`text-xs font-bold ${rankDelta.className}`}>
-                            {rankDelta.label}
+                    <div className="flex min-w-0 w-full items-start gap-2 sm:min-w-0 sm:flex-1 sm:items-center sm:gap-3">
+                      <div className="flex shrink-0 items-start gap-1.5 sm:items-center">
+                        <div className="w-9 shrink-0 text-center">
+                          <p
+                            className={`text-sm font-semibold ${getRankTextClass(school.rank)}`}
+                          >
+                            {school.rank}위
                           </p>
-                        ) : (
-                          <p className="text-xs font-medium text-stone-300">-</p>
-                        )}
+                        </div>
+                        <div className="w-8 shrink-0 text-center sm:w-11">
+                          {rankDelta ? (
+                            <p className={`text-xs font-bold ${rankDelta.className}`}>
+                              {rankDelta.label}
+                            </p>
+                          ) : (
+                            <p className="text-xs font-medium text-stone-300">-</p>
+                          )}
+                        </div>
+                        <SchoolLogo
+                          key={school.id}
+                          schoolId={school.id}
+                          schoolName={school.name}
+                        />
                       </div>
-                      <SchoolLogo
-                        key={school.id}
-                        schoolId={school.id}
-                        schoolName={school.name}
-                      />
-                      <div className="min-w-0 self-center">
-                        <p className="truncate text-base font-semibold">
+                      <div className="min-w-0 flex-1 self-center pt-0.5 sm:pt-0">
+                        <p className="break-words text-base font-semibold leading-snug sm:truncate">
                           {school.name}
                         </p>
-                        <p className="mt-1 text-sm text-stone-600">
+                        <p className="mt-1 text-xs leading-snug text-stone-600 whitespace-nowrap sm:mt-1 sm:text-sm">
                           {getLevelLabel(school.level)} / 개화율 {school.bloomRate}%
                         </p>
                       </div>
                     </div>
-                    <div className="shrink-0 self-center text-right">
-                      <p className="text-sm font-semibold text-stone-900">
-                        벚꽃 {school.totalPetals.toLocaleString()}개
-                      </p>
-                      <p className="text-xs text-stone-500">상세 보기</p>
+                    <div className="flex w-full shrink-0 justify-end border-t border-stone-100 pt-2 text-right sm:w-auto sm:border-t-0 sm:pt-0 sm:self-center">
+                      <div>
+                        <p className="text-sm font-semibold text-stone-900">
+                          벚꽃 {school.totalPetals.toLocaleString()}개
+                        </p>
+                        <p className="text-xs text-stone-500">상세 보기</p>
+                      </div>
                     </div>
                   </Link>
                 </li>
