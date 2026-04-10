@@ -79,13 +79,19 @@ function NearbySchoolRow({
 }) {
   if (!school) {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-stone-200/80 bg-white/60 px-3 py-2 text-stone-500">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200/80 bg-white/70 text-[10px]">
+      <div className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl border border-stone-200/80 bg-white/60 px-1.5 py-1 text-center text-stone-500 sm:gap-2 sm:px-3 sm:py-2">
+        <div className="flex h-7 w-7 items-center justify-center rounded-full border border-stone-200/80 bg-white/70 text-[9px] sm:h-9 sm:w-9 sm:text-[10px]">
           -
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-semibold">경쟁 학교 없음</p>
+          <p className="text-[9px] font-medium leading-none sm:text-[11px]">-</p>
+          <p className="mt-0.5 truncate text-[10px] font-semibold leading-tight sm:mt-1 sm:text-base sm:leading-normal">
+            경쟁 없음
+          </p>
         </div>
+        <p className="text-[10px] font-bold leading-none text-rose-500 sm:text-sm sm:leading-normal">
+          -
+        </p>
       </div>
     );
   }
@@ -93,17 +99,25 @@ function NearbySchoolRow({
   return (
     <Link
       href={`/schools/${school.id}`}
-      className="flex min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border border-stone-200/80 bg-white/60 px-3 py-3 text-center transition hover:border-stone-300 hover:bg-white/75"
+      className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl border border-stone-200/80 bg-white/60 px-2 py-1.5 text-center transition hover:border-stone-300 hover:bg-white/75 sm:gap-2 sm:px-3 sm:py-3"
     >
-      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200/80 bg-white/80">
-        <SchoolLogoImage schoolId={school.id} schoolName={school.name} sizes="48px" />
+      <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200/80 bg-white/80 sm:h-12 sm:w-12">
+        <SchoolLogoImage
+          schoolId={school.id}
+          schoolName={school.name}
+          sizes="(max-width: 640px) 32px, 48px"
+        />
         <span className="hidden text-[10px] text-stone-400">로고</span>
       </div>
       <div className="min-w-0">
-        <p className="text-[11px] font-medium text-stone-500">#{school.rank}</p>
-        <p className="mt-1 truncate text-base font-semibold text-stone-800">{school.name}</p>
+        <p className="text-[9px] font-medium text-stone-500 sm:text-[11px]">#{school.rank}</p>
+        <p className="mt-0.5 truncate text-[10px] font-semibold leading-tight text-stone-800 sm:mt-1 sm:text-base sm:leading-normal">
+          {school.name}
+        </p>
       </div>
-      <p className="text-sm font-bold text-rose-500">{gap.toLocaleString()}개</p>
+      <p className="text-[10px] font-bold leading-none text-rose-500 sm:text-sm sm:leading-normal">
+        {gap.toLocaleString()}개
+      </p>
     </Link>
   );
 }
@@ -380,15 +394,17 @@ export function MainClient({ school, score }: MainClientProps) {
           </div>
         </section>
 
-        <header className="mt-5 grid grid-cols-1 gap-2 rounded-[1.5rem] border border-white/30 bg-white/28 p-2.5 text-stone-950 backdrop-blur-sm sm:mt-6 sm:grid-cols-[1.15fr_1.35fr] sm:gap-2 sm:p-3">
-          <div className="grid grid-cols-1 gap-2 rounded-[1.25rem] bg-white/40 px-3 py-2 sm:grid-cols-3 sm:items-stretch">
+        <header className="mt-3 grid grid-cols-1 gap-1 rounded-[1.5rem] border border-white/30 bg-white/28 p-1.5 text-stone-950 backdrop-blur-sm sm:mt-6 sm:grid-cols-[1.15fr_1.35fr] sm:gap-2 sm:p-3">
+          <div className="grid grid-cols-3 gap-1 rounded-[1.25rem] bg-white/40 px-2 py-1 sm:grid-cols-3 sm:items-stretch sm:gap-2 sm:px-3 sm:py-2">
             <NearbySchoolRow
               school={previousSchool}
               gap={gapToPrevious}
             />
-            <div className="flex flex-col items-center justify-center rounded-2xl bg-white/45 px-3 py-2 text-center">
-              <p className="text-[11px] font-semibold text-stone-600 sm:text-xs">현재 순위</p>
-              <p className="mt-1 text-xl font-bold sm:text-3xl">#{currentSchool.rank}</p>
+            <div className="flex flex-col items-center justify-center rounded-2xl bg-white/45 px-2 py-1 text-center sm:px-3 sm:py-2">
+              <p className="text-[9px] font-semibold text-stone-600 sm:text-xs">현재 순위</p>
+              <p className="mt-0.5 text-sm font-bold leading-none sm:mt-1 sm:text-3xl sm:leading-normal">
+                #{currentSchool.rank}
+              </p>
             </div>
             <NearbySchoolRow
               school={nextSchool}
@@ -396,23 +412,25 @@ export function MainClient({ school, score }: MainClientProps) {
             />
           </div>
           <div className="rounded-[1.25rem] bg-white/40 px-3 py-2">
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-end justify-between gap-2">
               <div>
-                <p className="text-[11px] font-semibold text-stone-600 sm:text-xs">레벨</p>
-                <p className="mt-1 text-base font-bold sm:text-2xl">
+                <p className="hidden text-[11px] font-semibold text-stone-600 sm:block sm:text-xs">
+                  레벨
+                </p>
+                <p className="text-base font-bold sm:mt-1 sm:text-2xl">
                   {getLevelLabel(currentSchool.level)}
                 </p>
               </div>
+              <p className="text-[11px] font-medium text-stone-600 sm:text-xs">
+                총 벚꽃 수 {totalPetals.toLocaleString()}
+              </p>
               {score > 0 ? (
-                <span className="rounded-full bg-emerald-400/18 px-2 py-1 text-[11px] font-semibold text-emerald-700">
+                <span className="hidden rounded-full bg-emerald-400/18 px-2 py-1 text-[11px] font-semibold text-emerald-700 sm:inline-flex">
                   +{score}
                 </span>
               ) : null}
             </div>
             <div className="mt-2">
-              <p className="mb-2 text-[11px] font-medium text-stone-600 sm:text-xs">
-                총 벚꽃 수 {totalPetals.toLocaleString()}
-              </p>
               <div className="relative h-6 overflow-hidden rounded-full bg-white/45 sm:h-7">
                 <div
                   className="h-full rounded-full bg-[linear-gradient(90deg,#fda4af_0%,#fb7185_50%,#fecdd3_100%)] transition-[width] duration-700"
@@ -422,7 +440,7 @@ export function MainClient({ school, score }: MainClientProps) {
                   {progressPercent.toFixed(0)}%
                 </div>
               </div>
-              <div className="mt-2 flex items-center justify-between text-[10px] font-medium text-stone-600 sm:text-xs">
+              <div className="mt-2 hidden items-center justify-between text-[10px] font-medium text-stone-600 sm:flex sm:text-xs">
                 <span>{getLevelLabel(currentSchool.level)}</span>
                 <span>
                   {currentSchool.level >= 7
