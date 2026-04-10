@@ -71,21 +71,22 @@ function getPodiumTreeImage(rank: number) {
 }
 
 function getPodiumTreeOffset(rank: number) {
-  if (rank === 1) return "-mb-2";
-  if (rank === 2) return "-mb-2 sm:-mb-8";
-  return "-mb-2 sm:-mb-9";
+  if (rank === 1) return "-mb-1 sm:-mb-2";
+  if (rank === 2) return "-mb-1 sm:-mb-8";
+  return "-mb-1 sm:-mb-9";
 }
 
 function getPodiumNameOffset(rank: number) {
-  if (rank === 1) return "-mb-3";
-  if (rank === 2) return "-mb-3 sm:-mb-7";
-  return "-mb-3 sm:-mb-8";
+  if (rank === 1) return "-mb-2 sm:-mb-3";
+  if (rank === 2) return "-mb-2 sm:-mb-7";
+  return "-mb-2 sm:-mb-8";
 }
 
+/** 모바일 전용. 1·2·3위 막대 높이 비율 9:7:6 유지(데스크탑 sm: 는 별도). */
 function getMobilePodiumHeightClass(rank: number) {
-  if (rank === 1) return "h-36";
-  if (rank === 2) return "h-28";
-  return "h-24";
+  if (rank === 1) return "h-[7.2rem]";
+  if (rank === 2) return "h-[5.6rem]";
+  return "h-[4.8rem]";
 }
 
 function getDesktopPodiumHeightClass(rank: number) {
@@ -245,10 +246,10 @@ export function RankingClient({
   return (
     <main className="min-h-screen px-6 py-8 text-stone-900">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
-        <header className="rounded-[2rem] border border-rose-100 bg-gradient-to-r from-white via-rose-50 to-amber-50 p-6 shadow-[0_18px_50px_rgba(190,92,116,0.12)]">
-          <div className="flex flex-col gap-3 sm:grid sm:grid-cols-[minmax(0,42rem)_auto] sm:items-start sm:gap-x-6 sm:gap-y-0">
-            <div className="flex items-start justify-between gap-4 sm:contents">
-              <h1 className="mt-2 flex min-w-0 flex-1 items-center gap-1.5 text-lg font-bold leading-tight tracking-tight text-[#cf5f84] sm:col-start-1 sm:col-end-2 sm:row-start-1 sm:mt-2 sm:gap-2 sm:leading-normal sm:tracking-normal sm:flex-none sm:text-3xl">
+        <header className="rounded-[2rem] border border-rose-100 bg-gradient-to-r from-white via-rose-50 to-amber-50 p-4 shadow-[0_18px_50px_rgba(190,92,116,0.12)] sm:px-6 sm:py-5">
+          <div className="flex flex-col gap-2 sm:grid sm:grid-cols-[minmax(0,42rem)_auto] sm:items-start sm:gap-x-6 sm:gap-y-0">
+            <div className="flex items-start justify-between gap-3 sm:contents">
+              <h1 className="mt-1 flex min-w-0 flex-1 items-center gap-1.5 text-lg font-bold leading-tight tracking-tight text-[#cf5f84] sm:col-start-1 sm:col-end-2 sm:row-start-1 sm:mt-0 sm:gap-2 sm:leading-normal sm:tracking-normal sm:flex-none sm:text-3xl">
                 <span className="shrink-0 text-base sm:text-[1.875rem]" aria-hidden="true">
                   🏆
                 </span>
@@ -256,7 +257,7 @@ export function RankingClient({
               </h1>
               <Link
                 href="/main"
-                className="shrink-0 rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-sm font-medium text-stone-700 shadow-sm transition hover:bg-white sm:col-start-2 sm:col-end-3 sm:row-start-1 sm:self-start"
+                className="shrink-0 rounded-2xl border border-white/80 bg-white/90 px-3 py-2 text-sm font-medium text-stone-700 shadow-sm transition hover:bg-white sm:col-start-2 sm:col-end-3 sm:row-span-2 sm:row-start-1 sm:self-center sm:px-4 sm:py-3"
               >
                 메인으로
               </Link>
@@ -269,8 +270,8 @@ export function RankingClient({
           </div>
         </header>
 
-        <section className="rounded-[2rem] border border-stone-200 bg-white p-5 shadow-[0_18px_40px_rgba(36,15,26,0.06)]">
-          <div className="rounded-[1.4rem] border border-rose-100 bg-gradient-to-r from-rose-50 via-white to-rose-50 px-4 py-3">
+        <section className="rounded-[2rem] border border-stone-200 bg-white p-4 shadow-[0_18px_40px_rgba(36,15,26,0.06)] sm:p-5">
+          <div className="rounded-[1.4rem] border border-rose-100 bg-gradient-to-r from-rose-50 via-white to-rose-50 px-3 py-2 sm:px-4 sm:py-3">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-rose-700 sm:text-sm">
               <span aria-hidden="true">🔥</span>
               <span>실시간 TOP 3 대학</span>
@@ -279,7 +280,7 @@ export function RankingClient({
               </span>
             </div>
           </div>
-          <div className="mt-12 flex items-end justify-center gap-2 overflow-hidden pb-2 sm:mt-20 sm:gap-8 sm:overflow-x-auto">
+          <div className="mt-6 flex items-end justify-center gap-1.5 overflow-hidden pb-1 sm:mt-20 sm:gap-8 sm:pb-2 sm:overflow-x-auto">
             {[podiumSchools[1], podiumSchools[0], podiumSchools[2]].map((school) => {
               if (!school) {
                 return null;
@@ -306,7 +307,7 @@ export function RankingClient({
                   <div className={`${getPodiumTreeOffset(school.rank)} relative flex flex-col items-center`}>
                     {school.rank === 1 ? (
                       <div
-                        className="mb-1 text-[22px] drop-shadow-[0_3px_6px_rgba(176,122,23,0.28)]"
+                        className="mb-0.5 text-[19px] drop-shadow-[0_3px_6px_rgba(176,122,23,0.28)] sm:mb-1 sm:text-[22px]"
                         aria-hidden="true"
                       >
                         👑
@@ -334,18 +335,18 @@ export function RankingClient({
                       width={320}
                       height={320}
                       unoptimized
-                      sizes="(max-width: 640px) 132px, 192px"
+                      sizes="(max-width: 640px) 112px, 192px"
                       className={`relative z-10 w-auto object-contain ${
                         school.rank === 1
-                          ? "h-32 sm:h-48"
+                          ? "h-28 sm:h-48"
                           : school.rank === 2
-                            ? "h-28 sm:h-48"
-                            : "h-26 sm:h-48"
+                            ? "h-24 sm:h-48"
+                            : "h-[5.25rem] sm:h-48"
                       }`}
                     />
                   </div>
                   <div
-                    className={`-mt-3 flex w-full items-center justify-center rounded-t-[1.25rem] px-2 text-base font-bold backdrop-blur-[1px] sm:-mt-4 sm:rounded-t-[1.5rem] sm:px-3 sm:text-lg ${heightClass}`}
+                    className={`-mt-2 flex w-full items-center justify-center rounded-t-[1.25rem] px-2 text-base font-bold backdrop-blur-[1px] sm:-mt-4 sm:rounded-t-[1.5rem] sm:px-3 sm:text-lg ${heightClass}`}
                   >
                     {school.rank}위
                   </div>
@@ -355,16 +356,16 @@ export function RankingClient({
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-stone-200 bg-white p-5 shadow-[0_18px_40px_rgba(36,15,26,0.06)]">
-          <div className="rounded-[1.5rem] border border-rose-100 bg-gradient-to-r from-rose-50 via-white to-pink-50 p-4">
-            <div className="flex flex-col gap-3">
+        <section className="rounded-[2rem] border border-stone-200 bg-white p-4 shadow-[0_18px_40px_rgba(36,15,26,0.06)] sm:p-5">
+          <div className="rounded-[1.5rem] border border-rose-100 bg-gradient-to-r from-rose-50 via-white to-pink-50 p-3 sm:p-4">
+            <div className="flex flex-col gap-2 sm:gap-3">
               <div>
-                <p className="flex items-center gap-2 text-sm font-semibold text-rose-700">
+                <p className="flex items-center gap-2 text-xs font-semibold text-rose-700 sm:text-sm">
                   <span aria-hidden="true">🔍</span>
                   <span>학교 검색</span>
                 </p>
               </div>
-              <div className="rounded-[1.2rem] border border-stone-200 bg-white px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
+              <div className="rounded-[1.2rem] border border-stone-200 bg-white px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] sm:px-4 sm:py-3">
                 <input
                   value={searchQuery}
                   onChange={(event) => {
@@ -372,7 +373,7 @@ export function RankingClient({
                     setSelectedSearchSchoolId(null);
                   }}
                   placeholder="어느 학교부터 가볼까요?"
-                  className="w-full bg-transparent text-sm text-stone-900 outline-none placeholder:text-stone-400"
+                  className="w-full bg-transparent text-xs text-stone-900 outline-none placeholder:text-stone-400 sm:text-sm"
                 />
               </div>
             </div>
@@ -486,7 +487,7 @@ export function RankingClient({
 
         <section className="overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_18px_40px_rgba(36,15,26,0.06)]">
           <div className="flex flex-col gap-3 border-b border-rose-100 bg-rose-50/80 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-            <p className="min-w-0 text-sm font-medium text-rose-700">
+            <p className="min-w-0 text-xs font-semibold text-rose-700 sm:text-sm sm:font-medium">
               <span aria-hidden="true" className="mr-1">📢</span>
               학교를 클릭하면 해당 학교 나무 화면으로 이동할 수 있어요.
             </p>
