@@ -486,7 +486,7 @@ export function RankingClient({
         </section>
 
         <section className="overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_18px_40px_rgba(36,15,26,0.06)]">
-          <div className="flex flex-col gap-3 border-b border-rose-100 bg-rose-50/80 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="flex flex-col gap-3 border-b border-rose-100 bg-rose-50/80 px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:py-4">
             <p className="min-w-0 text-xs font-semibold text-rose-700 sm:text-sm sm:font-medium">
               <span className="flex gap-1.5 sm:hidden">
                 <span aria-hidden="true" className="shrink-0 select-none leading-none">
