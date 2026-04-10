@@ -3,7 +3,7 @@ import { BackgroundVideoWarmup } from "../../_components/background-video-warmup
 import { GameModeVideo } from "../../_components/game-mode-video";
 import { getSchoolById } from "../../_lib/mock-data";
 import { resolveSchoolIdFromRequest } from "../../_lib/selected-school-server";
-import { GAME_MODE_VIDEOS, MAIN_TREE_VIDEOS } from "../../_lib/video-assets";
+import { GAME_MODE_VIDEOS } from "../../_lib/video-assets";
 import { redirect } from "next/navigation";
 
 type GameSelectPageProps = {
@@ -29,6 +29,7 @@ const GAME_MODES = [
     glow: "shadow-[0_24px_60px_rgba(120,45,78,0.22)]",
     preview: "video",
     video: "/videos/game-modes/classic-fall.mp4",
+    poster: "/images/game-modes/posters/classic-fall-poster.webp",
   },
   {
     id: "tap",
@@ -40,6 +41,7 @@ const GAME_MODES = [
     glow: "shadow-[0_24px_60px_rgba(143,76,111,0.2)]",
     preview: "video",
     video: "/videos/game-modes/tap-bloom.mp4",
+    poster: "/images/game-modes/posters/tap-bloom-poster.webp",
   },
   {
     id: "prototype1",
@@ -51,6 +53,7 @@ const GAME_MODES = [
     glow: "shadow-[0_24px_60px_rgba(132,76,103,0.2)]",
     preview: "video",
     video: "/videos/game-modes/prototype1.mp4",
+    poster: "/images/game-modes/posters/prototype1-poster.webp",
   },
 ] as const;
 
@@ -75,8 +78,7 @@ export default async function GameSelectPage({
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,244,248,0.26),rgba(255,247,250,0.14)_28%,rgba(255,255,255,0)_58%)] px-4 py-5 text-stone-900">
       <BackgroundVideoWarmup
         groups={[
-          { sources: MAIN_TREE_VIDEOS, preload: "metadata", delayMs: 250 },
-          { sources: GAME_MODE_VIDEOS, preload: "auto", delayMs: 900 },
+          { sources: GAME_MODE_VIDEOS, preload: "metadata", delayMs: 0 },
         ]}
       />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,245,248,0.12),rgba(255,255,255,0.02)_36%,rgba(255,241,246,0.1)_100%)]" />
@@ -149,7 +151,11 @@ export default async function GameSelectPage({
                 >
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18),transparent_36%,rgba(0,0,0,0.24)_100%)]" />
                   {mode.preview === "video" ? (
-                    <GameModeVideo src={mode.video} title={mode.title} />
+                    <GameModeVideo
+                      src={mode.video}
+                      title={mode.title}
+                      poster={mode.poster}
+                    />
                   ) : (
                     <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[1.1rem] border border-white/25 bg-[linear-gradient(180deg,#59a8f6_0%,#8dd0ff_52%,#58a14f_52%,#4a8e42_100%)] [image-rendering:pixelated]">
                       <div className="absolute inset-0 opacity-20 [background-size:12px_12px] [background-image:linear-gradient(to_right,rgba(255,255,255,0.28)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.26)_1px,transparent_1px)]" />

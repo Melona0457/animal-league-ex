@@ -51,10 +51,13 @@ const PLAYER_MOVE_SPEED = 0.72;
 const PLAYER_JUMP_VELOCITY = 1.04;
 const PLAYER_DOUBLE_JUMP_VELOCITY = 0.98;
 const GRAVITY = 2.8;
-const PETAL_SIZE = 0.05;
+const PETAL_COLLISION_SIZE = 0.05;
+const PETAL_RENDER_SIZE = 0.058;
 const PETAL_SPAWN_INTERVAL = 0.22;
-const BEE_WIDTH = 0.072;
-const BEE_HEIGHT = 0.045;
+const BEE_COLLISION_WIDTH = 0.072;
+const BEE_COLLISION_HEIGHT = 0.045;
+const BEE_RENDER_WIDTH = 0.082;
+const BEE_RENDER_HEIGHT = 0.052;
 const BEE_COLLISION_PLAYER_WIDTH_FACTOR = 0.72;
 const BEE_COLLISION_PLAYER_HEIGHT_FACTOR = 0.74;
 const BEE_COLLISION_BEE_WIDTH_FACTOR = 0.72;
@@ -64,30 +67,30 @@ const DIFFICULTY_SCALE_INTERVAL = 10;
 const DIFFICULTY_MULTIPLIER_STEP = 1.5;
 const GAME_RENDER_FPS = 50;
 const HUD_UPDATE_FPS = 15;
-const PROTOTYPE_ONE_PETAL_IMAGE = "/images/game/prototype1/petal.png";
-const PROTOTYPE_ONE_BEE_IMAGE = "/images/game/prototype1/bee.png";
-const PROTOTYPE_ONE_TREE_IMAGE = "/images/game/prototype1/tree.png";
-const PROTOTYPE_ONE_BG_SKY_IMAGE = "/images/game/prototype1/background/sky.png";
+const PROTOTYPE_ONE_PETAL_IMAGE = "/images/game/prototype1/petal.webp";
+const PROTOTYPE_ONE_BEE_IMAGE = "/images/game/prototype1/bee.webp";
+const PROTOTYPE_ONE_TREE_IMAGE = "/images/game/prototype1/tree.webp";
+const PROTOTYPE_ONE_BG_SKY_IMAGE = "/images/game/prototype1/background/sky.webp";
 const PROTOTYPE_ONE_BG_UPPER_GREEN_IMAGE =
-  "/images/game/prototype1/background/upper-green.png";
+  "/images/game/prototype1/background/upper-green.webp";
 const PROTOTYPE_ONE_BG_LOWER_GREEN_IMAGE =
-  "/images/game/prototype1/background/lower-green.png";
+  "/images/game/prototype1/background/lower-green.webp";
 const PROTOTYPE_ONE_LION_SPRITES = {
   idle: {
-    left: "/images/game/prototype1/lion/lion-idle-left.png",
-    right: "/images/game/prototype1/lion/lion-idle-right.png",
+    left: "/images/game/prototype1/lion/lion-idle-left.webp",
+    right: "/images/game/prototype1/lion/lion-idle-right.webp",
   },
   run: {
-    left: "/images/game/prototype1/lion/lion-run-left.png",
-    right: "/images/game/prototype1/lion/lion-run-right.png",
+    left: "/images/game/prototype1/lion/lion-run-left.webp",
+    right: "/images/game/prototype1/lion/lion-run-right.webp",
   },
   jump1: {
-    left: "/images/game/prototype1/lion/lion-jump1-left.png",
-    right: "/images/game/prototype1/lion/lion-jump1-right.png",
+    left: "/images/game/prototype1/lion/lion-jump1-left.webp",
+    right: "/images/game/prototype1/lion/lion-jump1-right.webp",
   },
   jump2: {
-    left: "/images/game/prototype1/lion/lion-jump2-left.png",
-    right: "/images/game/prototype1/lion/lion-jump2-right.png",
+    left: "/images/game/prototype1/lion/lion-jump2-left.webp",
+    right: "/images/game/prototype1/lion/lion-jump2-right.webp",
   },
 } as const;
 
@@ -527,8 +530,8 @@ export function PrototypeOneGameClient({
             PLAYER_HEIGHT,
             updated.x,
             updated.y,
-            PETAL_SIZE,
-            PETAL_SIZE,
+            PETAL_COLLISION_SIZE,
+            PETAL_COLLISION_SIZE,
           )
         ) {
           deltaScore += 10;
@@ -562,8 +565,8 @@ export function PrototypeOneGameClient({
             PLAYER_HEIGHT * BEE_COLLISION_PLAYER_HEIGHT_FACTOR,
             updated.x,
             updated.y,
-            BEE_WIDTH * BEE_COLLISION_BEE_WIDTH_FACTOR,
-            BEE_HEIGHT * BEE_COLLISION_BEE_HEIGHT_FACTOR,
+            BEE_COLLISION_WIDTH * BEE_COLLISION_BEE_WIDTH_FACTOR,
+            BEE_COLLISION_HEIGHT * BEE_COLLISION_BEE_HEIGHT_FACTOR,
           )
         ) {
           hitByBee = true;
@@ -864,8 +867,8 @@ export function PrototypeOneGameClient({
                   style={{
                     left: `${petal.x * 100}%`,
                     bottom: `${petal.y * 100}%`,
-                    width: `${PETAL_SIZE * 100}%`,
-                    height: `${PETAL_SIZE * 100}%`,
+                    width: `${PETAL_RENDER_SIZE * 100}%`,
+                    height: `${PETAL_RENDER_SIZE * 100}%`,
                     transform: `translate(-50%, 50%) rotate(${petal.rotation}deg)`,
                   }}
                 >
@@ -889,8 +892,8 @@ export function PrototypeOneGameClient({
                   style={{
                     left: `${bee.x * 100}%`,
                     bottom: `${bee.y * 100}%`,
-                    width: `${BEE_WIDTH * 100}%`,
-                    height: `${BEE_HEIGHT * 100}%`,
+                    width: `${BEE_RENDER_WIDTH * 100}%`,
+                    height: `${BEE_RENDER_HEIGHT * 100}%`,
                   }}
                 >
                   <Image

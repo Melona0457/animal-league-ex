@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BackgroundImageWarmup } from "../_components/background-image-warmup";
 import { BackgroundVideoWarmup } from "../_components/background-video-warmup";
 import { TreeScene } from "../_components/tree-scene";
 import {
@@ -21,8 +20,6 @@ import {
 import { getPetalsBySchoolId, type PetalPlacement } from "../_lib/petal-state";
 import { setSelectedSchoolId } from "../_lib/selected-school";
 import { getStoredSchoolById, getStoredSchools } from "../_lib/school-state";
-import { CORE_BACKGROUND_IMAGES, PROTOTYPE_ONE_IMAGES } from "../_lib/image-assets";
-import { GAME_MODE_VIDEOS, MAIN_TREE_VIDEOS } from "../_lib/video-assets";
 
 type MainClientProps = {
   school: SchoolRecord;
@@ -199,7 +196,6 @@ export function MainClient({ school, score }: MainClientProps) {
   const treeVideoLevel = Math.min(Math.max(currentSchool.level, 1), 7);
   const treeVideoSrc = `/videos/trees/main-level-${treeVideoLevel}.mp4`;
   const hasTreeVideoError = brokenTreeVideoSrc === treeVideoSrc;
-  const secondaryTreeVideos = MAIN_TREE_VIDEOS.filter((src) => src !== treeVideoSrc);
   const hasUnreadAttackAlert =
     latestAttackAt !== null &&
     (dismissedAttackAt === null ||
@@ -261,14 +257,6 @@ export function MainClient({ school, score }: MainClientProps) {
       <BackgroundVideoWarmup
         groups={[
           { sources: [treeVideoSrc], preload: "auto", delayMs: 0 },
-          { sources: secondaryTreeVideos, preload: "metadata", delayMs: 250 },
-          { sources: GAME_MODE_VIDEOS, preload: "metadata", delayMs: 900 },
-        ]}
-      />
-      <BackgroundImageWarmup
-        sources={[
-          ...CORE_BACKGROUND_IMAGES,
-          ...PROTOTYPE_ONE_IMAGES,
         ]}
       />
       <div

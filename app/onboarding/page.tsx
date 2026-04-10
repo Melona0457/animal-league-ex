@@ -37,7 +37,7 @@ function TreeIntroVisual() {
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18),rgba(255,255,255,0.04))]" />
       <div
         className="h-[17rem] w-[32rem] max-w-full bg-cover bg-center sm:h-[22rem]"
-        style={{ backgroundImage: "url('/images/onboarding-tree-level7.png')" }}
+        style={{ backgroundImage: "url('/images/trees/tree-level-7.webp')" }}
       />
     </div>
   );
@@ -116,7 +116,7 @@ function ShakeVisual() {
       <div
         className="absolute inset-0 bg-center bg-no-repeat"
         style={{
-          backgroundImage: "url('/images/trees/tree-level-5.png')",
+          backgroundImage: "url('/images/trees/tree-level-5.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center 58%",
         }}
@@ -148,7 +148,7 @@ function RankingVisual() {
           <div className="flex flex-col items-center">
             <div
               className="mb-2 h-14 w-14 bg-contain bg-center bg-no-repeat sm:h-16 sm:w-16"
-              style={{ backgroundImage: "url('/images/trees/tree_clean_2.png')" }}
+              style={{ backgroundImage: "url('/images/trees/tree_clean_2.webp')" }}
             />
             <p className="text-sm font-semibold text-stone-700">경북대</p>
             <div className="mt-3 flex h-24 w-24 items-center justify-center rounded-t-[1.5rem] bg-[linear-gradient(180deg,#fff0f5,#ffd6e3)] text-2xl font-black text-rose-600">
@@ -158,7 +158,7 @@ function RankingVisual() {
           <div className="flex flex-col items-center">
             <div
               className="mb-2 h-32 w-32 bg-contain bg-center bg-no-repeat sm:h-36 sm:w-36"
-              style={{ backgroundImage: "url('/images/trees/tree_clean_3.png')" }}
+              style={{ backgroundImage: "url('/images/trees/tree_clean_3.webp')" }}
             />
             <p className="text-sm font-semibold text-stone-700">숭실대</p>
             <div className="mt-3 flex h-32 w-32 items-center justify-center rounded-t-[1.7rem] bg-[linear-gradient(180deg,#fda4af,#fb7185)] text-3xl font-black text-white shadow-[0_18px_30px_rgba(244,114,182,0.2)]">
@@ -168,7 +168,7 @@ function RankingVisual() {
           <div className="flex flex-col items-center">
             <div
               className="mb-2 h-12 w-12 bg-contain bg-center bg-no-repeat sm:h-14 sm:w-14"
-              style={{ backgroundImage: "url('/images/trees/tree_clean_1.png')" }}
+              style={{ backgroundImage: "url('/images/trees/tree_clean_1.webp')" }}
             />
             <p className="text-sm font-semibold text-stone-700">가톨릭대</p>
             <div className="mt-3 flex h-20 w-24 items-center justify-center rounded-t-[1.4rem] bg-[linear-gradient(180deg,#fff7fa,#ffe5ee)] text-2xl font-black text-rose-600">
@@ -228,7 +228,7 @@ function GrowthGaugeVisual() {
             <div className="rounded-[1.25rem] border border-stone-200 bg-white/88 p-3 text-center shadow-[0_8px_18px_rgba(148,163,184,0.1)]">
               <div
                 className="mx-auto h-20 w-full bg-contain bg-center bg-no-repeat sm:h-24"
-                style={{ backgroundImage: "url('/images/trees/tree-level-1.png')" }}
+                style={{ backgroundImage: "url('/images/trees/tree-level-1.webp')" }}
               />
               <p className="mt-2 text-sm font-black text-stone-700">Lv.1</p>
               <p className="mt-1 text-xs font-semibold text-stone-500">막 피어나기 시작한 나무</p>
@@ -244,7 +244,7 @@ function GrowthGaugeVisual() {
             <div className="rounded-[1.25rem] border border-rose-200 bg-[linear-gradient(180deg,#fff1f5,#ffe4ef)] p-3 text-center shadow-[0_10px_22px_rgba(244,114,182,0.12)]">
               <div
                 className="mx-auto h-20 w-full bg-contain bg-center bg-no-repeat sm:h-24"
-                style={{ backgroundImage: "url('/images/trees/tree-level-7.png')" }}
+                style={{ backgroundImage: "url('/images/trees/tree-level-7.webp')" }}
               />
               <p className="mt-2 text-sm font-black text-stone-800">Lv.7</p>
               <p className="mt-1 text-xs font-semibold text-rose-500">벚꽃이 가득 핀 만개 상태</p>
