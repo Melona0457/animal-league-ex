@@ -488,13 +488,27 @@ export function RankingClient({
         <section className="overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-[0_18px_40px_rgba(36,15,26,0.06)]">
           <div className="flex flex-col gap-3 border-b border-rose-100 bg-rose-50/80 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <p className="min-w-0 text-xs font-semibold text-rose-700 sm:text-sm sm:font-medium">
-              <span aria-hidden="true" className="mr-1">📢</span>
-              학교를 클릭하면 해당 학교 나무 화면으로 이동할 수 있어요.
+              <span className="flex gap-1.5 sm:hidden">
+                <span aria-hidden="true" className="shrink-0 select-none leading-none">
+                  📢
+                </span>
+                <span className="min-w-0 leading-snug">
+                  학교를 클릭하면
+                  <br />
+                  해당 학교 나무 화면으로 이동할 수 있어요.
+                </span>
+              </span>
+              <span className="hidden sm:inline">
+                <span aria-hidden="true" className="mr-1">
+                  📢
+                </span>
+                학교를 클릭하면 해당 학교 나무 화면으로 이동할 수 있어요.
+              </span>
             </p>
-            <div className="flex shrink-0 gap-2 self-end sm:self-auto">
+            <div className="flex w-full shrink-0 justify-center gap-1.5 sm:w-auto sm:justify-end sm:gap-2 sm:self-auto">
               <Link
                 href="/ranking"
-                className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                className={`rounded-xl px-3 py-1.5 text-xs font-medium transition sm:px-4 sm:py-2 sm:text-sm ${
                   sort === "rank"
                     ? "bg-stone-900 text-white shadow-lg shadow-stone-900/15"
                     : "border border-stone-200 bg-white text-stone-700 hover:border-rose-200 hover:bg-white"
@@ -504,7 +518,7 @@ export function RankingClient({
               </Link>
               <Link
                 href="/ranking?sort=name"
-                className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                className={`rounded-xl px-3 py-1.5 text-xs font-medium transition sm:px-4 sm:py-2 sm:text-sm ${
                   sort === "name"
                     ? "bg-stone-900 text-white shadow-lg shadow-stone-900/15"
                     : "border border-stone-200 bg-white text-stone-700 hover:border-rose-200 hover:bg-white"
