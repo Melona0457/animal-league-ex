@@ -23,9 +23,12 @@ type RankDelta = {
 function SchoolLogo({
   schoolId,
   schoolName,
+  listRow,
 }: {
   schoolId: string;
   schoolName: string;
+  /** 랭킹 리스트 한 줄 레이아웃(모바일)용 작은 로고 */
+  listRow?: boolean;
 }) {
   const [variant, setVariant] = useState<"avif" | "webp" | "missing">("avif");
   const logoSrc =
@@ -42,15 +45,21 @@ function SchoolLogo({
     setVariant("missing");
   }
 
+  const sizeClass = listRow
+    ? "h-10 w-10 rounded-xl sm:h-14 sm:w-14 sm:rounded-2xl"
+    : "h-12 w-12 sm:h-14 sm:w-14 rounded-2xl";
+
   return (
-    <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 sm:h-14 sm:w-14">
+    <div
+      className={`relative flex shrink-0 items-center justify-center overflow-hidden border border-stone-200 bg-stone-50 ${sizeClass}`}
+    >
       {variant !== "missing" ? (
         <Image
           src={logoSrc}
           alt={`${schoolName} logo`}
           fill
           unoptimized
-          sizes="(max-width: 640px) 48px, 56px"
+          sizes={listRow ? "(max-width: 640px) 40px, 56px" : "(max-width: 640px) 48px, 56px"}
           className="h-full w-full object-contain"
           onError={handleError}
         />
@@ -536,48 +545,47 @@ export function RankingClient({
                 <li key={school.id}>
                   <Link
                     href={getSchoolNavigationHref(school.id, currentSchoolId)}
-                    className="flex flex-col gap-2 px-5 py-4 transition hover:bg-rose-50/70 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+                    className="flex items-center gap-1.5 px-3 py-2.5 transition hover:bg-rose-50/70 sm:gap-3 sm:px-5 sm:py-4"
                   >
-                    <div className="flex min-w-0 w-full items-start gap-2 sm:min-w-0 sm:flex-1 sm:items-center sm:gap-3">
-                      <div className="flex shrink-0 items-start gap-1.5 sm:items-center">
-                        <div className="w-9 shrink-0 text-center">
-                          <p
-                            className={`text-sm font-semibold ${getRankTextClass(school.rank)}`}
-                          >
-                            {school.rank}위
+                    <div className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-1.5">
+                      <div className="w-8 shrink-0 text-center sm:w-9">
+                        <p
+                          className={`text-[11px] font-semibold leading-none sm:text-sm sm:leading-normal ${getRankTextClass(school.rank)}`}
+                        >
+                          {school.rank}위
+                        </p>
+                      </div>
+                      <div className="hidden w-8 shrink-0 text-center sm:block sm:w-11">
+                        {rankDelta ? (
+                          <p className={`text-xs font-bold ${rankDelta.className}`}>
+                            {rankDelta.label}
                           </p>
-                        </div>
-                        <div className="w-8 shrink-0 text-center sm:w-11">
-                          {rankDelta ? (
-                            <p className={`text-xs font-bold ${rankDelta.className}`}>
-                              {rankDelta.label}
-                            </p>
-                          ) : (
-                            <p className="text-xs font-medium text-stone-300">-</p>
-                          )}
-                        </div>
-                        <SchoolLogo
-                          key={school.id}
-                          schoolId={school.id}
-                          schoolName={school.name}
-                        />
+                        ) : (
+                          <p className="text-xs font-medium text-stone-300">-</p>
+                        )}
                       </div>
-                      <div className="min-w-0 flex-1 self-center pt-0.5 sm:pt-0">
-                        <p className="break-words text-base font-semibold leading-snug sm:truncate">
-                          {school.name}
-                        </p>
-                        <p className="mt-1 text-xs leading-snug text-stone-600 whitespace-nowrap sm:mt-1 sm:text-sm">
-                          {getLevelLabel(school.level)} / 개화율 {school.bloomRate}%
-                        </p>
-                      </div>
+                      <SchoolLogo
+                        key={school.id}
+                        listRow
+                        schoolId={school.id}
+                        schoolName={school.name}
+                      />
                     </div>
-                    <div className="flex w-full shrink-0 justify-end border-t border-stone-100 pt-2 text-right sm:w-auto sm:border-t-0 sm:pt-0 sm:self-center">
-                      <div>
-                        <p className="text-sm font-semibold text-stone-900">
-                          벚꽃 {school.totalPetals.toLocaleString()}개
-                        </p>
-                        <p className="text-xs text-stone-500">상세 보기</p>
-                      </div>
+                    <div className="min-w-0 flex-1 py-0.5 sm:py-0">
+                      <p className="line-clamp-2 break-words text-xs font-semibold leading-snug text-stone-900 sm:line-clamp-none sm:text-base sm:leading-snug sm:truncate">
+                        {school.name}
+                      </p>
+                      <p className="mt-0.5 text-[10px] leading-snug text-stone-600 sm:mt-1 sm:text-sm sm:leading-snug">
+                        {getLevelLabel(school.level)} / 개화율 {school.bloomRate}%
+                      </p>
+                    </div>
+                    <div className="shrink-0 pl-0.5 text-right sm:pl-0">
+                      <p className="text-[11px] font-semibold leading-tight text-stone-900 tabular-nums sm:text-sm">
+                        벚꽃 {school.totalPetals.toLocaleString()}개
+                      </p>
+                      <p className="mt-0.5 text-[10px] text-stone-500 sm:mt-0 sm:text-xs">
+                        상세 보기
+                      </p>
                     </div>
                   </Link>
                 </li>
