@@ -1,7 +1,6 @@
 import { getSchoolById } from "../_lib/mock-data";
 import { resolveSchoolIdFromRequest } from "../_lib/selected-school-server";
 import { GameClient } from "./game-client";
-import { PrototypeOneGameClient } from "./prototype-one-game-client";
 import { redirect } from "next/navigation";
 
 type GamePageProps = {
@@ -27,6 +26,9 @@ export default async function GamePage({ searchParams }: GamePageProps) {
   }
 
   if (params.mode === "prototype1") {
+    const { PrototypeOneGameClient } = await import(
+      "./prototype-one-game-client"
+    );
     return <PrototypeOneGameClient schoolId={school.id} schoolName={school.name} />;
   }
 
