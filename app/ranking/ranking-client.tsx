@@ -74,9 +74,9 @@ function SchoolLogo({
 }
 
 function getPodiumTreeImage(rank: number) {
-  if (rank === 1) return "/images/trees/tree_clean_2.png";
-  if (rank === 2) return "/images/trees/tree_clean_1.png";
-  return "/images/trees/tree_clean_3.png";
+  if (rank === 1) return "/images/trees/tree_clean_2.webp";
+  if (rank === 2) return "/images/trees/tree_clean_1.webp";
+  return "/images/trees/tree_clean_3.webp";
 }
 
 function getPodiumTreeOffset(rank: number) {

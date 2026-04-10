@@ -5,9 +5,10 @@ import { useEffect, useRef, useState } from "react";
 type GameModeVideoProps = {
   src: string;
   title: string;
+  poster?: string;
 };
 
-export function GameModeVideo({ src, title }: GameModeVideoProps) {
+export function GameModeVideo({ src, title, poster }: GameModeVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isReady, setIsReady] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -46,6 +47,7 @@ export function GameModeVideo({ src, title }: GameModeVideoProps) {
         muted
         loop
         playsInline
+        poster={poster}
         preload="metadata"
         disablePictureInPicture
         disableRemotePlayback

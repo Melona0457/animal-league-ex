@@ -95,7 +95,7 @@
 ### 이미지 자산 연결 방식
 - 초기화면 배경: `/public/images/landing/hero-background.jpg`
 - 학교별 메인 배경: `/public/images/schools/{schoolId}/main-background.jpg`
-- 학교별 레벨 나무 이미지: `/public/images/schools/{schoolId}/tree-level-{level}.png`
+- 공통 레벨 나무 이미지: `/public/images/trees/tree-level-{level}.webp`
 
 ### 아직 남은 실제 연결 포인트
 - 실제 이미지 파일 추가 필요
@@ -221,7 +221,7 @@
 - 학교 로고 파일 경로 helper 추가
 
 ### 이미지 파일 경로
-- 단상 나무 이미지: `/public/images/schools/{schoolId}/tree-level-{level}.png`
+- 단상 나무 이미지: `/public/images/trees/tree_clean_{1|2|3}.webp`
 - 리스트 로고 이미지: `/public/images/schools/{schoolId}/logo.avif`
 
 ## 2026-04-06 공통 나무 이미지 구조 변경
@@ -263,7 +263,7 @@
 - 클래식 낙하형 게임의 바깥 래퍼에도 큰 라운드를 적용해 전체 외곽선이 각지지 않도록 수정
 
 ### 이미지 파일 경로
-- 공통 나무 이미지: `/public/images/trees/tree-level-{level}.png`
+- 공통 나무 이미지: `/public/images/trees/tree-level-{level}.webp`
 - 학교별 로고 이미지: `/public/images/schools/{schoolId}/logo.avif`
 - 학교별 메인 배경 이미지: `/public/images/schools/{schoolId}/main-background.jpg`
 
