@@ -7,27 +7,27 @@ const slides = [
   {
     title: "흩날리는 꽃들 속에서",
     description:
-      "시험기간에 가려졌던 벚꽃, 이제는 다시 피워볼 시간이에요. 우리 학교 나무를 키우는 시즌 대항전이 시작됩니다.",
+      "시험기간에 가려졌던 벚꽃, 이제는 다시 피워볼 시간이에요.\n우리 학교 나무를 키우는 시즌 대항전이 시작됩니다.",
   },
   {
-    title: "미니게임으로 벚꽃 키우기",
+    title: "미니게임으로 벚꽃 살리기",
     description:
-      "벚꽃 붙이기 미니게임에 들어가 점수를 모으면 우리 학교 벚꽃잎 수가 늘어나고, 나무도 더 화려하게 자라납니다.",
+      "벚꽃 붙이기 미니게임에 들어가 점수를 모으면 우리 학교 벚꽃잎 수가 늘어나고,\n나무도 더 화려하게 자라납니다.",
   },
   {
     title: "상대 학교 나무 흔들기",
     description:
-      "경쟁학교의 나무를 흔들어서 벚꽃잎을 떨어트릴수 있어요. 전략적으로 방해해서 우리 학교 순위를 지켜보세요",
+      "경쟁학교의 나무를 흔들어서 벚꽃잎을 떨어트릴수 있어요.\n전략적으로 방해해서 우리 학교 순위를 지켜보세요.",
   },
   {
     title: "실시간 벚꽃 랭킹",
     description:
-      "전국 대학들의 벚꽃 개수를 비교하면서 우리 학교가 몇 등인지 확인해보세요. 친구들이 많이 참여할수록 더 많은 벚꽃잎을 얻을 수 있습니다.",
+      "전국 대학들의 벚꽃 개수를 비교하면서 우리 학교가 몇 등인지 확인해보세요.\n친구들이 많이 참여할수록 더 많은 벚꽃잎을 얻을 수 있습니다.",
   },
   {
     title: "게이지로 보는 우리 학교 성장",
     description:
-      "우리 학교의 총 벚꽃 수와 성장 진행도는 게이지로 바로 확인할 수 있어요. Lv.1부터 Lv.7까지 올라갈수록 나무가 점점 더 풍성해집니다.",
+      "우리 학교의 총 벚꽃 수와 성장 진행도는 게이지로 바로 확인할 수 있어요.\nLv.1부터 Lv.7까지 올라갈수록 나무가 점점 더 풍성해집니다.",
   },
 ] as const;
 
@@ -332,7 +332,7 @@ export default function OnboardingPage() {
                 <h1 className="text-4xl font-black tracking-[-0.05em] text-slate-900 sm:text-5xl">
                   {slides[currentIndex].title}
                 </h1>
-                <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl">
+                <p className="mx-auto mt-5 max-w-2xl whitespace-pre-line text-lg leading-8 text-slate-600 sm:text-xl">
                   {slides[currentIndex].description}
                 </p>
               </div>

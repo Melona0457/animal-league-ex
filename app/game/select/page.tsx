@@ -45,9 +45,9 @@ const GAME_MODES = [
   },
   {
     id: "prototype1",
-    title: "Prototype1",
+    title: "벚꽃 드랍",
     description:
-      "\ub3c4\ud2b8 \uac10\uc131 2D \ud14c\uc2a4\ud2b8 \ubaa8\ub4dc\ub85c, A/D(\ub610\ub294 \u2190/\u2192)\ub85c \uc774\ub3d9\ud558\uace0 Space\ub85c \uc810\ud504\ud558\uba70 \ubc9a\uaf43\uc740 +10\uc810, \ubc8c\uc740 -2\uc810\uc774\uc5d0\uc694.",
+      "A/D(\ub610\ub294 \u2190/\u2192)\ub85c \uc774\ub3d9\ud558\uace0 Space\ub85c \uc810\ud504\ud558\uba70 \ub5a8\uc5b4\uc9c0\ub294 \ubc9a\uaf43\uc744 \uc7a1\uc544\ubcf4\uc138\uc694.\n\ubc8c\uc5d0 \uc2a4\uce58\uba74 \uac8c\uc784 \uc885\ub8cc!",
     accent: "from-rose-200 via-pink-100 to-amber-100",
     frame: "from-stone-900/90 via-rose-950/75 to-stone-900/90",
     glow: "shadow-[0_24px_60px_rgba(132,76,103,0.2)]",
@@ -169,7 +169,7 @@ export default async function GameSelectPage({
 
                 </div>
 
-                <p className="text-sm leading-6 text-stone-700 sm:text-[15px]">
+                <p className="whitespace-pre-line text-sm leading-6 text-stone-700 sm:text-[15px]">
                   {mode.description}
                 </p>
 

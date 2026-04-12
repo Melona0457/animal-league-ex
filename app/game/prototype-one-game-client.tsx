@@ -238,8 +238,6 @@ export function PrototypeOneGameClient({
   const [roundKey, setRoundKey] = useState(0);
   const [shareBonus, setShareBonus] = useState(0);
   const [hasAppliedShareBonus, setHasAppliedShareBonus] = useState(false);
-  const [shareNotice, setShareNotice] = useState("");
-  const [shareNoticeTone, setShareNoticeTone] = useState<"success" | "warning">("success");
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
 
   const keysRef = useRef({
@@ -675,8 +673,6 @@ export function PrototypeOneGameClient({
     beesRef.current = [];
     setShareBonus(0);
     setHasAppliedShareBonus(false);
-    setShareNotice("");
-    setShareNoticeTone("success");
     setRoundKey((current) => current + 1);
   }
 
@@ -703,7 +699,8 @@ export function PrototypeOneGameClient({
       return;
     }
 
-    const shareText = `${schoolName} 방금 Prototype1에서 ${score}점 획득. 같이 들어와서 우리 학교 벚꽃 붙여줘.`;
+    const shareRankText = currentSchool ? `${currentSchool.rank}위` : "순위";
+    const shareText = `[${schoolName}] 방금 미니게임으로 벚꽃 ${score.toLocaleString()}개 획득. 이번 시즌 ${shareRankText} 굳히는 중. 같이 들어와서 우리 학교 도와줘!!`;
 
     try {
       if (navigator.share) {
@@ -717,8 +714,6 @@ export function PrototypeOneGameClient({
           const bonus = score;
           setShareBonus(bonus);
           setHasAppliedShareBonus(true);
-          setShareNoticeTone("success");
-          setShareNotice("결과를 공유해서 점수를 2배로 얻었어요!");
           return;
         }
 
@@ -726,11 +721,7 @@ export function PrototypeOneGameClient({
       }
 
       await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-      setShareNoticeTone("warning");
-      setShareNotice("친구에게 공유해야 점수가 두 배가 돼요!");
     } catch {
-      setShareNoticeTone("warning");
-      setShareNotice("공유를 완료하지 못했어요. 다시 시도해주세요.");
     }
   }
 
@@ -1055,7 +1046,7 @@ export function PrototypeOneGameClient({
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/46 px-4">
           <div className="w-full max-w-md rounded-[2rem] border border-white/20 bg-white/92 p-6 text-center text-stone-900 shadow-2xl">
             <div className="relative">
-              <h2 className="text-3xl font-bold">Prototype1 게임 오버</h2>
+              <h2 className="text-3xl font-bold">벚꽃 드랍 게임 종료</h2>
               <div className="mt-5 rounded-[1.6rem] border border-stone-200 bg-stone-50 px-5 py-6">
                 <p className="text-sm font-semibold tracking-[0.24em] text-rose-500">
                   게임 결과
@@ -1078,31 +1069,20 @@ export function PrototypeOneGameClient({
                     : ""}
                 </p>
               ) : null}
-              {shareNotice ? (
-                <div
-                  className={`mt-4 rounded-2xl px-4 py-3 text-sm ${
-                    shareNoticeTone === "success"
-                      ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
-                      : "border border-rose-200 bg-rose-50 text-rose-700"
-                  }`}
-                >
-                  {shareNotice}
-                </div>
-              ) : null}
               <div className="mt-6 flex flex-col gap-3">
                 <button
                   type="button"
                   onClick={handleShareResult}
                   className="rounded-2xl border border-stone-200 bg-white px-4 py-4 text-sm font-semibold text-stone-700 transition-transform duration-200 hover:scale-[1.02]"
                 >
-                  친구에게 결과 공유하기
+                  친구에게 공유하고 점수 더 받기
                 </button>
                 <button
                   type="button"
                   onClick={handleRestart}
-                  className="rounded-2xl border border-stone-200 px-4 py-4 text-sm font-semibold text-stone-700 transition-transform duration-200 hover:scale-[1.02]"
+                  className="rounded-2xl border border-stone-200 bg-white px-4 py-4 text-sm font-semibold text-stone-700 transition-transform duration-200 hover:scale-[1.02]"
                 >
-                  한 판 더 하기
+                  다시하기
                 </button>
                 <button
                   type="button"
