@@ -6,37 +6,49 @@ import { useState } from "react";
 const slides = [
   {
     title: "흩날리는 꽃들 속에서",
-    description:
-      "시험기간에 가려졌던 벚꽃, 이제는 다시 피워볼 시간이에요. 우리 학교 나무를 키우는 시즌 대항전이 시작됩니다.",
+    description: [
+      "시험기간에 가려졌던 벚꽃, 이제는 다시 피워볼 시간이에요.",
+      "우리 학교 나무를 키우는 시즌 대항전이 시작됩니다.",
+    ],
   },
   {
     title: "미니게임으로 벚꽃 키우기",
-    description:
-      "벚꽃 붙이기 미니게임에 들어가 점수를 모으면 우리 학교 벚꽃잎 수가 늘어나고, 나무도 더 화려하게 자라납니다.",
+    description: [
+      "벚꽃 붙이기 미니게임에 들어가 점수를 모으면",
+      "우리 학교 벚꽃잎 수가 늘어나고, 나무도 더 화려하게 자라납니다.",
+    ],
   },
   {
     title: "상대 학교 나무 흔들기",
-    description:
-      "경쟁학교의 나무를 흔들어서 벚꽃잎을 떨어트릴수 있어요. 전략적으로 방해해서 우리 학교 순위를 지켜보세요",
+    description: [
+      "경쟁학교의 나무를 흔들어서 벚꽃잎을 떨어트릴 수 있어요.",
+      "전략적으로 방해해서 우리 학교 순위를 지켜보세요.",
+    ],
   },
   {
     title: "실시간 벚꽃 랭킹",
-    description:
-      "전국 대학들의 벚꽃 개수를 비교하면서 우리 학교가 몇 등인지 확인해보세요. 친구들이 많이 참여할수록 더 많은 벚꽃잎을 얻을 수 있습니다.",
+    description: [
+      "전국 대학들의 벚꽃 개수를 비교하면서",
+      "우리 학교가 몇 등인지 확인해보세요.",
+      "친구들이 많이 참여할수록 더 많은 벚꽃잎을 얻을 수 있습니다.",
+    ],
   },
   {
     title: "게이지로 보는 우리 학교 성장",
-    description:
-      "우리 학교의 총 벚꽃 수와 성장 진행도는 게이지로 바로 확인할 수 있어요. Lv.1부터 Lv.7까지 올라갈수록 나무가 점점 더 풍성해집니다.",
+    description: [
+      "우리 학교의 총 벚꽃 수와 성장 진행도는",
+      "게이지로 바로 확인할 수 있어요.",
+      "Lv.1부터 Lv.7까지 올라갈수록 나무가 점점 더 풍성해집니다.",
+    ],
   },
 ] as const;
 
 function TreeIntroVisual() {
   return (
-    <div className="relative overflow-hidden rounded-[2rem] border border-white/45 bg-white/25 shadow-[0_24px_60px_rgba(132,149,186,0.2)]">
+    <div className="relative w-full max-w-[32rem] overflow-hidden rounded-[2rem] border border-white/45 bg-white/25 shadow-[0_24px_60px_rgba(132,149,186,0.2)]">
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18),rgba(255,255,255,0.04))]" />
       <div
-        className="h-[17rem] w-[32rem] max-w-full bg-cover bg-center sm:h-[22rem]"
+        className="h-[13rem] w-full bg-cover bg-center sm:h-[22rem]"
         style={{ backgroundImage: "url('/images/trees/tree-level-7.webp')" }}
       />
     </div>
@@ -45,11 +57,13 @@ function TreeIntroVisual() {
 
 function MiniGameVisual() {
   return (
-    <div className="w-[32rem] max-w-full overflow-hidden rounded-[2rem] border border-white/45 bg-[linear-gradient(180deg,rgba(120,183,241,0.9),rgba(255,233,243,0.88))] p-3 shadow-[0_24px_60px_rgba(132,149,186,0.2)]">
-      <div className="rounded-[1.5rem] border border-white/40 bg-white/30 p-3 backdrop-blur-sm">
-        <div className="rounded-[1.2rem] border border-white/35 bg-white/40 px-4 py-3 text-center">
+    <div className="w-full max-w-[32rem] overflow-hidden rounded-[2rem] border border-white/45 bg-[linear-gradient(180deg,rgba(120,183,241,0.9),rgba(255,233,243,0.88))] p-2.5 shadow-[0_24px_60px_rgba(132,149,186,0.2)] sm:p-3">
+      <div className="rounded-[1.5rem] border border-white/40 bg-white/30 p-2.5 backdrop-blur-sm sm:p-3">
+        <div className="rounded-[1.2rem] border border-white/35 bg-white/40 px-3 py-3 text-center sm:px-4">
           <p className="text-[10px] font-black tracking-[0.3em] text-rose-500">MINI GAME SELECT</p>
-          <p className="mt-2 text-2xl font-black tracking-[0.15em] text-stone-800">MINI GAME ZONE</p>
+          <p className="mt-2 text-xl font-black tracking-[0.12em] text-stone-800 sm:text-2xl sm:tracking-[0.15em]">
+            MINI GAME ZONE
+          </p>
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {[
@@ -63,17 +77,22 @@ function MiniGameVisual() {
               image:
                 "linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.02)), url('/images/backgrounds/main-background.png')",
             },
+            {
+              label: "벚꽃 드랍",
+              image:
+                "linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.02)), url('/images/backgrounds/main-background.png')",
+            },
           ].map((card) => (
             <div
               key={card.label}
-              className="rounded-[1.45rem] border border-white/55 bg-white/78 p-4 shadow-[0_12px_28px_rgba(132,149,186,0.18)]"
+              className="rounded-[1.45rem] border border-white/55 bg-white/78 p-3 shadow-[0_12px_28px_rgba(132,149,186,0.18)] sm:p-4"
             >
-              <p className="text-center text-2xl font-black tracking-[-0.04em] text-stone-900">
+              <p className="text-center text-xl font-black tracking-[-0.04em] text-stone-900 sm:text-2xl">
                 {card.label}
               </p>
               <div className="mt-4 overflow-hidden rounded-[1.2rem] border border-stone-200 shadow-[0_10px_24px_rgba(0,0,0,0.08)]">
                 <div
-                  className="relative h-40 bg-cover bg-center"
+                  className="relative h-32 bg-cover bg-center sm:h-40"
                   style={{
                     backgroundImage: card.image,
                   }}
@@ -107,9 +126,9 @@ function MiniGameVisual() {
 
 function ShakeVisual() {
   return (
-    <div className="relative overflow-hidden rounded-[2rem] border border-white/45 bg-white/25 shadow-[0_24px_60px_rgba(132,149,186,0.2)]">
+    <div className="relative w-full max-w-[32rem] overflow-hidden rounded-[2rem] border border-white/45 bg-white/25 shadow-[0_24px_60px_rgba(132,149,186,0.2)]">
       <div
-        className="h-[17rem] w-[32rem] max-w-full bg-cover bg-center sm:h-[22rem]"
+        className="h-[13rem] w-full bg-cover bg-center sm:h-[22rem]"
         style={{ backgroundImage: "url('/images/backgrounds/main-background.png')" }}
       />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_14%,rgba(255,255,255,0.22),transparent_20%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.08))]" />
@@ -139,39 +158,39 @@ function ShakeVisual() {
 
 function RankingVisual() {
   return (
-    <div className="w-[32rem] max-w-full overflow-hidden rounded-[2rem] border border-white/45 bg-white shadow-[0_24px_60px_rgba(132,149,186,0.2)]">
-      <div className="px-5 py-6 sm:px-6 sm:py-7">
-        <div className="mx-auto w-fit rounded-full bg-[linear-gradient(90deg,rgba(255,241,245,0.95),rgba(255,232,240,0.92))] px-5 py-2 text-xs font-bold text-rose-500 shadow-[0_10px_24px_rgba(244,114,182,0.08)]">
+    <div className="w-full max-w-[32rem] overflow-hidden rounded-[2rem] border border-white/45 bg-white shadow-[0_24px_60px_rgba(132,149,186,0.2)]">
+      <div className="px-3 py-5 sm:px-6 sm:py-7">
+        <div className="mx-auto w-fit rounded-full bg-[linear-gradient(90deg,rgba(255,241,245,0.95),rgba(255,232,240,0.92))] px-4 py-2 text-[11px] font-bold text-rose-500 shadow-[0_10px_24px_rgba(244,114,182,0.08)] sm:px-5 sm:text-xs">
           실시간 TOP 3 랭킹
         </div>
-        <div className="mt-8 flex items-end justify-center gap-4 sm:gap-6">
+        <div className="mt-6 flex items-end justify-center gap-2 sm:mt-8 sm:gap-6">
           <div className="flex flex-col items-center">
             <div
-              className="mb-2 h-14 w-14 bg-contain bg-center bg-no-repeat sm:h-16 sm:w-16"
+              className="mb-2 h-11 w-11 bg-contain bg-center bg-no-repeat sm:h-16 sm:w-16"
               style={{ backgroundImage: "url('/images/trees/tree_clean_2.webp')" }}
             />
-            <p className="text-sm font-semibold text-stone-700">경북대</p>
-            <div className="mt-3 flex h-24 w-24 items-center justify-center rounded-t-[1.5rem] bg-[linear-gradient(180deg,#fff0f5,#ffd6e3)] text-2xl font-black text-rose-600">
+            <p className="text-xs font-semibold text-stone-700 sm:text-sm">경북대</p>
+            <div className="mt-3 flex h-20 w-20 items-center justify-center rounded-t-[1.2rem] bg-[linear-gradient(180deg,#fff0f5,#ffd6e3)] text-xl font-black text-rose-600 sm:h-24 sm:w-24 sm:rounded-t-[1.5rem] sm:text-2xl">
               2위
             </div>
           </div>
           <div className="flex flex-col items-center">
             <div
-              className="mb-2 h-32 w-32 bg-contain bg-center bg-no-repeat sm:h-36 sm:w-36"
+              className="mb-2 h-24 w-24 bg-contain bg-center bg-no-repeat sm:h-36 sm:w-36"
               style={{ backgroundImage: "url('/images/trees/tree_clean_3.webp')" }}
             />
-            <p className="text-sm font-semibold text-stone-700">숭실대</p>
-            <div className="mt-3 flex h-32 w-32 items-center justify-center rounded-t-[1.7rem] bg-[linear-gradient(180deg,#fda4af,#fb7185)] text-3xl font-black text-white shadow-[0_18px_30px_rgba(244,114,182,0.2)]">
+            <p className="text-xs font-semibold text-stone-700 sm:text-sm">숭실대</p>
+            <div className="mt-3 flex h-24 w-24 items-center justify-center rounded-t-[1.4rem] bg-[linear-gradient(180deg,#fda4af,#fb7185)] text-2xl font-black text-white shadow-[0_18px_30px_rgba(244,114,182,0.2)] sm:h-32 sm:w-32 sm:rounded-t-[1.7rem] sm:text-3xl">
               1위
             </div>
           </div>
           <div className="flex flex-col items-center">
             <div
-              className="mb-2 h-12 w-12 bg-contain bg-center bg-no-repeat sm:h-14 sm:w-14"
+              className="mb-2 h-10 w-10 bg-contain bg-center bg-no-repeat sm:h-14 sm:w-14"
               style={{ backgroundImage: "url('/images/trees/tree_clean_1.webp')" }}
             />
-            <p className="text-sm font-semibold text-stone-700">가톨릭대</p>
-            <div className="mt-3 flex h-20 w-24 items-center justify-center rounded-t-[1.4rem] bg-[linear-gradient(180deg,#fff7fa,#ffe5ee)] text-2xl font-black text-rose-600">
+            <p className="text-xs font-semibold text-stone-700 sm:text-sm">가톨릭대</p>
+            <div className="mt-3 flex h-16 w-20 items-center justify-center rounded-t-[1.1rem] bg-[linear-gradient(180deg,#fff7fa,#ffe5ee)] text-xl font-black text-rose-600 sm:h-20 sm:w-24 sm:rounded-t-[1.4rem] sm:text-2xl">
               3위
             </div>
           </div>
@@ -183,10 +202,10 @@ function RankingVisual() {
 
 function GrowthGaugeVisual() {
   return (
-    <div className="w-[32rem] max-w-full overflow-hidden rounded-[2rem] border border-white/45 bg-[linear-gradient(180deg,rgba(206,236,255,0.95),rgba(243,248,255,0.92))] p-3 shadow-[0_24px_60px_rgba(132,149,186,0.2)]">
-      <div className="rounded-[1.6rem] border border-white/55 bg-white/52 p-4 backdrop-blur-md">
+    <div className="w-full max-w-[32rem] overflow-hidden rounded-[2rem] border border-white/45 bg-[linear-gradient(180deg,rgba(206,236,255,0.95),rgba(243,248,255,0.92))] p-2.5 shadow-[0_24px_60px_rgba(132,149,186,0.2)] sm:p-3">
+      <div className="rounded-[1.6rem] border border-white/55 bg-white/52 p-3 backdrop-blur-md sm:p-4">
         <div className="grid gap-3 sm:grid-cols-[1.1fr_1.45fr]">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid gap-2 min-[420px]:grid-cols-3">
             <div className="rounded-[1.2rem] border border-stone-200 bg-white/82 p-3 text-center shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
               <p className="text-[11px] font-semibold text-stone-500">이전 학교</p>
               <p className="mt-5 text-sm font-black text-stone-700">경쟁 학교 없음</p>
@@ -219,8 +238,8 @@ function GrowthGaugeVisual() {
           </div>
         </div>
 
-        <div className="mt-4 rounded-[1.5rem] border border-white/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.86),rgba(246,250,255,0.72))] p-4">
-          <div className="flex items-center justify-between">
+        <div className="mt-4 rounded-[1.5rem] border border-white/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.86),rgba(246,250,255,0.72))] p-3 sm:p-4">
+          <div className="flex flex-col gap-2 text-left sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm font-black tracking-[0.14em] text-rose-500">LEVEL GROWTH</p>
             <p className="text-xs font-semibold text-stone-500">레벨이 오를수록 나무가 풍성해져요</p>
           </div>
@@ -278,7 +297,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden px-4 py-6 text-stone-950 sm:px-6 sm:py-8">
+    <main className="relative min-h-dvh px-4 py-4 text-stone-950 sm:px-6 sm:py-8">
       <div
         className="pointer-events-none absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-md brightness-95 saturate-110"
         style={{ backgroundImage: "url('/images/backgrounds/main-background.png')" }}
@@ -287,11 +306,11 @@ export default function OnboardingPage() {
       <div className="pointer-events-none absolute left-0 top-10 h-56 w-56 rounded-full bg-pink-200/35 blur-3xl" />
       <div className="pointer-events-none absolute right-0 top-24 h-56 w-56 rounded-full bg-sky-100/45 blur-3xl" />
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl items-center justify-center sm:min-h-[calc(100vh-4rem)]">
-        <section className="w-full overflow-hidden rounded-[2.25rem] border border-white/45 bg-white/62 shadow-[0_28px_90px_rgba(104,128,171,0.22)] backdrop-blur-xl">
-          <div className="flex items-center justify-between border-b border-white/30 bg-[linear-gradient(90deg,rgba(255,242,247,0.95),rgba(245,238,255,0.88),rgba(232,242,255,0.92))] px-5 py-4 sm:px-7">
-            <div className="flex items-center gap-4">
-              <div className="rounded-full bg-white/90 px-4 py-2 text-[11px] font-black tracking-[0.28em] text-rose-500 shadow-sm">
+      <div className="relative z-10 mx-auto flex min-h-[calc(100dvh-2rem)] w-full max-w-6xl items-start justify-center py-2 sm:min-h-[calc(100dvh-4rem)] sm:items-center">
+        <section className="w-full overflow-visible rounded-[2.25rem] border border-white/45 bg-white/62 shadow-[0_28px_90px_rgba(104,128,171,0.22)] backdrop-blur-xl sm:overflow-hidden">
+          <div className="flex flex-col gap-3 border-b border-white/30 bg-[linear-gradient(90deg,rgba(255,242,247,0.95),rgba(245,238,255,0.88),rgba(232,242,255,0.92))] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+            <div className="flex items-center justify-between gap-3 sm:justify-start sm:gap-4">
+              <div className="rounded-full bg-white/90 px-3 py-2 text-[10px] font-black tracking-[0.24em] text-rose-500 shadow-sm sm:px-4 sm:text-[11px] sm:tracking-[0.28em]">
                 BLOSSOM GUIDE
               </div>
               <div className="hidden items-center gap-2 sm:flex">
@@ -302,18 +321,18 @@ export default function OnboardingPage() {
             </div>
             <Link
               href="/main?schoolId=school-044"
-              className="rounded-full border border-stone-200 bg-white/85 px-4 py-2 text-sm font-semibold text-stone-600 shadow-[0_8px_24px_rgba(148,163,184,0.15)] backdrop-blur-sm"
+              className="inline-flex w-full items-center justify-center rounded-full border border-stone-200 bg-white/85 px-4 py-2 text-sm font-semibold text-stone-600 shadow-[0_8px_24px_rgba(148,163,184,0.15)] backdrop-blur-sm sm:w-auto"
             >
               뒤로가기
             </Link>
           </div>
 
-          <div className="grid min-h-[70vh] grid-cols-[auto_1fr_auto] items-center gap-4 px-4 py-5 sm:gap-6 sm:px-6 sm:py-7">
+          <div className="grid gap-5 px-4 py-5 sm:min-h-[70vh] sm:grid-cols-[auto_1fr_auto] sm:items-center sm:gap-6 sm:px-6 sm:py-7">
             <button
               type="button"
               onClick={movePrev}
               disabled={isFirst}
-              className={`flex h-14 w-14 items-center justify-center rounded-full border border-stone-200 bg-white/86 text-3xl text-stone-600 shadow-[0_12px_24px_rgba(148,163,184,0.15)] backdrop-blur-sm transition ${
+              className={`hidden h-14 w-14 items-center justify-center rounded-full border border-stone-200 bg-white/86 text-3xl text-stone-600 shadow-[0_12px_24px_rgba(148,163,184,0.15)] backdrop-blur-sm transition sm:flex ${
                 isFirst ? "pointer-events-none opacity-35" : "hover:scale-[1.03]"
               }`}
               aria-label="이전 슬라이드"
@@ -322,22 +341,26 @@ export default function OnboardingPage() {
             </button>
 
             <section className="mx-auto flex w-full max-w-4xl flex-col items-center text-center">
-              <div className="min-h-[23rem] w-full transition-all duration-300 sm:min-h-[29rem]">
+              <div className="w-full transition-all duration-300 sm:min-h-[29rem]">
                 <div className="flex justify-center">
                   <SlideVisual index={currentIndex} />
                 </div>
               </div>
 
-              <div className="mt-8 max-w-3xl">
-                <h1 className="text-4xl font-black tracking-[-0.05em] text-slate-900 sm:text-5xl">
+              <div className="mt-6 max-w-3xl sm:mt-8">
+                <h1 className="text-3xl font-black tracking-[-0.05em] text-slate-900 sm:text-5xl">
                   {slides[currentIndex].title}
                 </h1>
-                <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl">
-                  {slides[currentIndex].description}
+                <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 break-keep sm:mt-5 sm:text-xl sm:leading-8">
+                  {slides[currentIndex].description.map((line) => (
+                    <span key={line} className="block">
+                      {line}
+                    </span>
+                  ))}
                 </p>
               </div>
 
-              <div className="mt-10 flex items-center justify-center gap-3">
+              <div className="mt-8 flex items-center justify-center gap-3 sm:mt-10">
                 {slides.map((slide, index) => (
                   <button
                     key={slide.title}
@@ -353,11 +376,34 @@ export default function OnboardingPage() {
                 ))}
               </div>
 
+              <div className="mt-6 flex w-full items-center justify-center gap-3 sm:hidden">
+                <button
+                  type="button"
+                  onClick={movePrev}
+                  disabled={isFirst}
+                  className={`flex h-12 min-w-[7rem] items-center justify-center rounded-full border border-stone-200 bg-white/88 px-4 text-base font-semibold text-stone-700 shadow-[0_12px_24px_rgba(148,163,184,0.15)] backdrop-blur-sm transition ${
+                    isFirst ? "pointer-events-none opacity-35" : "active:scale-[0.98]"
+                  }`}
+                >
+                  이전
+                </button>
+                <button
+                  type="button"
+                  onClick={moveNext}
+                  disabled={isLast}
+                  className={`flex h-12 min-w-[7rem] items-center justify-center rounded-full border border-stone-200 bg-white/88 px-4 text-base font-semibold text-stone-700 shadow-[0_12px_24px_rgba(148,163,184,0.15)] backdrop-blur-sm transition ${
+                    isLast ? "pointer-events-none opacity-35" : "active:scale-[0.98]"
+                  }`}
+                >
+                  다음
+                </button>
+              </div>
+
               {isLast ? (
-                <div className="mt-10">
+                <div className="mt-8 sm:mt-10">
                   <Link
                     href="/main?schoolId=school-044"
-                    className="inline-flex rounded-full bg-[linear-gradient(90deg,#fb7185,#ec4899)] px-10 py-4 text-lg font-bold text-white shadow-[0_20px_40px_rgba(244,114,182,0.28)] transition hover:scale-[1.02]"
+                    className="inline-flex rounded-full bg-[linear-gradient(90deg,#fb7185,#ec4899)] px-8 py-4 text-base font-bold text-white shadow-[0_20px_40px_rgba(244,114,182,0.28)] transition hover:scale-[1.02] sm:px-10 sm:text-lg"
                   >
                     시작하기
                   </Link>
@@ -369,7 +415,7 @@ export default function OnboardingPage() {
               type="button"
               onClick={moveNext}
               disabled={isLast}
-              className={`flex h-14 w-14 items-center justify-center rounded-full border border-stone-200 bg-white/86 text-3xl text-stone-600 shadow-[0_12px_24px_rgba(148,163,184,0.15)] backdrop-blur-sm transition ${
+              className={`hidden h-14 w-14 items-center justify-center rounded-full border border-stone-200 bg-white/86 text-3xl text-stone-600 shadow-[0_12px_24px_rgba(148,163,184,0.15)] backdrop-blur-sm transition sm:flex ${
                 isLast ? "pointer-events-none opacity-35" : "hover:scale-[1.03]"
               }`}
               aria-label="다음 슬라이드"
