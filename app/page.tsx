@@ -34,7 +34,7 @@ export default function Home() {
 
         <div className="home-entry-shell-content relative z-10 flex min-h-screen w-full flex-col items-center justify-between px-5 py-8 sm:px-8">
           <div className="flex w-full justify-between text-xs font-semibold tracking-[0.24em] text-rose-100 sm:text-sm">
-            <span>SPRING LEAGUE</span>
+            <span>APRIL ANIMAL LEAGUE</span>
             <span>2026 SEASON</span>
           </div>
 
@@ -50,9 +50,6 @@ export default function Home() {
                 <span className="text-4xl sm:text-5xl">🌸</span>
               </div>
 
-              <p className="text-sm font-semibold tracking-[0.36em] text-rose-100 sm:text-base">
-                시험기간 집중력 파괴 프로젝트
-              </p>
               <h1 className="mt-4 text-[3.2rem] font-black tracking-[-0.08em] text-white sm:text-[5.4rem]">
                 벚꽃살리기
               </h1>

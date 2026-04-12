@@ -72,10 +72,8 @@ function SchoolLogoImage({
 
 function NearbySchoolRow({
   school,
-  gap,
 }: {
   school: SchoolRecord | null;
-  gap: number;
 }) {
   if (!school) {
     return (
@@ -89,9 +87,6 @@ function NearbySchoolRow({
             경쟁 없음
           </p>
         </div>
-        <p className="text-[10px] font-bold leading-none text-rose-500 sm:text-sm sm:leading-normal">
-          -
-        </p>
       </div>
     );
   }
@@ -110,14 +105,11 @@ function NearbySchoolRow({
         <span className="hidden text-[10px] text-stone-400">로고</span>
       </div>
       <div className="min-w-0">
-        <p className="text-[9px] font-medium text-stone-500 sm:text-[11px]">#{school.rank}</p>
+        <p className="text-[9px] font-medium text-stone-500 sm:text-[11px]">{school.rank}위</p>
         <p className="mt-0.5 truncate text-[10px] font-semibold leading-tight text-stone-800 sm:mt-1 sm:text-base sm:leading-normal">
           {school.name}
         </p>
       </div>
-      <p className="text-[10px] font-bold leading-none text-rose-500 sm:text-sm sm:leading-normal">
-        {gap.toLocaleString()}개
-      </p>
     </Link>
   );
 }
@@ -186,12 +178,6 @@ export function MainClient({ school, score }: MainClientProps) {
   const previousSchool = currentIndex > 0 ? schools[currentIndex - 1] : null;
   const nextSchool =
     currentIndex >= 0 && currentIndex < schools.length - 1 ? schools[currentIndex + 1] : null;
-  const gapToPrevious = previousSchool
-    ? Math.max(0, previousSchool.totalPetals - currentSchool.totalPetals)
-    : 0;
-  const gapToNext = nextSchool
-    ? Math.max(0, currentSchool.totalPetals - nextSchool.totalPetals)
-    : 0;
   const latestAttackAt = attackLogs[0]?.createdAt ?? null;
   const treeVideoLevel = Math.min(Math.max(currentSchool.level, 1), 7);
   const treeVideoSrc = `/videos/trees/main-level-${treeVideoLevel}.mp4`;
@@ -398,17 +384,15 @@ export function MainClient({ school, score }: MainClientProps) {
           <div className="grid grid-cols-3 gap-1 rounded-[1.25rem] bg-white/40 px-2 py-1 sm:grid-cols-3 sm:items-stretch sm:gap-2 sm:px-3 sm:py-2">
             <NearbySchoolRow
               school={previousSchool}
-              gap={gapToPrevious}
             />
             <div className="flex flex-col items-center justify-center rounded-2xl bg-white/45 px-2 py-1 text-center sm:px-3 sm:py-2">
               <p className="text-[9px] font-semibold text-stone-600 sm:text-xs">현재 순위</p>
               <p className="mt-0.5 text-sm font-bold leading-none sm:mt-1 sm:text-3xl sm:leading-normal">
-                #{currentSchool.rank}
+                {currentSchool.rank}위
               </p>
             </div>
             <NearbySchoolRow
               school={nextSchool}
-              gap={gapToNext}
             />
           </div>
           <div className="rounded-[1.25rem] bg-white/40 px-3 py-2">

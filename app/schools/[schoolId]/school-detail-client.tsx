@@ -75,10 +75,8 @@ function SchoolLogoImage({
 
 function NearbySchoolRow({
   school,
-  gap,
 }: {
   school: SchoolRecord | null;
-  gap: number;
 }) {
   if (!school) {
     return (
@@ -92,9 +90,6 @@ function NearbySchoolRow({
             경쟁 없음
           </p>
         </div>
-        <p className="text-[10px] font-bold leading-none text-rose-500 sm:text-sm sm:leading-normal">
-          -
-        </p>
       </div>
     );
   }
@@ -106,14 +101,11 @@ function NearbySchoolRow({
         <span className="hidden text-[10px] text-stone-400">로고</span>
       </div>
       <div className="min-w-0">
-        <p className="text-[9px] font-medium text-stone-500 sm:text-[11px]">#{school.rank}</p>
+        <p className="text-[9px] font-medium text-stone-500 sm:text-[11px]">{school.rank}위</p>
         <p className="mt-0.5 truncate text-[10px] font-semibold leading-tight text-stone-800 sm:mt-1 sm:text-base sm:leading-normal">
           {school.name}
         </p>
       </div>
-      <p className="text-[10px] font-bold leading-none text-rose-500 sm:text-sm sm:leading-normal">
-        {gap.toLocaleString()}개
-      </p>
     </div>
   );
 }
@@ -465,12 +457,6 @@ export function SchoolDetailClient({
   const previousSchool = currentIndex > 0 ? schools[currentIndex - 1] : null;
   const nextSchool =
     currentIndex >= 0 && currentIndex < schools.length - 1 ? schools[currentIndex + 1] : null;
-  const gapToPrevious = previousSchool
-    ? Math.max(0, previousSchool.totalPetals - school.totalPetals)
-    : 0;
-  const gapToNext = nextSchool
-    ? Math.max(0, school.totalPetals - nextSchool.totalPetals)
-    : 0;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-sky-200 px-4 py-8 text-white sm:py-10">
@@ -616,12 +602,12 @@ export function SchoolDetailClient({
 
         <header className={`mt-3 grid grid-cols-1 gap-1 rounded-[1.5rem] border border-white/30 bg-white/28 p-1.5 text-stone-950 backdrop-blur-sm transition-opacity sm:mt-6 sm:grid-cols-[1.15fr_1.35fr] sm:gap-2 sm:p-3 ${shakeMode === "countdown" ? "opacity-0" : "opacity-100"}`}>
           <div className="grid grid-cols-3 gap-1 rounded-[1.25rem] bg-white/40 px-2 py-1 sm:grid-cols-3 sm:items-stretch sm:gap-2 sm:px-3 sm:py-2">
-            <NearbySchoolRow school={previousSchool} gap={gapToPrevious} />
+            <NearbySchoolRow school={previousSchool} />
             <div className="flex flex-col items-center justify-center rounded-2xl bg-white/45 px-2 py-1 text-center sm:px-3 sm:py-2">
               <p className="text-[9px] font-semibold text-stone-600 sm:text-xs">현재 순위</p>
-              <p className="mt-0.5 text-sm font-bold leading-none sm:mt-1 sm:text-3xl sm:leading-normal">#{school.rank}</p>
+              <p className="mt-0.5 text-sm font-bold leading-none sm:mt-1 sm:text-3xl sm:leading-normal">{school.rank}위</p>
             </div>
-            <NearbySchoolRow school={nextSchool} gap={gapToNext} />
+            <NearbySchoolRow school={nextSchool} />
           </div>
           <div className="rounded-[1.25rem] bg-white/40 px-3 py-2">
             <div className="flex items-end justify-between gap-2">
@@ -687,7 +673,7 @@ export function SchoolDetailClient({
                 <>
                   이번 방해로{" "}
                   <span className="font-semibold text-stone-900">{reducedScore}</span>점만큼 벚꽃 수가
-                  줄었어요. 아직 이 학교에 저장된 꽃잎이 없어서 화면에서 떨어진 꽃잎은 0개예요.
+                  줄었어요.
                 </>
               ) : shakeResult?.reason === "delete_failed" ? (
                 <>
@@ -724,7 +710,7 @@ export function SchoolDetailClient({
                 onClick={handleShakeStart}
                 className="rounded-2xl border border-stone-200 px-4 py-4 text-sm font-semibold text-stone-700 transition-transform duration-200 hover:scale-[1.02]"
               >
-                다시 하기
+                다시하기
               </button>
               <button
                 type="button"

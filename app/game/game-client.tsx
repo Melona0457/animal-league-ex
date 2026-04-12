@@ -116,8 +116,6 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
   const [tapBursts, setTapBursts] = useState<TapBurstPetal[]>([]);
   const [fallScore, setFallScore] = useState(0);
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
-  const [shareNotice, setShareNotice] = useState("");
-  const [shareNoticeTone, setShareNoticeTone] = useState<"success" | "warning">("success");
   const [shareBonus, setShareBonus] = useState(0);
   const [hasAppliedShareBonus, setHasAppliedShareBonus] = useState(false);
 
@@ -369,8 +367,6 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
     setFallScore(0);
     setShareBonus(0);
     setHasAppliedShareBonus(false);
-    setShareNotice("");
-    setShareNoticeTone("success");
   }
 
   function handleCloseGame() {
@@ -401,13 +397,8 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
       return;
     }
 
-    const rivalryLine = previousSchool
-      ? `${previousSchool.name} 추격 중.`
-      : "이번 시즌 1등 굳히는 중.";
-    const shareText =
-      mode === "fall"
-        ? `${schoolName} 방금 클래식 낙하형에서 ${currentScore}점 획득. ${rivalryLine} 같이 들어와서 벚꽃 붙여줘.`
-        : `${schoolName} 방금 터치 벚꽃 연출로 ${currentScore}점 획득. ${rivalryLine} 같이 들어와서 우리 학교 밀어줘.`;
+    const shareRankText = currentSchool ? `${currentSchool.rank}위` : "순위";
+    const shareText = `[${schoolName}] 방금 미니게임으로 벚꽃 ${currentScore.toLocaleString()}개 획득. 이번 시즌 ${shareRankText} 굳히는 중. 같이 들어와서 우리 학교 도와줘!!`;
 
     try {
       if (navigator.share) {
@@ -420,8 +411,6 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
           const bonus = currentScore;
           setShareBonus(bonus);
           setHasAppliedShareBonus(true);
-          setShareNoticeTone("success");
-          setShareNotice("결과를 공유해서 점수를 2배로 얻었어요!");
           return;
         }
 
@@ -429,11 +418,7 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
       }
 
       await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-      setShareNoticeTone("warning");
-      setShareNotice("친구에게 공유해야 점수가 두 배가 돼요!");
     } catch {
-      setShareNoticeTone("warning");
-      setShareNotice("공유를 완료하지 못했어요. 다시 시도해주세요.");
     }
   }
 
@@ -716,31 +701,20 @@ export function GameClient({ schoolId, schoolName, treeLevel, mode }: GameClient
                           : ""}
                       </p>
                     ) : null}
-                    {shareNotice ? (
-                      <div
-                        className={`mt-4 rounded-2xl px-4 py-3 text-sm ${
-                          shareNoticeTone === "success"
-                            ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
-                            : "border border-rose-200 bg-rose-50 text-rose-700"
-                        }`}
-                      >
-                        {shareNotice}
-                      </div>
-                    ) : null}
                     <div className="mt-6 flex flex-col gap-3">
                     <button
                       type="button"
                       onClick={handleShareResult}
                       className="rounded-2xl border border-stone-200 bg-white px-4 py-4 text-sm font-semibold text-stone-700 transition-transform duration-200 hover:scale-[1.02]"
                     >
-                      친구에게 결과 공유하기
+                      친구에게 공유하고 점수 더 받기
                     </button>
                     <button
                       type="button"
                       onClick={handleRestart}
-                      className="rounded-2xl border border-stone-200 px-4 py-4 text-sm font-semibold text-stone-700 transition-transform duration-200 hover:scale-[1.02]"
+                      className="rounded-2xl border border-stone-200 bg-white px-4 py-4 text-sm font-semibold text-stone-700 transition-transform duration-200 hover:scale-[1.02]"
                     >
-                      한 판 더 하기
+                      다시하기
                     </button>
                     <button
                       type="button"
