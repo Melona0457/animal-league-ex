@@ -742,7 +742,7 @@ export function PrototypeOneGameClient({
               <div className="flex w-full items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="rounded-full border border-white/80 bg-white/82 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-sky-700 shadow-[0_6px_18px_rgba(91,141,176,0.16)]">
-                    PROTOTYPE1
+                    BLOSSOM DROP
                   </div>
                   <div className="hidden translate-y-1 items-center gap-1.5 sm:flex">
                     <span className="h-1.5 w-1.5 rounded-full bg-white/95" />
