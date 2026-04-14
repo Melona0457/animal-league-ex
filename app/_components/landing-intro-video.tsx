@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { isConstrainedMediaDevice } from "../_lib/media-mode";
 
 type LandingIntroVideoProps = {
   src: string;
@@ -12,6 +13,12 @@ export function LandingIntroVideo({ src, fallbackImage }: LandingIntroVideoProps
   const [isReady, setIsReady] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [isFallbackLoaded, setIsFallbackLoaded] = useState(false);
+  const [shouldRenderVideo, setShouldRenderVideo] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setShouldRenderVideo(!isConstrainedMediaDevice());
+  }, []);
 
   return (
     <>
@@ -39,28 +46,30 @@ export function LandingIntroVideo({ src, fallbackImage }: LandingIntroVideoProps
           setIsFallbackLoaded(false);
         }}
       />
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        poster={fallbackImage}
-        className={`home-entry-bg home-entry-bg-zoom absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
-          isReady && !hasError ? "opacity-100" : "opacity-0"
-        }`}
-        onCanPlay={() => {
-          setIsReady(true);
-        }}
-        onLoadedData={() => {
-          setIsReady(true);
-        }}
-        onError={() => {
-          setHasError(true);
-        }}
-      >
-        <source src={src} type="video/mp4" />
-      </video>
+      {shouldRenderVideo ? (
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster={fallbackImage}
+          className={`home-entry-bg home-entry-bg-zoom absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
+            isReady && !hasError ? "opacity-100" : "opacity-0"
+          }`}
+          onCanPlay={() => {
+            setIsReady(true);
+          }}
+          onLoadedData={() => {
+            setIsReady(true);
+          }}
+          onError={() => {
+            setHasError(true);
+          }}
+        >
+          <source src={src} type="video/mp4" />
+        </video>
+      ) : null}
     </>
   );
 }

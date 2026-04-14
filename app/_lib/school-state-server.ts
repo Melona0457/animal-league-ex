@@ -83,7 +83,9 @@ function mapRows(rows: SchoolRow[]) {
 }
 
 export async function getStoredSchoolByIdServer(schoolId: string) {
-  const { data, error } = await supabase.from("schools").select("*");
+  const { data, error } = await supabase
+    .from("schools")
+    .select("id,name,total_petals,bloom_rate,level,rank,progress_percent");
 
   if (error || !data) {
     return getDefaultSchoolRecords().find((school) => school.id === schoolId) ?? null;
