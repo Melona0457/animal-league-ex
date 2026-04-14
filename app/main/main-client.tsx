@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BackgroundVideoWarmup } from "../_components/background-video-warmup";
 import { TreeScene } from "../_components/tree-scene";
 import {
   formatAttackTime,
@@ -18,6 +17,7 @@ import {
   type SchoolRecord,
 } from "../_lib/mock-data";
 import { getPetalsBySchoolId, type PetalPlacement } from "../_lib/petal-state";
+import { isConstrainedMediaDevice } from "../_lib/media-mode";
 import { setSelectedSchoolId } from "../_lib/selected-school";
 import { getStoredSchoolById, getStoredSchools } from "../_lib/school-state";
 
@@ -119,6 +119,7 @@ export function MainClient({ school, score }: MainClientProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAttackLogOpen, setIsAttackLogOpen] = useState(false);
   const [brokenTreeVideoSrc, setBrokenTreeVideoSrc] = useState<string | null>(null);
+  const [isConstrainedMedia, setIsConstrainedMedia] = useState(true);
   const [currentSchool, setCurrentSchool] = useState(school);
   const [schools, setSchools] = useState<SchoolRecord[]>([]);
   const [petals, setPetals] = useState<PetalPlacement[]>([]);
@@ -131,6 +132,11 @@ export function MainClient({ school, score }: MainClientProps) {
     return window.localStorage.getItem(getAttackAlertStorageKey(school.id));
   });
   const [shareNotice, setShareNotice] = useState("");
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsConstrainedMedia(isConstrainedMediaDevice());
+  }, []);
 
   useEffect(() => {
     let isActive = true;
@@ -240,11 +246,6 @@ export function MainClient({ school, score }: MainClientProps) {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-sky-200 px-4 py-8 text-white sm:py-10">
-      <BackgroundVideoWarmup
-        groups={[
-          { sources: [treeVideoSrc], preload: "auto", delayMs: 0 },
-        ]}
-      />
       <div
         className="pointer-events-none absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat blur-md brightness-110 saturate-110"
         style={{ backgroundImage: `url('${getSchoolBackgroundImage(currentSchool.id)}')` }}
@@ -290,7 +291,7 @@ export function MainClient({ school, score }: MainClientProps) {
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.45),transparent_30%),radial-gradient(circle_at_top_right,rgba(255,210,228,0.24),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.16),rgba(149,196,244,0.18))]" />
               <div className="relative flex h-[calc(100vh-12.5rem)] min-h-[720px] w-full items-end justify-center overflow-hidden rounded-[2rem] border border-white/45 bg-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(255,255,255,0.42),rgba(255,255,255,0.08),transparent)]" />
-                {hasTreeVideoError ? (
+                {hasTreeVideoError || isConstrainedMedia ? (
                   <TreeScene
                     treeLevel={currentSchool.level}
                     petals={petals}
@@ -306,7 +307,7 @@ export function MainClient({ school, score }: MainClientProps) {
                     muted
                     loop
                     playsInline
-                    preload="auto"
+                    preload="metadata"
                     disablePictureInPicture
                     disableRemotePlayback
                     className="absolute inset-0 h-full w-full object-cover"

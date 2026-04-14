@@ -37,7 +37,9 @@ function mapAttackLog(row: AttackLogRow): AttackLog {
 export async function getAttackLogsForSchool(schoolId: string, limit = 5) {
   const { data, error } = await supabase
     .from("attack_logs")
-    .select("*")
+    .select(
+      "id,attacker_school_id,attacker_school_name,target_school_id,target_school_name,reduced_petals,created_at",
+    )
     .eq("target_school_id", schoolId)
     .order("created_at", { ascending: false })
     .limit(limit);
