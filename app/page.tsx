@@ -1,5 +1,4 @@
 import { BackgroundImageWarmup } from "./_components/background-image-warmup";
-import { BackgroundVideoWarmup } from "./_components/background-video-warmup";
 import { LandingIntroVideoNoSsr } from "./_components/landing-intro-video-no-ssr";
 import { getLandingBackgroundImage } from "./_lib/mock-data";
 import { HomeEntryClient } from "./home-entry-client";
@@ -10,11 +9,6 @@ export default function Home() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-stone-900 text-white">
       <HomeEntryClient>
-        <BackgroundVideoWarmup
-          groups={[
-            { sources: ["/videos/intro.mp4"], preload: "metadata", delayMs: 0 },
-          ]}
-        />
         <BackgroundImageWarmup
           sources={[
             landingBackgroundImage,

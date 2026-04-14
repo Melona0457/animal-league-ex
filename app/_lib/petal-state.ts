@@ -50,7 +50,7 @@ function mapRows(rows: PetalRow[]) {
 export async function getPetalsBySchoolId(schoolId: string) {
   const { data, error } = await supabase
     .from("petal_placements")
-    .select("*")
+    .select("id,school_id,x_percent,y_percent,rotation,scale,created_at")
     .eq("school_id", schoolId)
     .order("created_at", { ascending: true });
 
